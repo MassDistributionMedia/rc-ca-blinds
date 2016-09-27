@@ -93,5 +93,8 @@
         ]
       }
     }
+  },
+  "scripts": {
+    "start": "meteor -p 8080"
   }
 }
