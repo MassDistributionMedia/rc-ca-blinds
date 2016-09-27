@@ -19,6 +19,12 @@ Template.variantForm.onCreated(function () {
  */
 
 Template.variantForm.helpers({
+  variantTypeOptions: function (){
+    return [
+      {label: "Default", value: 2013},
+      {label: "Height & Weight", value: "Height & Weight"}
+    ];
+  },
   variantDetails: function () {
     if (this.ancestors.length === 1) {
       return Template.parentVariantForm;

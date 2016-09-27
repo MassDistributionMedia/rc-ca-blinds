@@ -57,7 +57,7 @@
               
               <div class="form-group{{#if afFieldIsInvalid name='variantType'}} has-error{{/if}}">
                   <label class="control-label">{{afFieldLabelText name='variantType'}}</label>
-                  {{>afFieldInput name='variantType' type="select" options=optionsHelper}}
+                  {{>afFieldInput name='variantType' type="select" options=variantTypeOptions}}
                   {{#if afFieldIsInvalid name='variantType'}}
                   <span class="help-block">{{afFieldMessage name='variantType'}}</span>
                   {{/if}}
