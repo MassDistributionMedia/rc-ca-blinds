@@ -12,8 +12,11 @@
     <hr>
     <small data-i18n="variantList.moreOptions">There are more options available for this selection.</small>
     <div class="row variant-product-options">
+      {{#if displayVariantOptions}}
+        {{> heightWidth}}
+      {{/if}}
       {{#each childVariants}}
-        <div class="variant-select-option">
+        <div class="variant-select-option" style="{{displayVariantOptions 1}}">
         <button type="button" class="btn btn-default {{selectedVariant}}">
           {{#with media}}
             <div class="media">

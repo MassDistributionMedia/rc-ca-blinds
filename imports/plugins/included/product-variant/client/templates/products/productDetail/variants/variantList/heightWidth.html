@@ -1,0 +1,31 @@
+<template name="heightWidth">
+  <style type="text/css">
+    .rui.select:after{
+      border: #b2e4e9 2px solid;
+      border-radius: 3px;
+      background: #fff;
+      right: -20px;
+      height: 101%;
+    }
+    .rui.select{
+      border-radius: 3px;
+    }
+    .rui.select > select{
+      cursor: pointer;
+      width: 124%;
+      padding: 13px 35px 13px 23px;
+    }
+    .eighthOptions{
+      margin: 0 0 0 21px;
+    }
+  </style>
+  <h3>Enter size</h3>
+  <p>If you selected Inside Mount, enter your window size. For Outside Mount, enter the product size you want.</p>
+  <h4>Width &harr; &nbsp; </h4>
+  {{> select options=selectOptions}}
+  <span class="eighthOptions">{{> select options=eighthOptions}}</span>
+  <div style="width: 100%;"></div>
+  <h4>Height &#8597; &nbsp; </h4>
+  {{> select options=selectOptions}}
+  <span class="eighthOptions">{{> select options=eighthOptions}}</span>
+</template>

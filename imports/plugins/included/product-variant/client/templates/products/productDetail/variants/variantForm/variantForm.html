@@ -57,7 +57,7 @@
               
               <div class="form-group{{#if afFieldIsInvalid name='variantType'}} has-error{{/if}}">
                   <label class="control-label">{{afFieldLabelText name='variantType'}}</label>
-                  {{>afFieldInput name='variantType' type="select" options=variantTypeOptions}}
+                  {{>afFieldInput name='variantType' type='select' options=variantTypeOptions}}
                   {{#if afFieldIsInvalid name='variantType'}}
                   <span class="help-block">{{afFieldMessage name='variantType'}}</span>
                   {{/if}}
@@ -144,7 +144,7 @@
         <div class="panel-title">
           <span data-i18n="productDetailEdit.variantOptions">Variant Options</span>
         </div>
-        <div class="panel-controls">
+        <div class="panel-controls" style="{{displayVariantOptions}}">
           {{> button
             icon="plus"
             className="btn btn-default btn-child-variant-form"
@@ -153,7 +153,7 @@
           }}
         </div>
       </div>
-      <div class="panel-group panel-group-accordian" role="tablist" aria-multiselectable="true">
+      <div class="panel-group panel-group-accordian" role="tablist" aria-multiselectable="true" style="{{displayVariantOptions}}">
         {{#each childVariants}}
           {{>childVariantForm}}
         {{/each}}

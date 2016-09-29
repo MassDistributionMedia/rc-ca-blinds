@@ -19,11 +19,16 @@ Template.variantForm.onCreated(function () {
  */
 
 Template.variantForm.helpers({
-  variantTypeOptions: function (){
+  variantTypeOptions: function () {
     return [
-      {label: "Default", value: 2013},
-      {label: "Height & Weight", value: "Height & Weight"}
+      {label: "Default", value: "Default"},
+      {label: "Height & Width", value: "Height & Width"}
     ];
+  },
+  displayVariantOptions: function () {
+    if (this.isHeightWidth) {
+      return "display: none;";
+    }
   },
   variantDetails: function () {
     if (this.ancestors.length === 1) {
@@ -92,6 +97,17 @@ Template.variantForm.helpers({
  */
 
 Template.variantForm.events({
+  "change select[name='variantType']": function (event, template) {
+    var selectedType = $(event.currentTarget).find('option:selected').text();
+    selectedType === "Height & Width" ? template.data.isHeightWidth = true : template.data.isHeightWidth = false; 
+    
+    Meteor.call("products/updateProductField", template.data._id, "isHeightWidth", template.data.isHeightWidth,
+      error => {
+        if (error) {
+          throw new Meteor.Error("error updating variantType: isHeightWidth", error);
+        }
+      });
+  },
   "change form :input": function (event, template) {
     const field = $(event.currentTarget).attr("name");
     //
