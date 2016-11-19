@@ -1,8 +1,10 @@
-import { Reaction, i18next } from "/client/api";
-import { ReactionProduct } from "/lib/api";
 import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
 import { Template } from "meteor/templating";
+import { Reaction, i18next } from "/client/api";
+import { ReactionProduct } from "/lib/api";
+import { applyProductRevision } from "/lib/api/products";
+import { Products } from "/lib/collections";
 
 Template.variantForm.onCreated(function () {
   this.autorun(() => {
@@ -12,6 +14,11 @@ Template.variantForm.onCreated(function () {
       Reaction.clearActionView();
     }
   });
+
+  this.getVariant = (variant) => {
+    const product = Products.findOne(variant._id);
+    return applyProductRevision(product);
+  };
 });
 
 /**
@@ -19,6 +26,10 @@ Template.variantForm.onCreated(function () {
  */
 
 Template.variantForm.helpers({
+  variant() {
+    const instance = Template.instance();
+    return instance.getVariant(instance.data);
+  },
   variantTypeOptions: function () {
     return [
       {label: "Default", value: "Default"},
@@ -74,9 +85,9 @@ Template.variantForm.helpers({
         const title = variant.title || i18next.t("productDetailEdit.thisVariant");
 
         Alerts.alert({
-          title: i18next.t("productDetailEdit.removeVariantConfirm", { title }),
+          title: i18next.t("productDetailEdit.archiveVariantConfirm", { title }),
           showCancelButton: true,
-          confirmButtonText: "Remove"
+          confirmButtonText: "Archive"
         }, (isConfirm) => {
           if (isConfirm) {
             const id = variant._id;
@@ -85,6 +96,24 @@ Template.variantForm.helpers({
                 return ReactionProduct.setCurrentVariant(null);
               }
             });
+          }
+        });
+      };
+    };
+  },
+  restoreVariant(variant) {
+    return () => {
+      return () => {
+        const title = variant.title || i18next.t("productDetailEdit.thisVariant");
+
+        Alerts.alert({
+          title: i18next.t("productDetailEdit.restoreVariantConfirm", { title }),
+          showCancelButton: true,
+          confirmButtonText: "Restore"
+        }, (isConfirm) => {
+          if (isConfirm) {
+            const id = variant._id;
+            Meteor.call("products/updateProductField", id, "isDeleted", false);
           }
         });
       };
