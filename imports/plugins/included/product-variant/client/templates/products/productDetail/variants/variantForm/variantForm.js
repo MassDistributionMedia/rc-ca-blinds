@@ -37,9 +37,9 @@ Template.variantForm.helpers({
     ];
   },
   displayVariantOptions: function () {
-    if (this.isHeightWidth) {
-      return "display: none;";
-    }
+    // if (this.isHeightWidth) {
+    //   return "display: none;";
+    // }
   },
   variantDetails: function () {
     if (this.ancestors.length === 1) {

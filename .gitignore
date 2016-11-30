@@ -7,6 +7,7 @@
 *.log
 *.out
 *.pid
+*.swp
 *.seed
 *.sublime-project
 *.sublime-workspace

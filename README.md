@@ -6,7 +6,9 @@ Reaction is a modern reactive, real-time event driven ecommerce platform.
 
 Reaction is built with JavaScript (ES6), Meteor, Node.js and works nicely with Docker.
 
-Cloud9 IDE Workspace: https://ide.c9.io/mikeumus/ca-blinds
+Cloud9 IDE Workspace: 
+- https://ide.c9.io/mikeumus/ca-blinds
+- https://ca-blinds-mikeumus.c9users.io
 
 ## Installation
 

@@ -5,6 +5,26 @@ import { Select } from "/imports/plugins/core/ui/client/components";
 import { Meteor } from "meteor/meteor";
 import { Template } from "meteor/templating";
 
+
+/**
+ * heightWidth onRendered
+ */
+// Template.onCreated(function () {
+//   this.autorun(() => {
+//     // const selectedProductId = Reaction.Router.getParam("productId");
+//     // const selectedVariantId = Reaction.Router.getParam("variantId");
+//     // const selectedParentId = Reaction.Router.getParam("parentId");
+
+//     // debugger;
+
+//     // To create a child option from a variant
+//     // Meteor.call("products/cloneVariant", selectedProductId, selectecVariantId, selectedParentId);
+
+//     // $(`div.child-variant-collapse:not(#child-variant-form-${selectedVariantId})`).collapse("hide");
+//     // $(`#child-variant-form-${selectedVariantId}`).collapse("show");
+//   });
+// });
+
 Template.heightWidth.helpers({
   selectOptions() {
     let diameterOptions = [];
