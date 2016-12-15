@@ -9,23 +9,24 @@ import { Template } from "meteor/templating";
 /**
  * heightWidth onRendered
  */
-// Template.onCreated(function () {
-//   this.autorun(() => {
-//     // const selectedProductId = Reaction.Router.getParam("productId");
-//     // const selectedVariantId = Reaction.Router.getParam("variantId");
-//     // const selectedParentId = Reaction.Router.getParam("parentId");
+Template.onRendered(function () {
+  this.autorun(() => {
+    const selectedProductId = Reaction.Router.getParam("productId");
+    const selectedVariantId = Reaction.Router.getParam("variantId");
+    const selectedParentId = Reaction.Router.getParam("parentId");
+    
+    if(ReactionProduct.get("productId"))
+      debugger;
+    // To create a child option from a variant
+    // Meteor.call("products/cloneVariant", selectedProductId, selectecVariantId, selectedParentId);
 
-//     // debugger;
-
-//     // To create a child option from a variant
-//     // Meteor.call("products/cloneVariant", selectedProductId, selectecVariantId, selectedParentId);
-
-//     // $(`div.child-variant-collapse:not(#child-variant-form-${selectedVariantId})`).collapse("hide");
-//     // $(`#child-variant-form-${selectedVariantId}`).collapse("show");
-//   });
-// });
+    // $(`div.child-variant-collapse:not(#child-variant-form-${selectedVariantId})`).collapse("hide");
+    // $(`#child-variant-form-${selectedVariantId}`).collapse("show");
+  });
+});
 
 Template.heightWidth.helpers({
+  /** Calculate the range of sizes to for the height & width dropdown */ 
   selectOptions() {
     let diameterOptions = [];
     for(let i=9;i<97;i++){
@@ -33,6 +34,7 @@ Template.heightWidth.helpers({
     }
     return diameterOptions;
   },
+  /** Hard-coded range for eigths of inches fpr the height & width dropdown */
   eighthOptions() {
     return [
       {value: 0, label: '0/8"'},
