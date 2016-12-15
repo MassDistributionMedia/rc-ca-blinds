@@ -15,9 +15,16 @@ Template.onRendered(function () {
     const selectedVariantId = Reaction.Router.getParam("variantId");
     const selectedParentId = Reaction.Router.getParam("parentId");
     
+    // https://github.com/reactioncommerce/reaction/blob/c842d27fde639e3fd5709db99c261a7d59647c8d/lib/api/products.js#L109
+    // 1 ReactionProduct.selectedVariantId()
+    // 2 Meteor.call("products/createVariant" ...
+    
+    
+    
     if(ReactionProduct.get("productId"))
       debugger;
     // To create a child option from a variant
+    // https://github.com/reactioncommerce/reaction/blob/1eec469f19f765c1ca7f45bfe0e6bf39177e64f1/server/methods/catalog.js#L397
     // Meteor.call("products/cloneVariant", selectedProductId, selectecVariantId, selectedParentId);
 
     // $(`div.child-variant-collapse:not(#child-variant-form-${selectedVariantId})`).collapse("hide");
