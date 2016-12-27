@@ -64,6 +64,7 @@ class VariantList extends Component {
               editable={this.props.editable}
               index={index}
               isSelected={this.props.variantIsSelected(variant._id)}
+              isHeightWidth={variant.isHeightWidth}
               onClick={this.props.onVariantClick}
               onMove={this.props.onMoveVariant}
               soldOut={this.isSoldOut(variant)}
@@ -92,7 +93,7 @@ class VariantList extends Component {
           }
           return false;
         });
-
+        
         return (
           <EditContainer
             data={childVariant}
@@ -108,6 +109,7 @@ class VariantList extends Component {
           >
             <ChildVariant
               isSelected={this.props.variantIsSelected(childVariant._id)}
+              isHeightWidth={this.props.variants[0].isHeightWidth}
               media={media}
               onClick={this.handleChildleVariantClick}
               variant={childVariant}

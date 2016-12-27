@@ -19,10 +19,11 @@
       margin: 0 0 0 21px;
     }
   </style>
+  
   <h3>Enter size</h3>
   <p>If you selected Inside Mount, enter your window size. For Outside Mount, enter the product size you want.</p>
   <h4>Width &harr; &nbsp; </h4>
-  {{> select options=selectOptions}}
+  {{> select options=selectOptions onSelect=handleSelect}}
   <span class="eighthOptions">{{> select options=eighthOptions}}</span>
   <div style="width: 100%;"></div>
   <h4>Height &#8597; &nbsp; </h4>

@@ -65,11 +65,11 @@ Template.variantList.onRendered(function () {
  */
 Template.variantList.helpers({
   displayVariantOptions: function (type) {
-    // if (ReactionProduct.selectedVariant().isHeightWidth) {
-    //   if(type === 1)
-    //     return "display: none;"
-    //   else return true;
-    // }
+    if (ReactionProduct.selectedVariant().isHeightWidth) {
+      if(type === 1)
+        return "display: none;"
+      else return true;
+    }
   },
   media: function () {
     const media = Media.findOne({
