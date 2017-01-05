@@ -9,6 +9,8 @@ import { ProductDetail } from "../components";
 import { SocialContainer, VariantListContainer } from "./";
 import { MediaGalleryContainer } from "/imports/plugins/core/ui/client/containers";
 import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/client/providers";
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'; // http://www.material-ui.com/#/get-started/usage
+
 
 class ProductDetailContainer extends Component {
   constructor(props) {
@@ -148,18 +150,20 @@ class ProductDetailContainer extends Component {
     return (
       <TranslationProvider>
         <DragDropProvider>
-          <ProductDetail
-            cartQuantity={this.state.cartQuantity}
-            mediaGalleryComponent={<MediaGalleryContainer media={this.props.media} />}
-            onAddToCart={this.handleAddToCart}
-            onCartQuantityChange={this.handleCartQuantityChange}
-            onViewContextChange={this.handleViewContextChange}
-            socialComponent={<SocialContainer />}
-            topVariantComponent={<VariantListContainer />}
-            onDeleteProduct={this.handleDeleteProduct}
-            onProductFieldChange={this.handleProductFieldChange}
-            {...this.props}
-          />
+          <MuiThemeProvider>
+            <ProductDetail
+              cartQuantity={this.state.cartQuantity}
+              mediaGalleryComponent={<MediaGalleryContainer media={this.props.media} />}
+              onAddToCart={this.handleAddToCart}
+              onCartQuantityChange={this.handleCartQuantityChange}
+              onViewContextChange={this.handleViewContextChange}
+              socialComponent={<SocialContainer />}
+              topVariantComponent={<VariantListContainer />}
+              onDeleteProduct={this.handleDeleteProduct}
+              onProductFieldChange={this.handleProductFieldChange}
+              {...this.props}
+            />
+          </MuiThemeProvider>
         </DragDropProvider>
       </TranslationProvider>
     );

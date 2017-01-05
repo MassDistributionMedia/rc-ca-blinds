@@ -3,8 +3,13 @@ import Variant from "./variant";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { Divider, Translation } from "/imports/plugins/core/ui/client/components";
 import { ChildVariant } from "./";
+import SelectField from 'material-ui/SelectField'; // http://www.material-ui.com/#/components/select-field
+import MenuItem from 'material-ui/MenuItem'; // http://www.material-ui.com/#/components/select-field
 
 class VariantList extends Component {
+  state = {
+    value: null,
+  };
 
   handleVariantEditClick = (event, editButtonProps) => {
     if (this.props.onEditVariant) {
@@ -83,6 +88,11 @@ class VariantList extends Component {
       </li>
     );
   }
+  
+  handleChange = (event, index, value) => {
+    debugger;
+    this.setState({value});
+  }
 
   renderChildVariants() {
     if (this.props.childVariants) {
@@ -112,6 +122,7 @@ class VariantList extends Component {
               isHeightWidth={this.props.variants[0].isHeightWidth}
               media={media}
               onClick={this.handleChildleVariantClick}
+              onChange={this.handleChildleVariantClick}
               variant={childVariant}
             />
           </EditContainer>
@@ -137,7 +148,13 @@ class VariantList extends Component {
           label="Available Options"
         />
         <div className="row variant-product-options">
-          {this.renderChildVariants()}
+          <SelectField
+            floatingLabelText="Height in Inches"
+            value={this.state.value}
+            onChange={this.handleChange}
+          >
+            {this.renderChildVariants()}
+          </SelectField>
         </div>
       </div>
     );
@@ -150,6 +167,7 @@ VariantList.propTypes = {
   displayPrice: PropTypes.func,
   editable: PropTypes.bool,
   isSoldOut: PropTypes.func,
+  isHeightWidth: PropTypes.bool,
   onEditVariant: PropTypes.func,
   onMoveVariant: PropTypes.func,
   onVariantClick: PropTypes.func,
