@@ -46,6 +46,8 @@ class ChildVariant extends Component {
 
     return null;
   }
+  
+  // http://stackoverflow.com/questions/26176519/reactjs-call-parent-function
 
   render() {
     const variant = this.props.variant;
@@ -83,6 +85,7 @@ class ChildVariant extends Component {
 };
 
 ChildVariant.propTypes = {
+  value: PropTypes.number,
   editButton: PropTypes.node,
   isSelected: PropTypes.bool,
   media: PropTypes.arrayOf(PropTypes.object),

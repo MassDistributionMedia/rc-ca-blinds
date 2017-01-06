@@ -7,9 +7,16 @@ import SelectField from 'material-ui/SelectField'; // http://www.material-ui.com
 import MenuItem from 'material-ui/MenuItem'; // http://www.material-ui.com/#/components/select-field
 
 class VariantList extends Component {
-  state = {
-    value: null,
-  };
+  // state = {
+  //   value: null,
+  // };
+  constructor(props) {
+    super(props);
+    this.state = { 
+      /* initial state */
+      value: null,
+    };
+  }
 
   handleVariantEditClick = (event, editButtonProps) => {
     if (this.props.onEditVariant) {
@@ -25,13 +32,16 @@ class VariantList extends Component {
     }
   }
 
-  handleChildleVariantClick = (event, variant) => {
+  handleChildleVariantClick = (event, variant, value) => {
+    debugger;
+    this.setState({value: variant.height});
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
     }
   }
 
   handleChildVariantEditClick = (event, editButtonProps) => {
+    
     if (this.props.onEditVariant) {
       return this.props.onEditVariant(event, editButtonProps.data, 1);
     }
@@ -118,6 +128,7 @@ class VariantList extends Component {
             showsVisibilityButton={true}
           >
             <ChildVariant
+              value={this.state.value}
               isSelected={this.props.variantIsSelected(childVariant._id)}
               isHeightWidth={this.props.variants[0].isHeightWidth}
               media={media}
@@ -151,7 +162,7 @@ class VariantList extends Component {
           <SelectField
             floatingLabelText="Height in Inches"
             value={this.state.value}
-            onChange={this.handleChange}
+            onChange={this.handleChildleVariantClick}
           >
             {this.renderChildVariants()}
           </SelectField>
