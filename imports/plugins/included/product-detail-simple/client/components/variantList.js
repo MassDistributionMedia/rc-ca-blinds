@@ -12,6 +12,7 @@ class VariantList extends Component {
   // };
   constructor(props) {
     super(props);
+    this.handleChildleVariantClick = this.handleChildleVariantClick.bind(this);
     this.state = { 
       /* initial state */
       value: null,
@@ -32,7 +33,7 @@ class VariantList extends Component {
     }
   }
 
-  handleChildleVariantClick = (event, variant, value) => {
+  handleChildleVariantClick (event, variant) {
     debugger;
     this.setState({value: variant.height});
     if (this.props.onVariantClick) {
@@ -128,7 +129,6 @@ class VariantList extends Component {
             showsVisibilityButton={true}
           >
             <ChildVariant
-              value={this.state.value}
               isSelected={this.props.variantIsSelected(childVariant._id)}
               isHeightWidth={this.props.variants[0].isHeightWidth}
               media={media}

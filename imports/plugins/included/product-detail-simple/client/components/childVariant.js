@@ -5,7 +5,7 @@ import { MediaItem } from "/imports/plugins/core/ui/client/components";
 import MenuItem from 'material-ui/MenuItem';
 
 class ChildVariant extends Component {
-  handleClick = (event, index, value) => {
+  handleClick = (event, index) => {
     if (this.props.onClick) {
       this.props.onClick(event, this.props.variant);
     }
@@ -48,6 +48,7 @@ class ChildVariant extends Component {
   }
   
   // http://stackoverflow.com/questions/26176519/reactjs-call-parent-function
+  // http://stackoverflow.com/questions/30580638/pass-parent-prop-to-children-reactjs?rq=1
 
   render() {
     const variant = this.props.variant;
@@ -85,7 +86,6 @@ class ChildVariant extends Component {
 };
 
 ChildVariant.propTypes = {
-  value: PropTypes.number,
   editButton: PropTypes.node,
   isSelected: PropTypes.bool,
   media: PropTypes.arrayOf(PropTypes.object),
