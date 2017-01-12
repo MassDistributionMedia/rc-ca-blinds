@@ -130,7 +130,7 @@ class VariantList extends Component {
     return null;
   }
   
-  handleChange(event, index, value) {
+  handleChange = (event, index, value) => {
     debugger;
     this.setState({value});
   }
