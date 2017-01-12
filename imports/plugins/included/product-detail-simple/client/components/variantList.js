@@ -12,7 +12,7 @@ class VariantList extends Component {
   // };
   constructor(props) {
     super(props);
-    this.handleChildleVariantClick = this.handleChildleVariantClick.bind(this);
+    // this.handleChildleVariantClick = this.handleChildleVariantClick.bind(this);
     this.state = { 
       /* initial state */
       value: null,
@@ -34,7 +34,6 @@ class VariantList extends Component {
   }
 
   handleChildleVariantClick (event, variant) {
-    debugger;
     this.setState({value: variant.height});
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
@@ -100,10 +99,10 @@ class VariantList extends Component {
     );
   }
   
-  handleChange = (event, index, value) => {
-    debugger;
-    this.setState({value});
-  }
+  // TODO
+  // - Try custom component inside this file
+  // - Try accessing data-attribute:
+  //   - https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_data_attributes
 
   renderChildVariants() {
     if (this.props.childVariants) {
@@ -116,32 +115,23 @@ class VariantList extends Component {
         });
         
         return (
-          <EditContainer
-            data={childVariant}
-            disabled={this.props.editable === false}
-            editView="variantForm"
-            i18nKeyLabel="productDetailEdit.editVariant"
-            key={index}
-            label="Edit Variant"
-            onEditButtonClick={this.handleChildVariantEditClick}
-            onVisibilityButtonClick={this.handleVariantVisibilityClick}
-            permissions={["createProduct"]}
-            showsVisibilityButton={true}
-          >
-            <ChildVariant
+            <ChildSelectOption 
+              key={index}
+              value={this.state.value}
               isSelected={this.props.variantIsSelected(childVariant._id)}
-              isHeightWidth={this.props.variants[0].isHeightWidth}
-              media={media}
-              onClick={this.handleChildleVariantClick}
-              onChange={this.handleChildleVariantClick}
+              onValueChange={this.handleChildleVariantClick.bind(this)}
               variant={childVariant}
             />
-          </EditContainer>
         );
       });
     }
 
     return null;
+  }
+  
+  handleChange = (event, index, value) => {
+    debugger;
+    this.setState({value});
   }
 
   render() {
@@ -160,9 +150,9 @@ class VariantList extends Component {
         />
         <div className="row variant-product-options">
           <SelectField
-            floatingLabelText="Height in Inches"
             value={this.state.value}
-            onChange={this.handleChildleVariantClick}
+            onChange={this.handleChange}
+            floatingLabelText="Height in Inches"
           >
             {this.renderChildVariants()}
           </SelectField>
@@ -185,6 +175,35 @@ VariantList.propTypes = {
   onVariantVisibiltyToggle: PropTypes.func,
   variantIsSelected: PropTypes.func,
   variants: PropTypes.arrayOf(PropTypes.object)
+};
+
+class ChildSelectOption extends Component {
+  handleChange = (event, index) => {
+    if (this.props.onValueChange) {
+      this.props.onValueChange(event, this.props.variant);
+    }
+  }
+  render() {
+    const variant = this.props.variant;
+    return (
+      <MenuItem 
+        onClick={this.handleChange.bind(this)} 
+        value={this.props.value} 
+        primaryText={variant.height}
+      />
+    )
+  }
+};
+
+ChildSelectOption.propTypes = {
+  // editButton: PropTypes.node,
+  value: PropTypes.number,
+  isSelected: PropTypes.bool,
+  // media: PropTypes.arrayOf(PropTypes.object),
+  onClick: PropTypes.func,
+  // onChange: PropTypes.func,
+  variant: PropTypes.object,
+  // visibilityButton: PropTypes.node
 };
 
 export default VariantList;
