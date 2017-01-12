@@ -12,7 +12,8 @@ class VariantList extends Component {
   // };
   constructor(props) {
     super(props);
-    // this.handleChildleVariantClick = this.handleChildleVariantClick.bind(this);
+    this.handleChildleVariantClick = this.handleChildleVariantClick.bind(this);
+    this.handleChange = this.handleChange.bind(this);
     this.state = { 
       /* initial state */
       value: null,
@@ -129,7 +130,7 @@ class VariantList extends Component {
     return null;
   }
   
-  handleChange = (event, index, value) => {
+  handleChange(event, index, value) {
     debugger;
     this.setState({value});
   }
