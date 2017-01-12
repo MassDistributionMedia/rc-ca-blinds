@@ -7,16 +7,13 @@ import SelectField from 'material-ui/SelectField'; // http://www.material-ui.com
 import MenuItem from 'material-ui/MenuItem'; // http://www.material-ui.com/#/components/select-field
 
 class VariantList extends Component {
-  // state = {
-  //   value: null,
-  // };
   constructor(props) {
     super(props);
     this.handleChildleVariantClick = this.handleChildleVariantClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.state = { 
       /* initial state */
-      value: null,
+      value: '',
     };
   }
 
@@ -197,14 +194,10 @@ class ChildSelectOption extends Component {
 };
 
 ChildSelectOption.propTypes = {
-  // editButton: PropTypes.node,
-  value: PropTypes.number,
+  value: PropTypes.any,
   isSelected: PropTypes.bool,
-  // media: PropTypes.arrayOf(PropTypes.object),
   onClick: PropTypes.func,
-  // onChange: PropTypes.func,
   variant: PropTypes.object,
-  // visibilityButton: PropTypes.node
 };
 
 export default VariantList;
