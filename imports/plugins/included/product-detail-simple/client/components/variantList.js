@@ -148,13 +148,12 @@ class VariantList extends Component {
           label="Available Options"
         />
         <div className="row variant-product-options">
-          <SelectField
+          <select
             value={this.state.value}
             onChange={this.handleChange}
-            floatingLabelText="Height in Inches"
           >
             {this.renderChildVariants()}
-          </SelectField>
+          </select>
         </div>
       </div>
     );
@@ -185,11 +184,12 @@ class ChildSelectOption extends Component {
   render() {
     const variant = this.props.variant;
     return (
-      <MenuItem 
+      <option
         onClick={this.handleChange.bind(this)} 
         value={this.props.value} 
-        primaryText={variant.height}
-      />
+      >
+        {variant.height}
+      </option>
     )
   }
 };
