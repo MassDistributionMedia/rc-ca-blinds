@@ -2,7 +2,7 @@ import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { ProdPrices } from "/lib/collections/prodPrices";
 // import { Products, Media } from "/lib/collections";
-import { Select } from "/imports/plugins/core/ui/client/components";
+// import { Select } from "/imports/plugins/core/ui/client/components";
 import { Meteor } from "meteor/meteor";
 import { Packages, Shops } from "/lib/collections";
 import { Template } from "meteor/templating";
@@ -29,15 +29,20 @@ Template.onCreated(function () {
     // debugger;
   
   function heightWidthOptions(){
-    var hwId = _.find(ReactionProduct.getTopVariants(), o => o.variantType === "Height & Width")._id;
-    var clearVariants = ReactionProduct.getVariants(hwId);
-    clearVariants.forEach(e => {
-      Meteor.call("products/deleteVariant", e._id);
+    var oldVariants = ReactionProduct.getTopVariants();
+    var toRemove = oldVariants.filter(function(variant) {
+      return variant.variantType === "Height & Width"
     });
-    
+    // var clearVariants = ReactionProduct.getVariants(hwId);
+    toRemove.forEach(function(item){
+      Meteor.call("products/deleteVariant", item._id);
+    });
     ProdPrices.forEach((element, index) => {
       Meteor.call("products/createVariant", ReactionProduct.selectedVariantId(), prodProps(index));
     });
+    // clearVariants.forEach(e => {
+    // });
+    
     hwRan = true;
   }
   
@@ -61,32 +66,32 @@ Template.onCreated(function () {
   });
 });
 
-Template.heightWidth.helpers({
-  /** Calculate the range of sizes to for the height & width dropdown */ 
-  selectOptions() {
-    let diameterOptions = [];
-    for(let i=9;i<97;i++){
-      diameterOptions.push({value: i, label: i+'"'});
-    }
-    return diameterOptions;
-  },
+// Template.heightWidth.helpers({
+//   /** Calculate the range of sizes to for the height & width dropdown */ 
+//   selectOptions() {
+//     let diameterOptions = [];
+//     for(let i=9;i<97;i++){
+//       diameterOptions.push({value: i, label: i+'"'});
+//     }
+//     return diameterOptions;
+//   },
   
-  handleSelect() {
-    return (value, event) => {
-      console.log(value);
-    }
-  },
-  /** Hard-coded range for eigths of inches fpr the height & width dropdown */
-  eighthOptions() {
-    return [
-      {value: 0, label: '0/8"'},
-      {value: 1, label: '1/8"'},
-      {value: 2, label: '2/8"'},
-      {value: 3, label: '3/8"'},
-      {value: 4, label: '4/8"'},
-      {value: 5, label: '5/8"'},
-      {value: 6, label: '6/8"'},
-      {value: 7, label: '7/8"'}
-    ];
-  }
-})
+//   handleSelect() {
+//     return (value, event) => {
+//       console.log(value);
+//     }
+//   },
+//   /** Hard-coded range for eigths of inches fpr the height & width dropdown */
+//   eighthOptions() {
+//     return [
+//       {value: 0, label: '0/8"'},
+//       {value: 1, label: '1/8"'},
+//       {value: 2, label: '2/8"'},
+//       {value: 3, label: '3/8"'},
+//       {value: 4, label: '4/8"'},
+//       {value: 5, label: '5/8"'},
+//       {value: 6, label: '6/8"'},
+//       {value: 7, label: '7/8"'}
+//     ];
+//   }
+// })

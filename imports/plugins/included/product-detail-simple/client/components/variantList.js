@@ -3,18 +3,47 @@ import Variant from "./variant";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { Divider, Translation } from "/imports/plugins/core/ui/client/components";
 import { ChildVariant } from "./";
-import SelectField from 'material-ui/SelectField'; // http://www.material-ui.com/#/components/select-field
-import MenuItem from 'material-ui/MenuItem'; // http://www.material-ui.com/#/components/select-field
+import { Reaction } from "/client/api";
+import { ReactionProduct } from "/lib/api";
+
+import renderWidthHeightList, {
+  WIDTH_HEIGHT_VARIANT_TYPE,
+  width_heightVariantUploadForm,
+} from "/imports/plugins/custom/width-height-variant/client/render-list";
+
+function emptyOldVariants(productId) {
+    const variants = ReactionProduct.getVariants(productId, WIDTH_HEIGHT_VARIANT_TYPE);
+    variants.forEach(function(item) {
+      Meteor.call("products/deleteVariant", item._id);
+    })
+}
+
+function addNewVariants(productId, varientConfigs) {
+  varientConfigs.forEach((element, index) => {
+      Meteor.call("products/createVariant", productId, formatElement(index));
+  })
+}
+
+function formatElement(element) {
+    var width = element.width, height = element.height;
+    var unique_key = width + "x" + height;
+    return {
+        inventoryQuantity: 9,
+        type: WIDTH_HEIGHT_VARIANT_TYPE,
+        title: "Softwood Option " + unique_key,
+        optionTitle: "Softwood Option " + unique_key,
+        price: element.value,
+        height: height,
+        width: width,
+    }
+}
 
 class VariantList extends Component {
-  constructor(props) {
-    super(props);
-    this.handleChildleVariantClick = this.handleChildleVariantClick.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.state = { 
-      /* initial state */
-      value: '',
-    };
+  
+  componentDidMount() {
+    // var productId = ReactionProduct.selectedVariantId();
+    // emptyOldVariants(productId);
+    // addNewVariants(productId, ProdPrices);
   }
 
   handleVariantEditClick = (event, editButtonProps) => {
@@ -31,15 +60,13 @@ class VariantList extends Component {
     }
   }
 
-  handleChildleVariantClick (event, variant) {
-    this.setState({value: variant.height});
+  handleChildleVariantClick = (event, variant) => {
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
     }
   }
 
   handleChildVariantEditClick = (event, editButtonProps) => {
-    
     if (this.props.onEditVariant) {
       return this.props.onEditVariant(event, editButtonProps.data, 1);
     }
@@ -77,7 +104,6 @@ class VariantList extends Component {
               editable={this.props.editable}
               index={index}
               isSelected={this.props.variantIsSelected(variant._id)}
-              isHeightWidth={variant.isHeightWidth}
               onClick={this.props.onVariantClick}
               onMove={this.props.onMoveVariant}
               soldOut={this.isSoldOut(variant)}
@@ -96,66 +122,52 @@ class VariantList extends Component {
       </li>
     );
   }
-  
-  // TODO
-  // - Try custom component inside this file
-  // - Try accessing data-attribute:
-  //   - https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_data_attributes
 
   renderChildVariants() {
-    if (this.props.childVariants) {
-      return this.props.childVariants.map((childVariant, index) => {
-        const media = this.props.childVariantMedia.filter((mediaItem) => {
-          if (mediaItem.metadata.variantId === childVariant._id) {
-            return true;
-          }
-          return false;
-        });
-        
-        return (
-            <ChildSelectOption 
-              key={index}
-              value={this.state.value}
-              isSelected={this.props.variantIsSelected(childVariant._id)}
-              onValueChange={this.handleChildleVariantClick.bind(this)}
-              variant={childVariant}
-            />
-        );
-      });
+    if (!this.props.childVariants) {
+      return null;
     }
+    const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
+      const type = childVariant.type;
+      if(!(type in variants)) {
+        variants[type] = [];
+      }
+      variants[type].push(childVariant);
 
-    return null;
-  }
-  
-  handleChange = (event, index) => {
-    const value = event.target.value;
-    this.setState({value});
-    debugger;
+      return variants;
+    }, {});
+
+    var methods = this;
+    var props = this.props;
+    return Object.keys(lists).map(function(type){
+      const list = lists[type];
+      return renderList(type, list, props, methods)
+    });
   }
 
   render() {
     return (
-      <div className="product-variants">
+      <div className="product-variants">{[
+        !Reaction.hasPermission("createProduct") ? null : <Divider
+          label="Upload Width Height Variants"
+        />,
+        !Reaction.hasPermission("createProduct") ? null :
+        <div>{width_heightVariantUploadForm()}</div>,
         <Divider
           i18nKeyLabel="productDetail.options"
           label="Options"
-        />
+        />,
         <ul className="variant-list list-unstyled" id="variant-list">
           {this.renderVariants()}
-        </ul>
+        </ul>,
         <Divider
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"
-        />
+        />,
         <div className="row variant-product-options">
-          <select
-            value={this.state.value}
-            onChange={this.handleChange}
-          >
-            {this.renderChildVariants()}
-          </select>
+          {this.renderChildVariants()}
         </div>
-      </div>
+      ]}</div>
     );
   }
 }
@@ -166,7 +178,6 @@ VariantList.propTypes = {
   displayPrice: PropTypes.func,
   editable: PropTypes.bool,
   isSoldOut: PropTypes.func,
-  isHeightWidth: PropTypes.bool,
   onEditVariant: PropTypes.func,
   onMoveVariant: PropTypes.func,
   onVariantClick: PropTypes.func,
@@ -175,30 +186,46 @@ VariantList.propTypes = {
   variants: PropTypes.arrayOf(PropTypes.object)
 };
 
-class ChildSelectOption extends Component {
-  handleChange = (event, index) => {
-    if (this.props.onValueChange) {
-      this.props.onValueChange(event, this.props.variant);
-    }
-  }
-  render() {
-    const variant = this.props.variant;
-    return (
-      <option
-        onClick={this.handleChange.bind(this)} 
-        value={this.props.value} 
-      >
-        {variant.height}
-      </option>
-    )
-  }
-};
-
-ChildSelectOption.propTypes = {
-  value: PropTypes.any,
-  isSelected: PropTypes.bool,
-  onClick: PropTypes.func,
-  variant: PropTypes.object,
-};
-
 export default VariantList;
+
+function renderList(type, list, props, methods) {
+  switch(type) {
+    case "variant" : return renderVariantList(list, props, methods);
+    case WIDTH_HEIGHT_VARIANT_TYPE : return renderWidthHeightList(list, props, methods);
+  }
+}
+
+function renderVariantList(list, props, methods) {
+  return list.map((childVariant, index) => {
+    const media = props.childVariantMedia.filter((mediaItem) => {
+      if (mediaItem.metadata.variantId === childVariant._id) {
+        return true;
+      }
+      return false;
+    });
+    
+
+    return (
+      <EditContainer
+        data={childVariant}
+        disabled={props.editable === false}
+        editView="variantForm"
+        i18nKeyLabel="productDetailEdit.editVariant"
+        key={index}
+        label="Edit Variant"
+        onEditButtonClick={methods.handleChildVariantEditClick}
+        onVisibilityButtonClick={methods.handleVariantVisibilityClick}
+        permissions={["createProduct"]}
+        showsVisibilityButton={true}
+      >
+        <ChildVariant
+          isSelected={props.variantIsSelected(childVariant._id)}
+          media={media}
+          onClick={methods.handleChildleVariantClick}
+          variant={childVariant}
+        />
+      </EditContainer>
+    );
+  });
+}
+
