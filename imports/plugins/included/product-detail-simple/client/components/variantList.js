@@ -127,22 +127,25 @@ class VariantList extends Component {
     if (!this.props.childVariants) {
       return null;
     }
-    const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
-      const type = childVariant.type;
-      if(!(type in variants)) {
-        variants[type] = [];
-      }
-      variants[type].push(childVariant);
+    // const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
+    //   const type = childVariant.type;
+    //   if(!(type in variants)) {
+    //     variants[type] = [];
+    //   }
+    //   variants[type].push(childVariant);
 
-      return variants;
-    }, {});
-
-    var methods = this;
-    var props = this.props;
-    return Object.keys(lists).map(function(type){
-      const list = lists[type];
-      return renderList(type, list, props, methods)
-    });
+    //   return variants;
+    // }, {});
+    // var methods = this;
+    // var props = this.props;
+    // return Object.keys(lists).map(function(type){
+    //   const list = lists[type];
+    //   return renderList(type, list, props, methods)
+    // });
+    var list = this.props.childVariants.filter(function(variant) {
+      return !!variant.width && !!variant.height;
+    })
+    return renderWidthHeightList(list, this.props, this.methods);
   }
 
   render() {

@@ -14,9 +14,7 @@ function heightWidthOptions() {
   if(hwRan) return;
   hwRan = true;
   var oldVariants = ReactionProduct.getTopVariants();
-  var toRemove = oldVariants.filter(function(variant) {
-    return variant.variantType === "Height & Width";
-  });
+  var toRemove = oldVariants;
   // var clearVariants = ReactionProduct.getVariants(hwId);
   toRemove.forEach(function(item) {
     Meteor.call("products/deleteVariant", item._id);
