@@ -1,7 +1,7 @@
-import React, { Component, PropTypes} from "react";
+import React, { Component, PropTypes } from "react";
 import Variant from "./variant";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Divider, Translation } from "/imports/plugins/core/ui/client/components";
+import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 import { ChildVariant } from "./";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
@@ -48,19 +48,41 @@ class VariantList extends Component {
   }
 
   renderVariants() {
-    if (!this.props.variants) {
-      return (
-        <li>
-          <a href="#" id="create-variant">
-            {"+"} <Translation defaultValue="Create Variant" i18nKey="variantList.createVariant" />
-          </a>
-        </li>
-      );
+    const addButton = this.props.editable ? (
+      <div className="rui items flex">
+        <div className="rui item full justify center">
+          <IconButton
+            i18nKeyTooltip="variantList.createVariant"
+            icon="fa fa-plus"
+            tooltip="Create Variant"
+            onClick={this.props.onCreateVariant}
+          />
+        </div>
+      </div>
+    ) : null;
+
+    if(!this.props.variants || this.props.variants.length === 0) {
+      if (this.props.editable === false){
+        return (
+          <ul className="variant-list list-unstyled" id="variant-list" key="variantList"></ul>
+        );
+      }
+      return [
+        <Divider
+          i18nKeyLabel="productDetail.options"
+          key="dividerWithLabel"
+          label="Options"
+        />,
+        <ul className="variant-list list-unstyled" id="variant-list" key="variantList">
+          {addButton}
+        </ul>
+      ];
     }
+
     var variants = this.props.variants;
     var offset = this.state && this.state.offset || 0;
     var toRender = variants.length > 10 ? variants.slice(offset, 10) : variants;
-    return (
+    const renderedVariants = (
       offset === 0 ? [] : [
         <li key="prev-button">
           <button onClick={(e)=>{
@@ -107,6 +129,31 @@ class VariantList extends Component {
         </li>
       ]
     );
+
+    const variantList = (
+      <ul className="variant-list list-unstyled" id="variant-list" key="variantList">
+        {renderedVariants}
+        {addButton}
+      </ul>
+    );
+
+    if (variants.length > 1) {
+      return [
+        <Divider
+          i18nKeyLabel="productDetail.options"
+          key="dividerWithLabel"
+          label="Options"
+        />,
+        variantList
+      ];
+    } else if (variants.length === 1) {
+      return [
+        <Divider key="divider" />,
+        variantList
+      ];
+    }
+
+    return variantList;
   }
 
   renderChildVariants() {
@@ -124,12 +171,21 @@ class VariantList extends Component {
     }, {});
     var methods = this;
     var props = this.props;
-    return Object.keys(lists).map(function(type){
-      const list = lists[type];
-      return (<div key={"".concat("rendered-list", "-", type)}>
-        {renderList(type, list, props, methods)}
-      </div>)
-    });
+    return ([
+      <Divider
+        key="availableOptionsDivider"
+        i18nKeyLabel="productDetail.availableOptions"
+        label="Available Options"
+      />,
+      <div className="row variant-product-options" key="childVariantList">{
+        Object.keys(lists).map(function(type){
+          const list = lists[type];
+          return (<div key={"".concat("rendered-list", "-", type)}>
+            {renderList(type, list, props, methods)}
+          </div>)
+        })
+      }</div>
+    ])
     // var list = this.props.childVariants.filter(function(variant) {
     //   return !!variant.width && !!variant.height;
     // })
@@ -138,37 +194,10 @@ class VariantList extends Component {
 
   render() {
     return (
-      <div className="product-variants">{[
-        !Reaction.hasPermission("createProduct") ? null : <Divider
-          key="upload-width-height-label"
-          label="Upload Width Height Variants"
-        />,
-        !Reaction.hasPermission("createProduct") ? null :
-        <div key="upload-width-height-form">{width_heightVariantUploadForm()}</div>,
-        <Divider
-          i18nKeyLabel="productDetail.options"
-          label="Options"
-          key="parent-variants-label"
-        />,
-        <ul
-          className="variant-list list-unstyled"
-          id="variant-list"
-          key="render-parent-variants"
-        >
-          {this.renderVariants()}
-        </ul>,
-        <Divider
-          i18nKeyLabel="productDetail.availableOptions"
-          label="Available Options"
-          key="child-variants-label"
-        />,
-        <div
-          className="row variant-product-options"
-          key="child-variants-chosen"
-        >
-          {this.renderChildVariants()}
-        </div>
-      ]}</div>
+      <div className="product-variants">
+        {this.renderVariants()}
+        {this.renderChildVariants()}
+      </div>
     );
   }
 }
@@ -179,6 +208,7 @@ VariantList.propTypes = {
   displayPrice: PropTypes.func,
   editable: PropTypes.bool,
   isSoldOut: PropTypes.func,
+  onCreateVariant: PropTypes.func,
   onEditVariant: PropTypes.func,
   onMoveVariant: PropTypes.func,
   onVariantClick: PropTypes.func,
@@ -209,7 +239,7 @@ function renderVariantList(list, props, methods) {
       }
       return false;
     });
-    
+
 
     return (
       <EditContainer

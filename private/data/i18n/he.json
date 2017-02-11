@@ -21,23 +21,15 @@
           "analyticsLabel": "ניתוח",
           "analyticsTitle": "ניתוח",
           "analyticsDescription": "ניתוח ואינטגרציות מעקב",
-          "authorizenetLabel": "Authorize.net",
-          "authorizenetTitle": "Authorize.net",
-          "authorizenetDescription": "תשלומי Authorize.net",
           "shippingLabel": "משלוח",
           "shippingTitle": "משלוח",
           "shippingDescription": "תן תעריפי משלוח",
-          "braintreeLabel": "Braintree",
-          "braintreeTitle": "Braintree",
-          "braintreeDescription": "תשלומי Braintree",
           "catalogLabel": "קטלוג",
           "catalogTitle": "קטלוג",
           "catalogDescription": "קטלוג מוצרים",
           "coreLabel": "הגדרות",
           "coreTitle": "לוח המחוונים",
           "coreDescription": "תצורת Reaction",
-          "examplePaymentProviderLabel": "תשלום לדוגמה",
-          "examplePaymentProviderDescription": "שיטת תשלום לדוגמה",
           "emailLabel": "דוא\"ל",
           "emailTitle": "דוא\"ל",
           "emailDescription": "הגדרות דוא\"ל",
@@ -54,11 +46,11 @@
           "connectTitle": "התחבר לרשתות",
           "connectDescription": "חבר את Reaction כשירות נפרס (deployed service)",
           "ordersLabel": "הזמנות",
+          "smsLabel": "SMS",
+          "smsTitle": "SMS",
+          "smsDescription": "התראות",
           "ordersTitle": "הזמנות",
           "ordersDescription": "בצע את ההזמנות שלך",
-          "paypalLabel": "PayPal",
-          "paypalTitle": "PayPal",
-          "paypalDescription": "תשלומי PayPal ",
           "revisionsLabel": "גרסאות",
           "revisionsTitle": "גרסאות",
           "revisionsDescription": "ניהול גרסאות",
@@ -71,14 +63,9 @@
           "socialLabel": "חברתי",
           "socialTitle": "חברתי",
           "socialDescription": "קביעת תצורה לערוץ חברתי",
-          "taxesLabel": "מסים",
-          "taxesTitle": "מסים",
-          "taxesDescription": "תצורת מס",
           "themesLabel": "נושאים",
           "themesTitle": "נושאים",
           "themesDescription": "נושאים ורכיבי ממשק משתמש",
-          "stripeLabel": "Stripe",
-          "stripeDescription": "תשלומי Stripe",
           "filtrationLabel": "סינון",
           "filtrationDescription": "סינון מוצרים ל- Reaction"
         },
@@ -92,25 +79,25 @@
           "utilities": "תכניות שירות"
         },
         "settings": {
+          "saveSuccess": "ההגדרות עודכנו.",
+          "saveFailed": "עדכון ההגדרות נכשל.",
           "accountSettingsLabel": "הגדרות חשבון",
           "addShopMemberLabel": "הוסף חבר חנות",
-          "authorizenetSettingsLabel": "הגדרות Authorize.net",
           "permissionsSettingsLabel": "הרשאות",
-          "braintreeSettingsLabel": "הגדרות Braintree",
           "localizationAndI18NLabel": "מיקום ו- i18n",
           "searchSettingsLabel": "הגדרות חיפוש",
           "shopSettingsLabel": "הגדרות חנות",
+          "smsSettingsLabel": "הגדרות SMS",
           "socialSettingsLabel": "הגדרות חברתיות",
           "shippingSettingsLabel": "הגדרות משלוחים",
-          "stripeSettingsLabel": "הגדרות Stripe",
           "inventorySettingsLabel": "הגדרות מלאי",
           "analyticsSettingsLabel": "הגדרות ניתוח",
-          "paypalSettingsLabel": "הגדרות PayPal",
           "reactionConnectLabel": "חיבור Reaction",
-          "examplePaymentSettingsLabel": "הגדרות תשלום לדוגמה",
           "productSettingsLabel": "הגדרות מוצר",
           "productDetailsLabel": "פרטי המוצר",
-          "taxSettingsLabel": "הגדרות מס"
+          "productRevisionsLabel": "גרסאות מוצרים",
+          "emailSettingsLabel": "הגדרות דוא\"ל",
+          "catalogSettingsLabel": "הגדרות קטלוג"
         },
         "userAccountDropdown": {
           "profileLabel": "פרופיל"
@@ -201,6 +188,41 @@
         "shopPaymentMethodsSaved": "הגדרות שיטות התשלום של החנות נשמרו.",
         "shopPaymentMethodsFailed": "עדכון הגדרות שיטות התשלום לחנות נכשל."
       },
+      "notifications": {
+        "body": {
+          "noNotifications": "עדיין אין הודעות",
+          "markAllAsRead": "סמן הכל כנקרא",
+          "recent": "לאחרונה",
+          "viewAll": "להציג את כל"
+        },
+        "messages": {
+          "orderCancelled": "ההזמנה שלך בוטלה.",
+          "newOrder": "שההזמנה מעובדת.",
+          "forAdmin": "יש לך הזמנה חדשה.",
+          "orderDelivered": "ההזמנה נשלחה.",
+          "orderAccepted": "הזמנתך התקבלה.",
+          "orderShipped": "ההזמנה נשלחה."
+        }
+      },
+      "sms": {
+        "headers": {
+          "settings": "ספק SMS"
+        },
+        "settings": {
+          "provider": "ספק",
+          "selectProvider": "בחירת ספק SMS ...",
+          "smsPhone": "מספר טלפון SMS",
+          "apiKey": "מפתח API",
+          "apiToken": "אסימון API / סוד"
+        },
+        "alerts": {
+          "noApiKey": "אנא להוסיף מפתח API",
+          "noApiToken": "אנא להוסיף API אסימון / סוד",
+          "noSmsProvider": "בחר ספק SMS",
+          "noSmsPhone": "נא להוסיף את מספר הטלפון שנתן לך ספק SMS שלך",
+          "saveSuccess": "הגדרות SMS הצילו"
+        }
+      },
       "mail": {
         "headers": {
           "email": "דוא\"ל",
@@ -245,23 +267,10 @@
           "connectionFailed": "החיבור נכשל!",
           "saveAnyway": "האם ברצונך לשמור את ההגדרות בכל מקרה?",
           "saveSuccess": "הגדרות הדואר נשמרו.",
-          "saveFailed": "שמירת הגדרות הדואר נכשלה. {{error}}"
+          "saveFailed": "שמירת הגדרות הדואר נכשלה. {{error}}",
+          "cantSendEmail": "שגיאת שרת: לא ניתן לשלוח התראת דוא\"ל.",
+          "emailSent": "התראת דוא\"ל נשלחה."
         }
-      },
-      "taxSettings": {
-        "noCustomTaxRatesFound": "לא נמצאו תעריפים מס בהתאמה אישית.",
-        "shopCustomTaxRatesSaved": "שיעור מס מותאם אישית נשמר.",
-        "shopCustomTaxRatesFailed": "שגיאה בשמירת שיעור המס.",
-        "shopTaxMethodsSaved": "שיטת המס נשמרה.",
-        "shopTaxMethodsFailed": "שמירת שיטת המס נכשלה.",
-        "customRatesDescription": "התאם אישית תעריפים",
-        "taxCode": "קוד מס",
-        "taxShipping": "כלול משלוח",
-        "taxRate": "תעריף",
-        "discountsIncluded": "כלול הנחות",
-        "taxable": "חייב במס",
-        "nottaxable": "לא חייב במס",
-        "confirmRateDelete": "אשר מחיקת שיעור מס"
       },
       "header": {
         "tagsAdd": "הוספת תגית",
@@ -371,6 +380,7 @@
         "productIsNotVisible": "המוצר אינו גלוי"
       },
       "productVariant": {
+        "addVariantOptions": "הוסף אפשרויות כדי להפעיל  את הלחצן \"הוסף לעגלה\"",
         "inventoryQuantity": "כמות",
         "title": "תווית",
         "price": "מחיר",
@@ -454,11 +464,6 @@
           "completed": "הושלם",
           "canceled": "בוטל",
           "refunded": "החזר ניתן"
-        },
-        "paymentProvider": {
-          "braintree": {
-            "braintreeSettlementDelay": "Braintree אינו מאפשר החזרים עד הסדרת העסקאות. התהליך עשוי להימשך עד 24 שעות.  אנא נסה שוב מאוחר יותר."
-          }
         }
       },
       "orderShipping": {
@@ -579,6 +584,7 @@
       },
       "revisions": {
         "isDisabled": "ניהול הגרסאות מושבת. כל השינויים יפורסמו באופן מידי.",
+        "isEnabled": "ניהול גרסאות מופעל עבור המוצרים. יש לפרסם את כל השינויים לפני שיהפכו להיות גלויים עבור הלקוחות.",
         "unpublishedChanges": "שינויים שלא פורסמו",
         "publishChanges": "פרסם שינויים",
         "showChanges": "הצג שינויים",
@@ -612,14 +618,6 @@
         "shippingOptions": "אפשרויות משלוח",
         "reviewPayment": "סקירה ותשלום",
         "complete": "הושלם"
-      },
-      "checkoutPayment": {
-        "addPaymentToCompleteOrder": "הוסף תשלום על מנת להשלים את ההזמנה",
-        "processingError": "התגלתה בעיה עם התשלום שלך.",
-        "completeYourOrder": "השלם את הזמנתך",
-        "noPaymentMethods": "לא הוגדרו שיטות תשלום.",
-        "configureNow": "קבע תצורה עכשיו.",
-        "failedToPlaceOrder": "שליחת ההזמנה נכשלה."
       },
       "checkoutReview": {
         "review": "סקירה"

@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from "react";
-import { composeWithTracker } from "react-komposer";
+import { composeWithTracker } from "/lib/api/compose";
 import { Meteor } from "meteor/meteor";
 import { ReactionProduct } from "/lib/api";
 import { Reaction, i18next, Logger } from "/client/api";
@@ -9,8 +9,7 @@ import { ProductDetail } from "../components";
 import { SocialContainer, VariantListContainer } from "./";
 import { MediaGalleryContainer } from "/imports/plugins/core/ui/client/containers";
 import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/client/providers";
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'; // http://www.material-ui.com/#/get-started/usage
-
+import { StyleRoot } from "radium";
 
 class ProductDetailContainer extends Component {
   constructor(props) {
@@ -139,7 +138,7 @@ class ProductDetailContainer extends Component {
   }
 
   handleViewContextChange = (event, value) => {
-    Reaction.Router.setQueryParams({as: value});
+    Reaction.Router.setQueryParams({ as: value });
   }
 
   handleDeleteProduct = () => {
@@ -150,7 +149,7 @@ class ProductDetailContainer extends Component {
     return (
       <TranslationProvider>
         <DragDropProvider>
-          <MuiThemeProvider>
+          <StyleRoot>
             <ProductDetail
               cartQuantity={this.state.cartQuantity}
               mediaGalleryComponent={<MediaGalleryContainer media={this.props.media} />}
@@ -163,7 +162,7 @@ class ProductDetailContainer extends Component {
               onProductFieldChange={this.handleProductFieldChange}
               {...this.props}
             />
-          </MuiThemeProvider>
+          </StyleRoot>
         </DragDropProvider>
       </TranslationProvider>
     );
@@ -229,9 +228,10 @@ function composer(props, onData) {
         // when top variant has no child variants we display only its price
         if (childVariants.length === 0) {
           priceRange = selectedVariant.price;
+        } else {
+          // otherwise we want to show child variants price range
+          priceRange = ReactionProduct.getVariantPriceRange();
         }
-        // otherwise we want to show child variants price range
-        priceRange = ReactionProduct.getVariantPriceRange();
       }
 
       let productRevision;
@@ -248,7 +248,11 @@ function composer(props, onData) {
         editable = Reaction.hasPermission(["createProduct"]);
       }
 
+      const topVariants = ReactionProduct.getTopVariants();
+
       onData(null, {
+        variants: topVariants,
+        layout: "productDetailSimple",
         product: productRevision || product,
         priceRange,
         tags,
