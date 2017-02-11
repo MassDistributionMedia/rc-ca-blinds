@@ -1,6 +1,4 @@
-/**
- * Product Price Collection
- */
+
 export default [
   {
     "value": 147,

@@ -1,7 +1,8 @@
+
 /**
  * Product Price Collection
  */
-export default [
+export default = [
   {
     "value": 147,
     "height": 30,
@@ -912,4 +913,4 @@ export default [
     "height": 108,
     "width": 96
   }
-]
+];

@@ -1,7 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { Reaction } from "/server/api";
 import { ReactionProduct } from "/lib/api";
-import { ProdPrices } from "/lib/collections/prodPrices";
 // import { Products, Media } from "/lib/collections";
 import { Media, Products, Revisions, Tags } from "/lib/collections";
 import { Packages, Shops } from "/lib/collections";
@@ -9,6 +8,26 @@ import { Template } from "meteor/templating";
 
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 import { spawn, execSync } from "child_process";
+
+
+import products from "../data/product-prices";
+// import { readFileSync, readdirSync } from "fs";
+// import { resolve as pathResolve } from "path";
+
+// console.log(readdirSync(pathResolve(__dirname, "..")))
+// console.log(readdirSync(pathResolve(__dirname, "..", "./data")))
+// const file = readFileSync(pathResolve(__dirname, "..", "./data/product-prices.json"));
+// / fdsflkdslfdljkfd
+// // import { ProdPrices } from "/lib/collections/prodPrices";
+
+function convertStringToProducts(text){
+  return JSON.parse(text)
+}
+
+function handleTextInput(productId, text){
+  emptyOldVariants(productId);
+  addNewVariants(productId, convertStringToProducts(text));
+}
 
 var hwRan = false;
 function heightWidthOptions() {
@@ -112,7 +131,7 @@ Meteor.startup(function () {
   // const existingProducts = Products.find({}, {limit: 1}).fetch();
   // console.log(existingProducts);
   var hackyProductId = "BCTMZ6HTxFSppJESk";
-  var hackyPrices = ProdPrices;
+  var hackyPrices = products;
   // emptyOldVariants(hackyProductId);
   /*
     db.Products.remove({ ancestors: { $in: ["BCTMZ6HTxFSppJESk"] }, type: "variant", $or :[ {variantType: "Height & Width"}, { width: { "$exists": true }, height: { "$exists": true }, } ]})
@@ -192,7 +211,7 @@ const toDenormalize = [
   "inventoryQuantity",
   "lowInventoryWarningThreshold",
   "inventoryPolicy",
-  "inventoryManagement"
+  "inventoryManagement",
 ];
 
 
