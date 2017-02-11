@@ -7,3 +7,6 @@
 //   icon: "fa fa-cubes",
 //   autoEnable: true
 // });
+
+
+import "./server/startup";

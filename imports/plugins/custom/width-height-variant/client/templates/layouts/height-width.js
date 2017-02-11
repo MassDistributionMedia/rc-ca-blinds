@@ -79,9 +79,9 @@ Template.onCreated(function () {
   }
   
   return this.autorun(() => {
-    if(_.find(ReactionProduct.getTopVariants(), o => o.variantType === "Height & Width") && hwRan === false) {
-      heightWidthOptions();
-    }
+    // if(_.find(ReactionProduct.getTopVariants(), o => o.variantType === "Height & Width") && hwRan === false) {
+    //   heightWidthOptions();
+    // }
     // https://github.com/reactioncommerce/reaction/blob/1eec469f19f765c1ca7f45bfe0e6bf39177e64f1/lib/collections/schemas/products.js#L74
     // https://github.com/reactioncommerce/reaction/blob/c842d27fde639e3fd5709db99c261a7d59647c8d/lib/api/products.js#L109
     // 1 ReactionProduct.selectedVariantId() // nMf6PybiAu5RHENHg

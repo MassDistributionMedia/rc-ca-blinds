@@ -10,41 +10,7 @@ import renderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
   width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
-
-function emptyOldVariants(productId) {
-    const variants = ReactionProduct.getVariants(productId, WIDTH_HEIGHT_VARIANT_TYPE);
-    variants.forEach(function(item) {
-      Meteor.call("products/deleteVariant", item._id);
-    })
-}
-
-function addNewVariants(productId, varientConfigs) {
-  varientConfigs.forEach((element, index) => {
-      Meteor.call("products/createVariant", productId, formatElement(index));
-  })
-}
-
-function formatElement(element) {
-    var width = element.width, height = element.height;
-    var unique_key = width + "x" + height;
-    return {
-        inventoryQuantity: 9,
-        type: WIDTH_HEIGHT_VARIANT_TYPE,
-        title: "Softwood Option " + unique_key,
-        optionTitle: "Softwood Option " + unique_key,
-        price: element.value,
-        height: height,
-        width: width,
-    }
-}
-
 class VariantList extends Component {
-  
-  componentDidMount() {
-    // var productId = ReactionProduct.selectedVariantId();
-    // emptyOldVariants(productId);
-    // addNewVariants(productId, ProdPrices);
-  }
 
   handleVariantEditClick = (event, editButtonProps) => {
     if (this.props.onEditVariant) {
@@ -82,44 +48,64 @@ class VariantList extends Component {
   }
 
   renderVariants() {
-    if (this.props.variants) {
-      return this.props.variants.map((variant, index) => {
-        const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
-
-        return (
-          <EditContainer
-            data={variant}
-            disabled={this.props.editable === false}
-            editView="variantForm"
-            i18nKeyLabel="productDetailEdit.editVariant"
-            key={index}
-            label="Edit Variant"
-            onEditButtonClick={this.handleVariantEditClick}
-            onVisibilityButtonClick={this.handleVariantVisibilityClick}
-            permissions={["createProduct"]}
-            showsVisibilityButton={true}
-          >
-            <Variant
-              displayPrice={displayPrice}
-              editable={this.props.editable}
-              index={index}
-              isSelected={this.props.variantIsSelected(variant._id)}
-              onClick={this.props.onVariantClick}
-              onMove={this.props.onMoveVariant}
-              soldOut={this.isSoldOut(variant)}
-              variant={variant}
-            />
-          </EditContainer>
-        );
-      });
+    if (!this.props.variants) {
+      return (
+        <li>
+          <a href="#" id="create-variant">
+            {"+"} <Translation defaultValue="Create Variant" i18nKey="variantList.createVariant" />
+          </a>
+        </li>
+      );
     }
-
+    var variants = this.props.variants;
+    var offset = this.state && this.state.offset || 0;
+    var toRender = variants.length > 10 ? variants.slice(offset, 10) : variants;
     return (
-      <li>
-        <a href="#" id="create-variant">
-          {"+"} <Translation defaultValue="Create Variant" i18nKey="variantList.createVariant" />
-        </a>
-      </li>
+      offset === 0 ? [] : [
+        <li key="prev-button">
+          <button onClick={(e)=>{
+              e.preventDefault();
+              this.setState({ offset : offset - 10 });
+          }}>Previous Variants</button>
+        </li>
+      ]
+    ).concat(toRender.map((variant, index) => {
+      const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
+
+      return (
+        <EditContainer
+          data={variant}
+          disabled={this.props.editable === false}
+          editView="variantForm"
+          i18nKeyLabel="productDetailEdit.editVariant"
+          key={index}
+          label="Edit Variant"
+          onEditButtonClick={this.handleVariantEditClick}
+          onVisibilityButtonClick={this.handleVariantVisibilityClick}
+          permissions={["createProduct"]}
+          showsVisibilityButton={true}
+        >
+          <Variant
+            displayPrice={displayPrice}
+            editable={this.props.editable}
+            index={index}
+            isSelected={this.props.variantIsSelected(variant._id)}
+            onClick={this.props.onVariantClick}
+            onMove={this.props.onMoveVariant}
+            soldOut={this.isSoldOut(variant)}
+            variant={variant}
+          />
+        </EditContainer>
+      );
+    })).concat(
+      offset + 10 >= variants.length ? [] : [
+        <li key="next-button">
+          <button onClick={(e)=>{
+            e.preventDefault();
+            this.setState({ offset : offset + 10 });
+          }}>Next Variants</button>
+        </li>
+      ]
     );
   }
 
@@ -127,47 +113,59 @@ class VariantList extends Component {
     if (!this.props.childVariants) {
       return null;
     }
-    // const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
-    //   const type = childVariant.type;
-    //   if(!(type in variants)) {
-    //     variants[type] = [];
-    //   }
-    //   variants[type].push(childVariant);
+    const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
+      const type = childVariant.variantType || "variant";
+      if(!(type in variants)) {
+        variants[type] = [];
+      }
+      variants[type].push(childVariant);
 
-    //   return variants;
-    // }, {});
-    // var methods = this;
-    // var props = this.props;
-    // return Object.keys(lists).map(function(type){
-    //   const list = lists[type];
-    //   return renderList(type, list, props, methods)
-    // });
-    var list = this.props.childVariants.filter(function(variant) {
-      return !!variant.width && !!variant.height;
-    })
-    return renderWidthHeightList(list, this.props, this.methods);
+      return variants;
+    }, {});
+    var methods = this;
+    var props = this.props;
+    return Object.keys(lists).map(function(type){
+      const list = lists[type];
+      return (<div key={"".concat("rendered-list", "-", type)}>
+        {renderList(type, list, props, methods)}
+      </div>)
+    });
+    // var list = this.props.childVariants.filter(function(variant) {
+    //   return !!variant.width && !!variant.height;
+    // })
+    // return renderWidthHeightList(list, this.props, this.methods);
   }
 
   render() {
     return (
       <div className="product-variants">{[
         !Reaction.hasPermission("createProduct") ? null : <Divider
+          key="upload-width-height-label"
           label="Upload Width Height Variants"
         />,
         !Reaction.hasPermission("createProduct") ? null :
-        <div>{width_heightVariantUploadForm()}</div>,
+        <div key="upload-width-height-form">{width_heightVariantUploadForm()}</div>,
         <Divider
           i18nKeyLabel="productDetail.options"
           label="Options"
+          key="parent-variants-label"
         />,
-        <ul className="variant-list list-unstyled" id="variant-list">
+        <ul
+          className="variant-list list-unstyled"
+          id="variant-list"
+          key="render-parent-variants"
+        >
           {this.renderVariants()}
         </ul>,
         <Divider
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"
+          key="child-variants-label"
         />,
-        <div className="row variant-product-options">
+        <div
+          className="row variant-product-options"
+          key="child-variants-chosen"
+        >
           {this.renderChildVariants()}
         </div>
       ]}</div>
@@ -191,10 +189,15 @@ VariantList.propTypes = {
 
 export default VariantList;
 
+var i = 0;
 function renderList(type, list, props, methods) {
   switch(type) {
-    case "variant" : return renderVariantList(list, props, methods);
-    case WIDTH_HEIGHT_VARIANT_TYPE : return renderWidthHeightList(list, props, methods);
+    case "variant" : {
+      return renderVariantList(list, props, methods);
+    }
+    case WIDTH_HEIGHT_VARIANT_TYPE : {
+      return renderWidthHeightList(list, props, methods);
+    }
   }
 }
 

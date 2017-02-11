@@ -16,7 +16,7 @@ class VariantList extends Component {
       value: '',
     };
   }
-  
+
   componentWillMount() {
     this.compileIndexes(this.props)
   }
@@ -33,7 +33,7 @@ class VariantList extends Component {
     }
     this.compileIndexes(nextProps);
   }
-  
+
   onChangeHeight(event) {
     var value = event.target.value;
     this.updateVariant(value, this.state.selectedVariant.width);
@@ -43,7 +43,7 @@ class VariantList extends Component {
     var value = event.target.value;
     this.updateVariant(this.state.selectedVariant.height, value);
   }
-  
+
   updateVariant(height, width) {
     var key = this.createKey(height, width);
     var indexes = this.indexedVariants.indexes;
@@ -65,7 +65,7 @@ class VariantList extends Component {
         }
         return false;
       });
-      
+
     */
   }
 
@@ -91,10 +91,10 @@ class VariantList extends Component {
       selectedVariant: variant
     });
   }
-  
+
 
   handleChildVariantEditClick = (event, editButtonProps) => {
-    
+
     if (this.props.onEditVariant) {
       return this.props.onEditVariant(event, editButtonProps.data, 1);
     }
@@ -109,49 +109,6 @@ class VariantList extends Component {
     return false;
   }
 
-  renderVariants() {
-    if (this.props.variants) {
-      return this.props.variants.map((variant, index) => {
-        const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
-
-        return (
-          <EditContainer
-            data={variant}
-            disabled={this.props.editable === false}
-            editView="variantForm"
-            i18nKeyLabel="productDetailEdit.editVariant"
-            key={index}
-            label="Edit Variant"
-            onEditButtonClick={this.handleVariantEditClick}
-            onVisibilityButtonClick={this.handleVariantVisibilityClick}
-            permissions={["createProduct"]}
-            showsVisibilityButton={true}
-          >
-            <Variant
-              displayPrice={displayPrice}
-              editable={this.props.editable}
-              index={index}
-              isSelected={this.props.variantIsSelected(variant._id)}
-              isHeightWidth={variant.isHeightWidth}
-              onClick={this.props.onVariantClick}
-              onMove={this.props.onMoveVariant}
-              soldOut={this.isSoldOut(variant)}
-              variant={variant}
-            />
-          </EditContainer>
-        );
-      });
-    }
-
-    return (
-      <li>
-        <a href="#" id="create-variant">
-          {"+"} <Translation defaultValue="Create Variant" i18nKey="variantList.createVariant" />
-        </a>
-      </li>
-    );
-  }
-  
   renderChildVariants(list, uniqueName) {
     return list.map((dimensionValue, index) => {
       return (
@@ -175,36 +132,77 @@ class VariantList extends Component {
     return (
       <div className="product-variants">
         <Divider
-          i18nKeyLabel="productDetail.options"
-          label="Options"
-        />
-        <ul className="variant-list list-unstyled" id="variant-list">
-          {this.renderVariants()}
-        </ul>
-        <Divider
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"
         />
-        <div className="row variant-product-options">{
+        <div className="row variant-product-options">
+          <h2>Select Size</h2>
+          <p>
+             If you selected Inside Mount, enter your window size.
+             <br/>
+             For Outside Mount, enter the product size you want.
+          </p>
+          <hr style="
+            width: 100%;
+            background: #1a99dd;
+            height: 2px;
+          "/>
+          {
           !this.props.childVariants ? null : [
-            <select
-              className="form-group"
-              value={selectedHeight}
-              onChange={this.onChangeHeight}
-            >
-              {this.renderChildVariants(this.indexedVariants.heightList, "height")}
-            </select>,
-            <select
-              value={selectedWidth}
-              onChange={this.onChangeWidth}
-            >
-              {this.renderChildVariants(this.indexedVariants.widthList, "width")}
-            </select>
+            renderList(
+              "height", this.indexedVariants.heightList, selectedHeight,
+              this.onChangeHeight,
+              function(){}
+            ),
+            renderList(
+              "width", this.indexedVariants.widthList, selectedWidth,
+              this.onChangeWidth,
+              function(){}
+            ),
           ]
         }</div>
       </div>
     );
   }
+}
+
+function renderList(key, list, selected, onChange, onEightChange){
+  return <div style="display:inline-block" >
+  <div>
+    <h3>Width &harr;</h3>
+    <select
+      className="form-group"
+      value={selected}
+      onChange={onChange}
+    >{list.map((dimensionValue, index) => {
+      return (
+        <option
+          className="form-control"
+          key={"".concat(key, index.toString(), dimensionValue.toString())}
+          value={dimensionValue}
+        >{dimensionValue}</option>
+      );
+    })}</select>
+    <h3>Height &#8597;</h3>
+    <select
+      className="form-group"
+      value={selectedHeight}
+      onChange={this.onChangeHeight}
+    >{(function(){
+        var ret = [];
+        for(var i = 0; i < 8; i++) {
+          ret.push(
+            <option
+              className="form-control"
+              key={"".concat(key, "-eight-", i)}
+              value={i/8}
+              onChange={onEightChange}
+            >{i +"/" + 8}</option>
+          );
+        }
+        return ret;
+      })()}</select>
+  </div>
 }
 
 VariantList.propTypes = {

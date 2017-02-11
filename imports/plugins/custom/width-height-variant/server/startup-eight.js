@@ -8,6 +8,7 @@ import { Packages, Shops } from "/lib/collections";
 import { Template } from "meteor/templating";
 
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
+import constructKey, { formatDim } from "../shared/construct-key";
 import { spawn, execSync } from "child_process";
 
 var hwRan = false;
@@ -16,13 +17,9 @@ function heightWidthOptions() {
   hwRan = true;
   var oldVariants = ReactionProduct.getTopVariants();
   var toRemove = oldVariants;
-  // var clearVariants = ReactionProduct.getVariants(hwId);
   toRemove.forEach(function(item) {
     deleteVariant(item._id);
   });
-  // clearVariants.forEach(e => {
-  // });
-
 }
 
 function emptyOldVariants(productId) {
@@ -46,21 +43,6 @@ function emptyOldVariants(productId) {
   // var deleted = deleteVariants(productId, WIDTH_HEIGHT_VARIANT_TYPE);
 }
 
-function formatElement(element) {
-    var width = element.width, height = element.height;
-    var unique_key = width + "x" + height;
-    return {
-      _id: "SoftwoodOption" + unique_key + "Price" + element.value,
-      inventoryQuantity: 9,
-      variantType: WIDTH_HEIGHT_VARIANT_TYPE,
-      title: "Softwood Option " + unique_key,
-      optionTitle: "Softwood Option " + unique_key,
-      price: element.value,
-      height: height,
-      width: width,
-    };
-}
-
 function addNewVariantsIfNotExist(productId, varientConfigs) {
   try{
     var nextParentID = addNewVariant(productId, {
@@ -79,11 +61,66 @@ function addNewVariantsIfNotExist(productId, varientConfigs) {
   }
 }
 
-function addNewVariants(productId, varientConfigs) {
-  varientConfigs.forEach((element, index) => {
-    addNewVariant(productId, formatElement(element))
+function addNewVariants(productId, variantConfigs) {
+  var widthIndexed = new Map();
+  var heightIndexed = new Map();
+  variantConfigs.forEach(function(a) {
+    if(!widthIndexed.has(a.width)) {
+      widthIndexed.set(a.width, new Map());
+    }
+    widthIndexed.get(a.width).set(a.height, a);
+
+    if(!heightIndexed.has(a.height)) {
+      heightIndexed.set(a.height, new Map());
+    }
+    heightIndexed.get(a.height).set(a.width, a);
+  });
+
+  var sortedWidths = Array.from(widthIndexed.keys()).sort(function(a, b){ return a - b; });
+  var sortedHeights = Array.from(heightIndexed.keys()).sort(function(a, b){ return a - b; });
+  sortedWidths.forEach(function(width, iw){
+    sortedHeights.forEach(function(height, ih){
+      for(var x = 0; x < 8; x++) {
+        for(var y = 0; y < 8; y++) {
+          var config;
+          if(x === 0 && y === 0) {
+            config = heightIndexed.get(height).get(width);
+          }else if(x === 0) {
+            config = heightIndexed.get(sortedHeights[ih - 1]).get(width)
+          }else if(y === 0) {
+            config = widthIndexed.get(sortedWidths[iw - 1]).get(height)
+          }else {
+            config = widthIndexed.get(sortedWidths[iw - 1]).get(sortedHeights[ih - 1])
+          }
+          addNewVariant(
+            productId, formatElement(config, x, y)
+          );
+
+          if(ih === 0) break;
+        }
+        if(iw === 0) break;
+      }
+    });
   });
 }
+
+function formatElement(element, x, y) {
+    var width = element.width, height = element.height;
+    var unique_key = constructKey(width, x, height, y);
+    return {
+      _id: "SoftwoodOptionW"+width+"H"+height+"X"+x+"Y"+y,
+      inventoryQuantity: 9,
+      variantType: WIDTH_HEIGHT_VARIANT_TYPE,
+      title: "Softwood Option " + unique_key,
+      optionTitle: "Softwood Option " + unique_key,
+      price: element.value,
+      width: width,
+      w_frac: x,
+      height: height,
+      h_frac: y
+    };
+}
+
 
 Meteor.startup(function () {
 
@@ -150,7 +187,6 @@ function addNewVariant(parentId, newVariant, cb){
       ancestors,
     } = Products.findOne(parentId);
     Array.isArray(ancestors) && ancestors.push(parentId);
-    console.log(ancestors);
     const assembledVariant = Object.assign(newVariant || {}, {
       _id: newVariantId,
       ancestors: ancestors,
