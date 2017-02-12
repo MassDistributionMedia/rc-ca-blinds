@@ -1,3 +1,14 @@
+/**
+  * rangeToJSON
+  * @summary create json file from Google Speadsheet
+  * @param {String} columnName -
+  * @param {String} rowName -
+  * @param {Number} initRow -
+  * @param {Number} initCol -
+  * @param {Number} numRows -
+  * @param {Number} numCols -
+  * @return {String} new json RC variants object
+*/
 function rangeToJSON(columnName, rowName, initRow, initCol, numRows, numCols) {
   var result = [];
   var sheet = SpreadsheetApp.getActiveSheet();

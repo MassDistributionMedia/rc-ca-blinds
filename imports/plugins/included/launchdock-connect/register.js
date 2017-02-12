@@ -4,7 +4,7 @@ Reaction.registerPackage({
   label: "Reaction Connect",
   name: "reaction-connect",
   icon: "fa fa-rocket",
-  autoEnable: true,
+  autoEnable: false,
   settings: {
     name: "Connect"
   },

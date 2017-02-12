@@ -7,6 +7,7 @@ import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 
 import renderWidthHeightList, {
+  WidthHeightOptionDescription,
   WIDTH_HEIGHT_VARIANT_TYPE,
   width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
@@ -160,8 +161,10 @@ class VariantList extends Component {
     if (!this.props.childVariants) {
       return null;
     }
+    let childVariantType = '';
     const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
       const type = childVariant.variantType || "variant";
+      childVariantType = type;
       if(!(type in variants)) {
         variants[type] = [];
       }
@@ -171,12 +174,20 @@ class VariantList extends Component {
     }, {});
     var methods = this;
     var props = this.props;
-    return ([
+
+    let optionDescription = null;
+    if ( childVariantType === WIDTH_HEIGHT_VARIANT_TYPE ) {
+      optionDescription = <WidthHeightOptionDescription/>
+    }
+
+    return (
+      <span>
       <Divider
-        key="availableOptionsDivider"
-        i18nKeyLabel="productDetail.availableOptions"
-        label="Available Options"
-      />,
+          key="availableOptionsDivider"
+          i18nKeyLabel="productDetail.availableOptions"
+          label="Available Options"
+        />
+      {optionDescription}
       <div className="row variant-product-options" key="childVariantList">{
         Object.keys(lists).map(function(type){
           const list = lists[type];
@@ -185,7 +196,8 @@ class VariantList extends Component {
           </div>)
         })
       }</div>
-    ])
+      </span>
+    );
     // var list = this.props.childVariants.filter(function(variant) {
     //   return !!variant.width && !!variant.height;
     // })

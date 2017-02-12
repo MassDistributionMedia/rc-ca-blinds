@@ -4,7 +4,7 @@ Reaction.registerPackage({
   label: "Inventory",
   name: "reaction-inventory",
   icon: "fa fa-building",
-  autoEnable: true,
+  autoEnable: false,
   settings: {
     name: "Inventory"
   },
@@ -26,6 +26,6 @@ Reaction.registerPackage({
     workflow: "coreInventoryWorkflow",
     collection: "Inventory",
     theme: "default",
-    enabled: true
+    enabled: false
   }]
 });

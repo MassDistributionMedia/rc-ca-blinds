@@ -1,4 +1,12 @@
 
+### OnDemand Variant Creation Idea
+- so that there isn't hundreds of variants for the system to handle
+- A user lands on a product detail page ->
+  - If the variant they select hasn't been created yet, create it
+  - Keep a que of ten or so of the last or most popular created variants
+
+
+### Pricing Calculator Idea
 OptionVariant
 - has a series of options which independently modify the end price
 

@@ -1,9 +1,9 @@
-export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants"
+export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 
 import constructKey, { formatDim } from "../shared/construct-key";
-import width_heightVariantUploadForm from "./upload-template"
+import width_heightVariantUploadForm from "./upload-template";
 
-import React, { Component, PropTypes} from "react";
+import React, { Component, PropTypes } from "react";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 
@@ -12,28 +12,28 @@ const EIGHTHS = [
 ].map(function(i) { return i + "/8"; });
 
 export { width_heightVariantUploadForm };
-export default function renderWidthHeightList(list, props, methods){
+export default function renderWidthHeightList(list, props, methods) {
   if(!list.length) {
     return null;
   }
   var selectedWidth = "`";
   var selectedHeight;
-  var selectedWFrac
-  var selectedHFrac
-  var indexedVariants = list.reduce(function(indexes, variant, index){
+  var selectedWFrac;
+  var selectedHFrac;
+  var indexedVariants = list.reduce(function(indexes, variant, index) {
     var { width, height, wfrac, hfrac } = variant;
-    if(props.variantIsSelected(variant._id)){
+    if (props.variantIsSelected(variant._id)) {
       selectedWidth = width;
       selectedWFrac = wfrac;
       selectedHeight = height;
       selectedHFrac = hfrac;
     }
     var key = constructKey(width, wfrac, height, hfrac);
-    if(key in indexes.variantIndex) {
+    if (key in indexes.variantIndex) {
       throw new Error("a duplicate index exists");
     }
     indexes.variantIndex[key] = variant;
-    if(wfrac > 0 || hfrac > 0){
+    if (wfrac > 0 || hfrac > 0) {
       return indexes;
     }
     indexes.widthList.add(width);

@@ -1,48 +1,23 @@
 import { Meteor } from "meteor/meteor";
 import { Reaction } from "/server/api";
 import { ReactionProduct } from "/lib/api";
-// import { Products, Media } from "/lib/collections";
 import { Media, Products, Revisions, Tags } from "/lib/collections";
 import { Packages, Shops } from "/lib/collections";
 import { Template } from "meteor/templating";
 
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
-import { spawn, execSync } from "child_process";
 
 
 import products from "../data/product-prices";
-// import { readFileSync, readdirSync } from "fs";
-// import { resolve as pathResolve } from "path";
-
-// console.log(readdirSync(pathResolve(__dirname, "..")))
-// console.log(readdirSync(pathResolve(__dirname, "..", "./data")))
-// const file = readFileSync(pathResolve(__dirname, "..", "./data/product-prices.json"));
-// / fdsflkdslfdljkfd
-// // import { ProdPrices } from "/lib/collections/prodPrices";
 
 function convertStringToProducts(text){
-  return JSON.parse(text)
+  return JSON.parse(text);
 }
 
-function handleTextInput(productId, text){
-  emptyOldVariants(productId);
-  addNewVariants(productId, convertStringToProducts(text));
-}
-
-var hwRan = false;
-function heightWidthOptions() {
-  if(hwRan) return;
-  hwRan = true;
-  var oldVariants = ReactionProduct.getTopVariants();
-  var toRemove = oldVariants;
-  // var clearVariants = ReactionProduct.getVariants(hwId);
-  toRemove.forEach(function(item) {
-    deleteVariant(item._id);
-  });
-  // clearVariants.forEach(e => {
-  // });
-
-}
+// function handleTextInput(productId, text){
+//   emptyOldVariants(productId);
+//   addNewVariants(productId, convertStringToProducts(text));
+// }
 
 function emptyOldVariants(productId) {
   var query = {
@@ -81,7 +56,7 @@ function formatElement(element) {
 }
 
 function addNewVariantsIfNotExist(productId, varientConfigs) {
-  try{
+  try {
     var nextParentID = addNewVariant(productId, {
       _id: "SoftwoodOptionParent",
       title: "Softwood: Width and Height",
@@ -93,7 +68,7 @@ function addNewVariantsIfNotExist(productId, varientConfigs) {
         addNewVariants(nextParentID, varientConfigs);
       }
     })
-  }catch(e){
+  } catch(e) {
     console.log("already exists:", e);
   }
 }
@@ -169,7 +144,10 @@ function addNewVariant(parentId, newVariant, cb){
       ancestors,
     } = Products.findOne(parentId);
     Array.isArray(ancestors) && ancestors.push(parentId);
-    console.log(ancestors);
+    console.log(
+      `addNewVariant(${parentId}, newVariant, cb) \n`,
+      `From: /imports/plugins/custom/width-height-variant/server/startup.js`
+    );
     const assembledVariant = Object.assign(newVariant || {}, {
       _id: newVariantId,
       ancestors: ancestors,
@@ -206,137 +184,137 @@ function addNewVariant(parentId, newVariant, cb){
 
 }
 
-const toDenormalize = [
-  "price",
-  "inventoryQuantity",
-  "lowInventoryWarningThreshold",
-  "inventoryPolicy",
-  "inventoryManagement",
-];
+// const toDenormalize = [
+//   "price",
+//   "inventoryQuantity",
+//   "lowInventoryWarningThreshold",
+//   "inventoryPolicy",
+//   "inventoryManagement",
+// ];
 
 
-function getVariants(id, type){
-  return Products.find({
-    ancestors: { $in: [id] },
-    type: "variant",
-    variantType: type
-  }).map(getPublishedOrRevision);
-}
+// function getVariants(id, type){
+//   return Products.find({
+//     ancestors: { $in: [id] },
+//     type: "variant",
+//     variantType: type,
+//   }).map(getPublishedOrRevision);
+// }
 
-function deleteVariants(id, type) {
-  var query = {
-    ancestors: { $in: [id] },
-    type: "variant",
-    variantType: type
-  };
-  var ret = Products.find(query).map(getPublishedOrRevision);
-  console.log("new delete length: ", ret.length)
-  if(ret.length === 0) return [];
-  console.log(query);
-  console.log(Products.remove(query, function(err){
-    console.log("delete error: ", err);
-  }));
-  return ret;
-}
-function oldDeleteVariants(id) {
-  var query = {
-    ancestors: { $in: [id] },
-    type: "variant",
-    width: { $exists: true },
-    height: { $exists: true },
-  };
+// function deleteVariants(id, type) {
+//   var query = {
+//     ancestors: { $in: [id] },
+//     type: "variant",
+//     variantType: type,
+//   };
+//   var ret = Products.find(query).map(getPublishedOrRevision);
+//   console.log("new delete length: ", ret.length);
+//   if(ret.length === 0) return [];
+//   console.log(query);
+//   console.log(Products.remove(query, function(err){
+//     console.log("delete error: ", err);
+//   }));
+//   return ret;
+// }
+// function oldDeleteVariants(id) {
+//   var query = {
+//     ancestors: { $in: [id] },
+//     type: "variant",
+//     width: { $exists: true },
+//     height: { $exists: true },
+//   };
 
-  var ret = Products.find(query).map(getPublishedOrRevision);
-  console.log("old delete length: ", ret.length)
-  if(ret.length === 0) return [];
-  console.log(query);
-  console.log(Products.remove(query, function(err){
-    console.log("old delete error: ", err);
-  }));
-  return ret;
-}
+//   var ret = Products.find(query).map(getPublishedOrRevision);
+//   console.log("old delete length: ", ret.length);
+//   if(ret.length === 0) return [];
+//   console.log(query);
+//   console.log(Products.remove(query, function(err){
+//     console.log("old delete error: ", err);
+//   }));
+//   return ret;
+// }
 
 
-function deleteVariant(variantId){
-    const selector = {
-      $or: [{
-        _id: variantId,
-      }, {
-        ancestors: {
-          $in: [variantId],
-        }
-      }]
-    };
-    const toDelete = Products.find(selector).fetch();
-    // out if nothing to delete
-    if (!Array.isArray(toDelete) || toDelete.length === 0) return false;
+// function deleteVariant(variantId){
+//     const selector = {
+//       $or: [{
+//         _id: variantId,
+//       }, {
+//         ancestors: {
+//           $in: [variantId],
+//         }
+//       }]
+//     };
+//     const toDelete = Products.find(selector).fetch();
+//     // out if nothing to delete
+//     if (!Array.isArray(toDelete) || toDelete.length === 0) return false;
 
-    const deleted = Products.remove(selector);
+//     const deleted = Products.remove(selector);
 
-    // after variant were removed from product, we need to recalculate all
-    // denormalized fields
-    const productId = toDelete[0].ancestors[0];
-    toDenormalize.forEach(field => denormalize(productId, field));
+//     // after variant were removed from product, we need to recalculate all
+//     // denormalized fields
+//     const productId = toDelete[0].ancestors[0];
+//     toDenormalize.forEach(field => denormalize(productId, field));
 
-    return typeof deleted === "number" && deleted > 0;
-}
+//     return typeof deleted === "number" && deleted > 0;
+// }
 
 // createVariant(product_Id);
 // var heightWidthParnetId = get(ID) // from returned variant ID: https://github.com/reactioncommerce/reaction/blob/90ce4bf67f084e0ec39bf7eaf2c80b5bc0ed902f/server/methods/catalog.js#L444
 // loop -> createVariant(heightWidthParnetId);
 
-function denormalize(id, field) {
-  const doc = Products.findOne(id);
-  let variants;
-  if (doc.type === "simple") {
-    variants = Catalog.getTopVariants(id);
-  } else if (doc.type === "variant" && doc.ancestors.length === 1) {
-    variants = getVariants(id);
-  }
-  const update = {};
+// function denormalize(id, field) {
+//   const doc = Products.findOne(id);
+//   let variants;
+//   if (doc.type === "simple") {
+//     variants = Catalog.getTopVariants(id);
+//   } else if (doc.type === "variant" && doc.ancestors.length === 1) {
+//     variants = getVariants(id);
+//   }
+//   const update = {};
 
-  switch (field) {
-    case "inventoryPolicy":
-    case "inventoryQuantity":
-    case "inventoryManagement":
-      Object.assign(update, {
-        isSoldOut: isSoldOut(variants),
-        isLowQuantity: isLowQuantity(variants),
-        isBackorder: isBackorder(variants),
-      });
-      break;
-    case "lowInventoryWarningThreshold":
-      Object.assign(update, {
-        isLowQuantity: isLowQuantity(variants)
-      });
-      break;
-    default: // "price" is object with range, min, max
-      const priceObject = Catalog.getProductPriceRange(id);
-      Object.assign(update, {
-        price: priceObject,
-      });
-  }
-  Products.update(id, {
-    $set: update,
-  }, {
-    selector: {
-      type: "simple",
-    }
-  });
-}
+//   switch (field) {
+//     case "inventoryPolicy":
+//     case "inventoryQuantity":
+//     case "inventoryManagement":
+//       Object.assign(update, {
+//         isSoldOut: isSoldOut(variants),
+//         isLowQuantity: isLowQuantity(variants),
+//         isBackorder: isBackorder(variants),
+//       });
+//       break;
+//     case "lowInventoryWarningThreshold":
+//       Object.assign(update, {
+//         isLowQuantity: isLowQuantity(variants)
+//       });
+//       break;
+//     default: // "price" is object with range, min, max
+//       const priceObject = Catalog.getProductPriceRange(id);
+//       Object.assign(update, {
+//         price: priceObject,
+//       });
+//   }
+//   Products.update(id, {
+//     $set: update,
+//   }, {
+//     selector: {
+//       type: "simple",
+//     }
+//   });
+// }
 
-function getPublishedOrRevision(product) {
-  if (product.__revisions && product.__revisions.length) {
-    const cleanProduct = Object.assign({}, product);
-    delete cleanProduct.__revisions;
+// function getPublishedOrRevision(product) {
+//   if (product.__revisions && product.__revisions.length) {
+//     const cleanProduct = Object.assign({}, product);
+//     delete cleanProduct.__revisions;
 
-    return Object.assign({},
-      product.__revisions[0].documentData,
-      {
-        __published: cleanProduct,
-        __draft: product.__revisions[0]
-      }
-    );
-  }
-  return product;
-}
+//     return Object.assign({},
+//       product.__revisions[0].documentData,
+//       {
+//         __published: cleanProduct,
+//         __draft: product.__revisions[0]
+//       }
+//     );
+//   }
+//   return product;
+// }
