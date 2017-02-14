@@ -117,8 +117,8 @@
     }
   },
   "scripts": {
-    "start": "meteor run -p 0.0.0.0:8080",
-    "debug": "meteor run -p 0.0.0.0:8080 debug --debug-port 8081",
+    "start": "rc run",
+    "debug": "rc debug",
     "create-report": "allure generate allure-results/ -o ~/allure-report",
     "open-report": "cd && allure report open",
     "del-report": "rm -rf ~/allure-report && rm -rf allure-results",

@@ -80,9 +80,9 @@ class VariantList extends Component {
       ];
     }
 
-    var variants = this.props.variants;
-    var offset = this.state && this.state.offset || 0;
-    var toRender = variants.length > 10 ? variants.slice(offset, 10) : variants;
+    let variants = this.props.variants;
+    let offset = this.state && this.state.offset || 0;
+    let toRender = variants.length > 10 ? variants.slice(offset, 10) : variants;
     const renderedVariants = (
       offset === 0 ? [] : [
         <li key="prev-button">
@@ -172,8 +172,8 @@ class VariantList extends Component {
 
       return variants;
     }, {});
-    var methods = this;
-    var props = this.props;
+    let methods = this;
+    let props = this.props;
 
     let optionDescription = null;
     if ( childVariantType === WIDTH_HEIGHT_VARIANT_TYPE ) {
@@ -198,7 +198,7 @@ class VariantList extends Component {
       }</div>
       </span>
     );
-    // var list = this.props.childVariants.filter(function(variant) {
+    // let list = this.props.childVariants.filter(function(variant) {
     //   return !!variant.width && !!variant.height;
     // })
     // return renderWidthHeightList(list, this.props, this.methods);
@@ -231,7 +231,7 @@ VariantList.propTypes = {
 
 export default VariantList;
 
-var i = 0;
+let i = 0;
 function renderList(type, list, props, methods) {
   switch(type) {
     case "variant" : {
