@@ -48,18 +48,24 @@ class VariantList extends Component {
   }
 
   renderVariants() {
-    const addButton = this.props.editable ? (
-      <div className="rui items flex">
-        <div className="rui item full justify center">
-          <IconButton
-            i18nKeyTooltip="variantList.createVariant"
-            icon="fa fa-plus"
-            tooltip="Create Variant"
-            onClick={this.props.onCreateVariant}
-          />
+    let variants = [];
+    let addButton;
+
+    if (this.props.editable) {
+      addButton = (
+        <div className="rui items flex">
+          <div className="rui item full justify center">
+            <IconButton
+              i18nKeyTooltip="variantList.createVariant"
+              icon="fa fa-plus"
+              primary={true}
+              tooltip="Create Variant"
+              onClick={this.props.onCreateVariant}
+            />
+          </div>
         </div>
-      </div>
-    ) : null;
+      );
+    }
 
     if(!this.props.variants || this.props.variants.length === 0) {
       if (this.props.editable === false){
