@@ -107,6 +107,7 @@ function HeightTitle() {
 }
 
 function dimensionSelect(key, value, list, onChange){
+  if ( Reaction.hasPermission('guest') ) {
   let optionTitle = null;
   if ( key === "width" ) {
     optionTitle = <WidthTitle/>
@@ -129,4 +130,5 @@ function dimensionSelect(key, value, list, onChange){
       }</select>
     </span>
   );
+  } // end if Reaction.hasPermission('guest')
 }

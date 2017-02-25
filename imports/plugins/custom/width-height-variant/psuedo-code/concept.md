@@ -9,6 +9,7 @@
    - /imports/plugins/custom/width-height-variant/server/startup.js (React.js)
    - /imports/plugins/custom/width-height-variant/client/render-list.js (React.js)
    - /imports/plugins/included/product-detail-simple/client/components/variantList.js (React.js)
+   - Latest code is the mikeDev branch.
 
 ### OnDemand Variant Creation Idea
 - so that there isn't hundreds of variants for the system to handle

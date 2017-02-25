@@ -57,7 +57,7 @@ function formatElement(element) {
 
 function addNewVariantsIfNotExist(productId, varientConfigs) {
   try {
-    var nextParentID = addNewVariant(productId, {
+    let nextParentID = addNewVariant(productId, {
       _id: "SoftwoodOptionParent",
       title: "Softwood: Width and Height",
       variantType: WIDTH_HEIGHT_VARIANT_TYPE,
@@ -67,7 +67,7 @@ function addNewVariantsIfNotExist(productId, varientConfigs) {
       if(!err && nextParentID) {
         addNewVariants(nextParentID, varientConfigs);
       }
-    })
+    }); // end nextParentID
   } catch(e) {
     console.log("already exists:", e);
   }
@@ -75,7 +75,7 @@ function addNewVariantsIfNotExist(productId, varientConfigs) {
 
 function addNewVariants(productId, varientConfigs) {
   varientConfigs.forEach((element, index) => {
-    addNewVariant(productId, formatElement(element))
+    addNewVariant(productId, formatElement(element));
   });
 }
 
@@ -84,7 +84,7 @@ Meteor.startup(function () {
   Meteor.methods({
     'width-height-variant.set-variants'({ productId, variantConfigFile }) {
       console.log("set variant");
-      var variantConfigs = JSON.parse(variantConfigFile);
+      let variantConfigs = JSON.parse(variantConfigFile);
       emptyOldVariants(productId);
       addNewVariants(productId, varientConfigs);
     },
@@ -105,8 +105,8 @@ Meteor.startup(function () {
 
   // const existingProducts = Products.find({}, {limit: 1}).fetch();
   // console.log(existingProducts);
-  var hackyProductId = "BCTMZ6HTxFSppJESk";
-  var hackyPrices = products;
+  let hackyProductId = "BCTMZ6HTxFSppJESk";
+  let hackyPrices = products;
   // emptyOldVariants(hackyProductId);
   /*
     db.Products.remove({ ancestors: { $in: ["BCTMZ6HTxFSppJESk"] }, type: "variant", $or :[ {variantType: "Height & Width"}, { width: { "$exists": true }, height: { "$exists": true }, } ]})
@@ -152,6 +152,7 @@ function addNewVariant(parentId, newVariant, cb){
       _id: newVariantId,
       ancestors: ancestors,
       type: "variant",
+      isVisible: true,
     });
 
     if (!newVariant) {
