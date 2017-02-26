@@ -50,11 +50,11 @@ export default function renderWidthHeightList(list, props, methods) {
 
   return [
     dimensionSelect("width", selectedWidth, widthList, function(event) {
-      var value = event.target.value;
+      let value = event.target.value;
       updateVariant(selectedHeight, value, indexedVariants, methods);
     }),
     dimensionSelect("height", selectedHeight, heightList, function(event) {
-      var value = event.target.value;
+      let value = event.target.value;
       updateVariant(value, selectedWidth, indexedVariants, methods);
     }),
   ];
@@ -68,7 +68,7 @@ export function WidthHeightOptionDescription() {
     height: '2px',
   }
   return (
-    <div className="row variant-product-options">
+    <div key="variant-product-options" className="row variant-product-options">
       <h2 style={{width: '100%'}}>Select Size</h2>
       <p>
         If you selected <b>Inside Mount</b>, enter your window size.
@@ -115,7 +115,7 @@ function dimensionSelect(key, value, list, onChange){
     optionTitle = <HeightTitle/>
   }
   return (
-    <span>
+    <span key={key+"select-span"}>
       {optionTitle}
       <select key={key + "-select"} className="form-control" value={value} onChange={onChange}> {
         list.map((opVal, index) => {

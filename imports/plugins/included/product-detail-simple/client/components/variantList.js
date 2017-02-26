@@ -49,96 +49,67 @@ class VariantList extends Component {
   }
 
   renderVariants() {
-    const addButton = this.props.editable ? (
-      <div className="rui items flex">
-        <div className="rui item full justify center">
-          <IconButton
-            i18nKeyTooltip="variantList.createVariant"
-            icon="fa fa-plus"
-            tooltip="Create Variant"
-            onClick={this.props.onCreateVariant}
-          />
-        </div>
-      </div>
-    ) : null;
+    let variants = [];
+    let addButton;
 
-    if(!this.props.variants || this.props.variants.length === 0) {
-      if (this.props.editable === false){
-        return (
-          <ul className="variant-list list-unstyled" id="variant-list" key="variantList"></ul>
-        );
-      }
-      return [
-        <Divider
-          i18nKeyLabel="productDetail.options"
-          key="dividerWithLabel"
-          label="Options"
-        />,
-        <ul className="variant-list list-unstyled" id="variant-list" key="variantList">
-          {addButton}
-        </ul>
-      ];
+    if (this.props.editable) {
+      addButton = (
+        <div className="rui items flex">
+          <div className="rui item full justify center">
+            <IconButton
+              i18nKeyTooltip="variantList.createVariant"
+              icon="fa fa-plus"
+              primary={true}
+              tooltip="Create Variant"
+              onClick={this.props.onCreateVariant}
+            />
+          </div>
+        </div>
+      );
     }
 
-    let variants = this.props.variants;
-    let offset = this.state && this.state.offset || 0;
-    let toRender = variants.length > 10 ? variants.slice(offset, 10) : variants;
-    const renderedVariants = (
-      offset === 0 ? [] : [
-        <li key="prev-button">
-          <button onClick={(e)=>{
-              e.preventDefault();
-              this.setState({ offset : offset - 10 });
-          }}>Previous Variants</button>
-        </li>
-      ]
-    ).concat(toRender.map((variant, index) => {
-      const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
+    if (this.props.variants) {
+      variants = this.props.variants.map((variant, index) => {
+        const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
 
-      return (
-        <EditContainer
-          data={variant}
-          disabled={this.props.editable === false}
-          editView="variantForm"
-          i18nKeyLabel="productDetailEdit.editVariant"
-          key={index}
-          label="Edit Variant"
-          onEditButtonClick={this.handleVariantEditClick}
-          onVisibilityButtonClick={this.handleVariantVisibilityClick}
-          permissions={["createProduct"]}
-          showsVisibilityButton={true}
-        >
-          <Variant
-            displayPrice={displayPrice}
-            editable={this.props.editable}
-            index={index}
-            isSelected={this.props.variantIsSelected(variant._id)}
-            onClick={this.props.onVariantClick}
-            onMove={this.props.onMoveVariant}
-            soldOut={this.isSoldOut(variant)}
-            variant={variant}
-          />
-        </EditContainer>
-      );
-    })).concat(
-      offset + 10 >= variants.length ? [] : [
-        <li key="next-button">
-          <button onClick={(e)=>{
-            e.preventDefault();
-            this.setState({ offset : offset + 10 });
-          }}>Next Variants</button>
-        </li>
-      ]
-    );
+        return (
+          <EditContainer
+            data={variant}
+            disabled={this.props.editable === false}
+            editView="variantForm"
+            i18nKeyLabel="productDetailEdit.editVariant"
+            key={index}
+            label="Edit Variant"
+            onEditButtonClick={this.handleVariantEditClick}
+            onVisibilityButtonClick={this.handleVariantVisibilityClick}
+            permissions={["createProduct"]}
+            showsVisibilityButton={true}
+          >
+            <Variant
+              displayPrice={displayPrice}
+              editable={this.props.editable}
+              index={index}
+              isSelected={this.props.variantIsSelected(variant._id)}
+              onClick={this.props.onVariantClick}
+              onMove={this.props.onMoveVariant}
+              soldOut={this.isSoldOut(variant)}
+              variant={variant}
+            />
+          </EditContainer>
+        );
+      });
+    }
 
     const variantList = (
       <ul className="variant-list list-unstyled" id="variant-list" key="variantList">
-        {renderedVariants}
+        {variants}
         {addButton}
       </ul>
     );
 
-    if (variants.length > 1) {
+    if (variants.length === 0 && this.props.editable === false) {
+      return variantList;
+    } else if (variants.length > 1 || variants.length === 0) {
       return [
         <Divider
           i18nKeyLabel="productDetail.options"
