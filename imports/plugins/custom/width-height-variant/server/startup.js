@@ -41,22 +41,24 @@ function emptyOldVariants(productId) {
 }
 
 function formatElement(element) {
-    var width = element.width, height = element.height;
-    var unique_key = width + "x" + height;
-    return {
-      _id: "SoftwoodOption" + unique_key + "Price" + element.value,
-      inventoryQuantity: 9,
-      variantType: WIDTH_HEIGHT_VARIANT_TYPE,
-      title: "Softwood Option " + unique_key,
-      optionTitle: "Softwood Option " + unique_key,
-      price: element.value,
-      height: height,
-      width: width,
-    };
+  var width = element.width, height = element.height;
+  var unique_key = width + "x" + height;
+  return {
+    _id: "SoftwoodOption" + unique_key + "Price" + element.value,
+    inventoryQuantity: 9,
+    variantType: WIDTH_HEIGHT_VARIANT_TYPE,
+    title: "Softwood Option " + unique_key,
+    optionTitle: "Softwood Option " + unique_key,
+    price: element.value,
+    height: height,
+    width: width,
+  };
 }
 
-function addNewVariantsIfNotExist(productId, varientConfigs) {
+function addNewVariantsIfNotExist(productId, varientConfig) {
   try {
+    // First, create the parent/top-level-variant with the second arg in `let nextParentID`
+    // Then, in `nextParentID`s callback, create the child variant(s)
     let nextParentID = addNewVariant(productId, {
       _id: "SoftwoodOptionParent",
       title: "Softwood: Width and Height",
@@ -65,16 +67,16 @@ function addNewVariantsIfNotExist(productId, varientConfigs) {
     }, function(err){
       console.log(nextParentID);
       if(!err && nextParentID) {
-        addNewVariants(nextParentID, varientConfigs);
+        addNewVariants(nextParentID, varientConfig);
       }
     }); // end nextParentID
   } catch(e) {
-    console.log("already exists:", e);
+    console.log("already exists: ", e);
   }
 }
 
-function addNewVariants(productId, varientConfigs) {
-  varientConfigs.forEach((element, index) => {
+function addNewVariants(productId, varientConfig) {
+  varientConfig.forEach((element, index) => {
     addNewVariant(productId, formatElement(element));
   });
 }
@@ -86,7 +88,7 @@ Meteor.startup(function () {
       console.log("set variant");
       let variantConfigs = JSON.parse(variantConfigFile);
       emptyOldVariants(productId);
-      addNewVariants(productId, varientConfigs);
+      addNewVariants(productId, varientConfig);
     },
     "width-height-variant.is-valid-variant"({ productId, variantConfig}) {
 
@@ -140,9 +142,8 @@ function addNewVariant(parentId, newVariant, cb){
 
     const newVariantId = newVariant._id || Random.id();
     // get parent ancestors to build new ancestors array
-    const {
-      ancestors,
-    } = Products.findOne(parentId);
+    const { ancestors } = Products.findOne(parentId);
+
     Array.isArray(ancestors) && ancestors.push(parentId);
     console.log(
       `addNewVariant(${parentId}, newVariant, cb) \n`,
@@ -182,8 +183,8 @@ function addNewVariant(parentId, newVariant, cb){
     );
 
     return newVariantId;
-
 }
+
 
 // const toDenormalize = [
 //   "price",
