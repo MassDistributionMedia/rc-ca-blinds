@@ -8,7 +8,7 @@ import { Template } from "meteor/templating";
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 
 
-import products from "../data/product-prices";
+import products from "../data/three-product-prices";
 
 function convertStringToProducts(text){
   return JSON.parse(text);
