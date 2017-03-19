@@ -12,6 +12,8 @@ import renderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
   width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
+
+
 class VariantList extends Component {
 
   handleVariantEditClick = (event, editButtonProps) => {
@@ -133,8 +135,10 @@ class VariantList extends Component {
     if (!this.props.childVariants) {
       return null;
     }
+    let childVariantType = '';
     const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
       const type = childVariant.variantType || "variant";
+      childVariant = type;
       if(!(type in variants)) {
         variants[type] = [];
       }
@@ -144,13 +148,9 @@ class VariantList extends Component {
     }, {});
     const methods = this;
     const props = this.props;
-    const variant = ReactionProduct.selectedVariant();
-
-    console.log(ReactionProduct, Reaction, Products);
-    debugger;
 
     let optionDescription = null;
-    if (variant.isHeightWidth === true) {
+    if (childVariantType === WIDTH_HEIGHT_VARIANT_TYPE || isBlind()) {
       optionDescription = <WidthHeightOptionDescription/>
     }
 
@@ -213,20 +213,36 @@ VariantList.defaultProps = {
 
 export default VariantList;
 
+/**
+ * isBlind()
+ *
+ * Checking the product and variant if they
+ *  have `isHeightWidth` to decide to
+ *  render `<WidthHeightOptionDescription/>`
+ */
+function isBlind() {
+  const variant = ReactionProduct.selectedVariant();
+  const product = ReactionProduct.selectedProduct();
+  if (variant && variant.isHeightWidth && variant.isHeightWidth === true) {
+    return true;
+  } else if (product && product.isHeightWidth && product.isHeightWidth === true) {
+    return true;
+  }
+  return false;
+}
 
-// let i = 0;
 let selectedValues = {
   width: '',
   height: '',
 };
 function renderList(type, list, props, methods, selectedValues) {
-  console.log(ReactionProduct, props);
-  debugger;
-  const variant = ReactionProduct.selectedVariant();
-  if(variant.isHeightWidth === true) {
-    return renderWidthHeightList(list, props, methods, selectedValues);
-  } else if (type === "variant") {
-    return renderVariantList(list, props, methods);
+    switch(type) {
+    case "variant" : {
+      return renderVariantList(list, props, methods);
+    }
+    case WIDTH_HEIGHT_VARIANT_TYPE : {
+      return renderWidthHeightList(list, props, methods, selectedValues);
+    }
   }
 }
 

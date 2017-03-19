@@ -8,7 +8,7 @@ import { Template } from "meteor/templating";
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 
 
-import products from "../data/three-product-prices";
+import products from "../data/product-seed";
 
 function convertStringToProducts(text){
   return JSON.parse(text);
@@ -55,7 +55,7 @@ function formatElement(element) {
   };
 }
 
-function addNewVariantsIfNotExist(productId, varientConfig) {
+function addNewVariantIfNotExist(productId, varientConfig) {
   try {
     // First, create the parent/top-level-variant with the second arg in `let nextParentID`
     // Then, in `nextParentID`s callback, create the child variant(s)
@@ -113,7 +113,7 @@ Meteor.startup(function () {
   /*
     db.Products.remove({ ancestors: { $in: ["BCTMZ6HTxFSppJESk"] }, type: "variant", $or :[ {variantType: "Height & Width"}, { width: { "$exists": true }, height: { "$exists": true }, } ]})
   */
-  // addNewVariantsIfNotExist(hackyProductId, hackyPrices);
+  // addNewVariantIfNotExist(hackyProductId, hackyPrices);
 
 });
 

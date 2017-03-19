@@ -1,5 +1,5 @@
-import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants"
-export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants"
+import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
+export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";

@@ -6,8 +6,8 @@ import { ReactionProduct } from "/lib/api";
 import { applyProductRevision } from "/lib/api/products";
 import { Products } from "/lib/collections";
 
-import { addNewVariantIfNotExist } from "/imports/plugins/custom/width-height-variant/client/add-new-variant";
-import products from "/imports/plugins/custom/width-height-variant/data/three-product-prices";
+import { addNewVariantIfNotExist } from "/imports/plugins/custom/width-height-variant/client/render-list";
+import seedProduct from "/imports/plugins/custom/width-height-variant/data/product-seed";
 
 Template.variantForm.onCreated(function () {
   this.autorun(() => {
@@ -27,7 +27,6 @@ Template.variantForm.onCreated(function () {
 /**
  * variantForm helpers
  */
-
 Template.variantForm.helpers({
   variant() {
     const instance = Template.instance();
@@ -134,7 +133,6 @@ Template.variantForm.helpers({
 /**
  * variantForm events
  */
-
 Template.variantForm.events({
   "change select[name='variantType']": function (event, template) {
     const selectedType = $(event.currentTarget).find('option:selected').text();
@@ -150,8 +148,10 @@ Template.variantForm.events({
         }
     });
 
-    console.log(Products, Reaction, ReactionProduct, variant);
-    debugger;
+    if (selectedType === "Height & Width") {
+      addNewVariantIfNotExist(variant._id, seedProduct);
+      Meteor.call("revisions/publish", product._id);
+    }
 
   },
   "change form :input": function (event, template) {
