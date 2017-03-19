@@ -6,6 +6,9 @@ import { ReactionProduct } from "/lib/api";
 import { applyProductRevision } from "/lib/api/products";
 import { Products } from "/lib/collections";
 
+import { addNewVariantIfNotExist } from "/imports/plugins/custom/width-height-variant/client/add-new-variant";
+import products from "/imports/plugins/custom/width-height-variant/data/three-product-prices";
+
 Template.variantForm.onCreated(function () {
   this.autorun(() => {
     const productHandle = Reaction.Router.getParam("handle");
@@ -134,15 +137,22 @@ Template.variantForm.helpers({
 
 Template.variantForm.events({
   "change select[name='variantType']": function (event, template) {
-    var selectedType = $(event.currentTarget).find('option:selected').text();
-    selectedType === "Height & Width" ? template.data.isHeightWidth = true : template.data.isHeightWidth = false; 
-    
+    const selectedType = $(event.currentTarget).find('option:selected').text();
+    const variant = ReactionProduct.selectedVariant();
+    const product = ReactionProduct.selectedProduct();
+
+    selectedType === "Height & Width" ? template.data.isHeightWidth = true : template.data.isHeightWidth = false;
+
     Meteor.call("products/updateProductField", template.data._id, "isHeightWidth", template.data.isHeightWidth,
       error => {
         if (error) {
           throw new Meteor.Error("error updating variantType: isHeightWidth", error);
         }
-      });
+    });
+
+    console.log(Products, Reaction, ReactionProduct, variant);
+    debugger;
+
   },
   "change form :input": function (event, template) {
     const field = Template.instance().$(event.currentTarget).attr("name");

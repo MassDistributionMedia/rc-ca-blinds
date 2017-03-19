@@ -83,17 +83,17 @@ function addNewVariants(productId, varientConfig) {
 
 Meteor.startup(function () {
 
-  Meteor.methods({
-    'width-height-variant.set-variants'({ productId, variantConfigFile }) {
-      console.log("set variant");
-      let variantConfigs = JSON.parse(variantConfigFile);
-      emptyOldVariants(productId);
-      addNewVariants(productId, varientConfig);
-    },
-    "width-height-variant.is-valid-variant"({ productId, variantConfig}) {
+  // Meteor.methods({
+  //   'width-height-variant.set-variants'({ productId, variantConfigFile }) {
+  //     console.log("set variant");
+  //     let variantConfigs = JSON.parse(variantConfigFile);
+  //     emptyOldVariants(productId);
+  //     addNewVariants(productId, varientConfig);
+  //   },
+  //   "width-height-variant.is-valid-variant"({ productId, variantConfig}) {
 
-    }
-  });
+  //   }
+  // });
 
     /**
      * heightWidth onRendered
@@ -107,13 +107,13 @@ Meteor.startup(function () {
 
   // const existingProducts = Products.find({}, {limit: 1}).fetch();
   // console.log(existingProducts);
-  let hackyProductId = "BCTMZ6HTxFSppJESk";
-  let hackyPrices = products;
+  // let hackyProductId = "BCTMZ6HTxFSppJESk";
+  // let hackyPrices = products;
   // emptyOldVariants(hackyProductId);
   /*
     db.Products.remove({ ancestors: { $in: ["BCTMZ6HTxFSppJESk"] }, type: "variant", $or :[ {variantType: "Height & Width"}, { width: { "$exists": true }, height: { "$exists": true }, } ]})
   */
-  addNewVariantsIfNotExist(hackyProductId, hackyPrices);
+  // addNewVariantsIfNotExist(hackyProductId, hackyPrices);
 
 });
 

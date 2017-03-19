@@ -5,6 +5,7 @@ import { Divider, IconButton } from "/imports/plugins/core/ui/client/components"
 import { ChildVariant } from "./";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
+import { Products } from "/lib/collections";
 
 import renderWidthHeightList, {
   WidthHeightOptionDescription,
@@ -132,10 +133,8 @@ class VariantList extends Component {
     if (!this.props.childVariants) {
       return null;
     }
-    let childVariantType = '';
     const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
       const type = childVariant.variantType || "variant";
-      childVariantType = type;
       if(!(type in variants)) {
         variants[type] = [];
       }
@@ -143,11 +142,15 @@ class VariantList extends Component {
 
       return variants;
     }, {});
-    let methods = this;
-    let props = this.props;
+    const methods = this;
+    const props = this.props;
+    const variant = ReactionProduct.selectedVariant();
+
+    console.log(ReactionProduct, Reaction, Products);
+    debugger;
 
     let optionDescription = null;
-    if ( childVariantType === WIDTH_HEIGHT_VARIANT_TYPE ) {
+    if (variant.isHeightWidth === true) {
       optionDescription = <WidthHeightOptionDescription/>
     }
 
@@ -157,13 +160,13 @@ class VariantList extends Component {
           key="availableOptionsDivider"
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"
-        />
+      />
       {optionDescription}
       <div className="row variant-product-options" key="childVariantList">{
         Object.keys(lists).map(function(type){
           const list = lists[type];
           return (<div key={"".concat("rendered-list", "-", type)}>
-            {renderList(type, list, props, methods)}
+            {renderList(type, list, props, methods, props.widthHeightValues)}
           </div>)
         })
       }</div>
@@ -173,7 +176,7 @@ class VariantList extends Component {
     //   return !!variant.width && !!variant.height;
     // })
     // return renderWidthHeightList(list, this.props, this.methods);
-  }
+  } // end renderChildVariants()
 
   render() {
     return (
@@ -197,20 +200,33 @@ VariantList.propTypes = {
   onVariantClick: PropTypes.func,
   onVariantVisibiltyToggle: PropTypes.func,
   variantIsSelected: PropTypes.func,
-  variants: PropTypes.arrayOf(PropTypes.object)
+  variants: PropTypes.arrayOf(PropTypes.object),
+  widthHeightValues: PropTypes.objectOf(PropTypes.number),
 };
+
+VariantList.defaultProps = {
+  widthHeightValues: {
+    width: 24,
+    height: 36,
+  },
+}
 
 export default VariantList;
 
-let i = 0;
-function renderList(type, list, props, methods) {
-  switch(type) {
-    case "variant" : {
-      return renderVariantList(list, props, methods);
-    }
-    case WIDTH_HEIGHT_VARIANT_TYPE : {
-      return renderWidthHeightList(list, props, methods);
-    }
+
+// let i = 0;
+let selectedValues = {
+  width: '',
+  height: '',
+};
+function renderList(type, list, props, methods, selectedValues) {
+  console.log(ReactionProduct, props);
+  debugger;
+  const variant = ReactionProduct.selectedVariant();
+  if(variant.isHeightWidth === true) {
+    return renderWidthHeightList(list, props, methods, selectedValues);
+  } else if (type === "variant") {
+    return renderVariantList(list, props, methods);
   }
 }
 
