@@ -7,8 +7,7 @@ import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
 
-import renderWidthHeightList, {
-  WidthHeightOptionDescription,
+import RenderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
   width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
@@ -132,50 +131,29 @@ class VariantList extends Component {
   }
 
   renderChildVariants() {
-    if (!this.props.childVariants) {
-      return null;
+    /**
+     * This `if` is to handle error:
+     *  Exception from Tracker recompute function
+     *  Which happens on one of Meteor's cycles
+     *  see: http://stackoverflow.com/a/42896843/1762493
+     */
+    if (ReactionProduct.selectedVariant() === null) {
+      return; // or return null;
     }
-    let childVariantType = '';
-    const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
-      const type = childVariant.variantType || "variant";
-      childVariant = type;
-      if(!(type in variants)) {
-        variants[type] = [];
-      }
-      variants[type].push(childVariant);
+    const currentVariant = ReactionProduct.selectedVariant();
 
-      return variants;
-    }, {});
+    const type = currentVariant.variantType || "variant";
     const methods = this;
     const props = this.props;
 
-    let optionDescription = null;
-    if (childVariantType === WIDTH_HEIGHT_VARIANT_TYPE || isBlind()) {
-      optionDescription = <WidthHeightOptionDescription/>
-    }
-
     return (
-      <span>
-      <Divider
-          key="availableOptionsDivider"
-          i18nKeyLabel="productDetail.availableOptions"
-          label="Available Options"
+      <RenderList
+        renderType={type}
+        renderList={props.childVariants}
+        parentProps={props}
+        parentMethods={methods}
       />
-      {optionDescription}
-      <div className="row variant-product-options" key="childVariantList">{
-        Object.keys(lists).map(function(type){
-          const list = lists[type];
-          return (<div key={"".concat("rendered-list", "-", type)}>
-            {renderList(type, list, props, methods, props.widthHeightValues)}
-          </div>)
-        })
-      }</div>
-      </span>
     );
-    // let list = this.props.childVariants.filter(function(variant) {
-    //   return !!variant.width && !!variant.height;
-    // })
-    // return renderWidthHeightList(list, this.props, this.methods);
   } // end renderChildVariants()
 
   render() {
@@ -201,15 +179,7 @@ VariantList.propTypes = {
   onVariantVisibiltyToggle: PropTypes.func,
   variantIsSelected: PropTypes.func,
   variants: PropTypes.arrayOf(PropTypes.object),
-  widthHeightValues: PropTypes.objectOf(PropTypes.number),
 };
-
-VariantList.defaultProps = {
-  widthHeightValues: {
-    width: 24,
-    height: 36,
-  },
-}
 
 export default VariantList;
 
@@ -231,52 +201,78 @@ function isBlind() {
   return false;
 }
 
-let selectedValues = {
-  width: '',
-  height: '',
-};
-function renderList(type, list, props, methods, selectedValues) {
-    switch(type) {
+function RenderList(props) {
+  const {
+    renderType,
+    renderList,
+    parentProps,
+    parentMethods,
+  } = props;
+
+  switch(renderType) {
     case "variant" : {
-      return renderVariantList(list, props, methods);
+      return ( <RenderVariantList
+        renderList={renderList}
+        parentProps={parentProps}
+        methods={parentMethods}
+      />
+      );
     }
     case WIDTH_HEIGHT_VARIANT_TYPE : {
-      return renderWidthHeightList(list, props, methods, selectedValues);
+      return (<RenderWidthHeightList
+        renderList={renderList}
+        methods={parentMethods}
+      />)
     }
   }
 }
 
-function renderVariantList(list, props, methods) {
-  return list.map((childVariant, index) => {
-    const media = props.childVariantMedia.filter((mediaItem) => {
-      if (mediaItem.metadata.variantId === childVariant._id) {
-        return true;
-      }
-      return false;
-    });
+function RenderVariantList({ renderList, parentProps, methods }) {
+    if (!renderList) {
+    return null;
+  }
 
+  return (
+    <span>
+      <Divider
+          key="availableOptionsDivider"
+          i18nKeyLabel="productDetail.availableOptions"
+          label="Available Options"
+      />
+      <div className="row variant-product-options" key="childVariantList">
+        <div>{
+          renderList.map((childVariant, index) => {
+            const media = parentProps.childVariantMedia.filter((mediaItem) => {
+              if (mediaItem.metadata.variantId === childVariant._id) {
+                return true;
+              }
+              return false;
+            });
 
-    return (
-      <EditContainer
-        data={childVariant}
-        disabled={props.editable === false}
-        editView="variantForm"
-        i18nKeyLabel="productDetailEdit.editVariant"
-        key={index}
-        label="Edit Variant"
-        onEditButtonClick={methods.handleChildVariantEditClick}
-        onVisibilityButtonClick={methods.handleVariantVisibilityClick}
-        permissions={["createProduct"]}
-        showsVisibilityButton={true}
-      >
-        <ChildVariant
-          isSelected={props.variantIsSelected(childVariant._id)}
-          media={media}
-          onClick={methods.handleChildleVariantClick}
-          variant={childVariant}
-        />
-      </EditContainer>
-    );
-  });
+            return (
+              <EditContainer
+                data={childVariant}
+                disabled={parentProps.editable === false}
+                editView="variantForm"
+                i18nKeyLabel="productDetailEdit.editVariant"
+                key={index}
+                label="Edit Variant"
+                onEditButtonClick={methods.handleChildVariantEditClick}
+                onVisibilityButtonClick={methods.handleVariantVisibilityClick}
+                permissions={["createProduct"]}
+                showsVisibilityButton={true}
+              >
+                <ChildVariant
+                  isSelected={parentProps.variantIsSelected(childVariant._id)}
+                  media={media}
+                  onClick={methods.handleChildleVariantClick}
+                  variant={childVariant}
+                />
+              </EditContainer>
+            );
+          })
+        }</div>
+      </div>
+    </span>);
 }
 

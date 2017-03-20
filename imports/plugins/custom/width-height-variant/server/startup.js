@@ -6,8 +6,6 @@ import { Packages, Shops } from "/lib/collections";
 import { Template } from "meteor/templating";
 
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
-
-
 import products from "../data/product-seed";
 
 function convertStringToProducts(text){
@@ -27,7 +25,6 @@ function emptyOldVariants(productId) {
   };
   var oldProducts = Products.find(query).fetch();
   console.log("old products:", oldProducts.length)
-  Products.remove(query);
   Products.remove(query);
   var eh = Products.find(query).fetch();
   console.log("new length:", eh.length);
@@ -55,7 +52,7 @@ function formatElement(element) {
   };
 }
 
-function addNewVariantIfNotExist(productId, varientConfig) {
+function addNewVariantsIfNotExist(productId, varientConfig) {
   try {
     // First, create the parent/top-level-variant with the second arg in `let nextParentID`
     // Then, in `nextParentID`s callback, create the child variant(s)
@@ -81,19 +78,59 @@ function addNewVariants(productId, varientConfig) {
   });
 }
 
+/* PSUEDO CODE - User has variant? Don't delete it.
+
+  on("removeFromCart", function(variant, userID) {
+    if(variant.type !== OUR_DESIRED_VARIANT_TYPE) {
+      return;
+    }
+    findVariantWhere({
+        parent: selectedParent,
+        dependentUsers: {
+          $has: {
+            user: userID,
+            context: "in-cart", // context will be "temporary" | "in cart"
+          }
+        }
+      });
+      var toDelet = [];
+      var toUpdate = [];
+      temps.forEach(function(variant) {
+        if(variant.dependentUsers.length === 1 ){
+          toDelet.push(variant);
+        } else {
+          variant.dependentUsers.splice(variant.indexOf(userID), 1);
+          toUpdate.push(variant);
+        }
+      });
+      deleteVariants(toDele);
+      updateVariants(toUpdate);
+
+    })
+
+*/
+
 Meteor.startup(function () {
 
-  // Meteor.methods({
-  //   'width-height-variant.set-variants'({ productId, variantConfigFile }) {
-  //     console.log("set variant");
-  //     let variantConfigs = JSON.parse(variantConfigFile);
-  //     emptyOldVariants(productId);
-  //     addNewVariants(productId, varientConfig);
-  //   },
-  //   "width-height-variant.is-valid-variant"({ productId, variantConfig}) {
+  Meteor.methods({
+    'clearBlinds'({ selectedParent, selectedVariantConfig,  userID }) {
 
-  //   }
-  // });
+      removeOldTemporaryVarient(userID, "temporary", selectedParent);
+      var tempVariant = findOrCreateTemporaryVariant(
+        selectedParent, selectedVariantConfig
+      );
+      setVariantToUsersTemporaryVariant(userID, tempVariant);
+    },
+    'width-height-variant.set-variants'({ productId, variantConfigFile }) {
+      console.log("set variant");
+      let variantConfigs = JSON.parse(variantConfigFile);
+      emptyOldVariants(productId);
+      addNewVariants(productId, varientConfig);
+    },
+    "width-height-variant.is-valid-variant"({ productId, variantConfig}) {
+
+    }
+  });
 
     /**
      * heightWidth onRendered
@@ -113,9 +150,66 @@ Meteor.startup(function () {
   /*
     db.Products.remove({ ancestors: { $in: ["BCTMZ6HTxFSppJESk"] }, type: "variant", $or :[ {variantType: "Height & Width"}, { width: { "$exists": true }, height: { "$exists": true }, } ]})
   */
-  // addNewVariantIfNotExist(hackyProductId, hackyPrices);
+  // addNewVariantsIfNotExist(hackyProductId, hackyPrices);
 
 });
+
+function formatElement(element) {
+  const width = element.width;
+  const height = element.height;
+  const widthEighth = element.widthEighth + "8th";
+  const heightEighth = element.heightEighth + '8th';
+  const unique_key = width + "-" + widthEighth + "x" + height + "-" + heightEighth;
+  return {
+    _id: "Softwood" + unique_key + "Price" + element.price,
+    variantType: WIDTH_HEIGHT_VARIANT_TYPE,
+    title: "Softwood " + unique_key,
+    optionTitle: "Softwood " + unique_key,
+    price: element.price,
+    height: height,
+    width: width,
+    widthEighth: element.widthEighth,
+    heightEighth: element.heightEighth,
+    weight: 0,
+    inventoryQuantity: 9,
+    inventoryPolicy: false,
+    title: "Softwood " + unique_key,
+  };
+}
+
+
+function removeVarient(userID, context, selectedParent) {
+  var temps = findVariantWhere({
+    parent: selectedParent,
+    dependentUsers: {
+      $has: {
+        user: userID,
+        context: context, // context will be "temporary" | "in cart"
+      }
+    }
+  });
+  var toDelete = [];
+  var toUpdate = [];
+  temps.forEach(function(variant) {
+    if(variant.dependentUsers.length === 1 ){
+      return toDelete.push(variant);
+    }
+    for(var i = 0; i < variant.dependentUsers.length; i++){
+      if(variant.dependentUsers[i].context !== context){
+        continue;
+      }
+      if(variant.dependentUsers[i].user !== userID){
+        continue;
+      }
+      variant.dependentUsers.splice(i, 1);
+      return toUpdate.push(variant);
+    }
+    console.error("missing user");
+  });
+  deleteVariants(toDelete);
+  updateVariants(toUpdate);
+}
+
 
 function flushQuantity(id) {
   const variant = Products.findOne(id);
@@ -203,63 +297,63 @@ function addNewVariant(parentId, newVariant, cb){
 //   }).map(getPublishedOrRevision);
 // }
 
-// function deleteVariants(id, type) {
-//   var query = {
-//     ancestors: { $in: [id] },
-//     type: "variant",
-//     variantType: type,
-//   };
-//   var ret = Products.find(query).map(getPublishedOrRevision);
-//   console.log("new delete length: ", ret.length);
-//   if(ret.length === 0) return [];
-//   console.log(query);
-//   console.log(Products.remove(query, function(err){
-//     console.log("delete error: ", err);
-//   }));
-//   return ret;
-// }
-// function oldDeleteVariants(id) {
-//   var query = {
-//     ancestors: { $in: [id] },
-//     type: "variant",
-//     width: { $exists: true },
-//     height: { $exists: true },
-//   };
+function deleteVariants(id, type) {
+  var query = {
+    ancestors: { $in: [id] },
+    type: "variant",
+    variantType: type,
+  };
+  var ret = Products.find(query).map(getPublishedOrRevision);
+  console.log("new delete length: ", ret.length);
+  if(ret.length === 0) return [];
+  console.log(query);
+  console.log(Products.remove(query, function(err){
+    console.log("delete error: ", err);
+  }));
+  return ret;
+}
+function oldDeleteVariants(id) {
+  var query = {
+    ancestors: { $in: [id] },
+    type: "variant",
+    width: { $exists: true },
+    height: { $exists: true },
+  };
 
-//   var ret = Products.find(query).map(getPublishedOrRevision);
-//   console.log("old delete length: ", ret.length);
-//   if(ret.length === 0) return [];
-//   console.log(query);
-//   console.log(Products.remove(query, function(err){
-//     console.log("old delete error: ", err);
-//   }));
-//   return ret;
-// }
+  var ret = Products.find(query).map(getPublishedOrRevision);
+  console.log("old delete length: ", ret.length);
+  if(ret.length === 0) return [];
+  console.log(query);
+  console.log(Products.remove(query, function(err){
+    console.log("old delete error: ", err);
+  }));
+  return ret;
+}
 
 
-// function deleteVariant(variantId){
-//     const selector = {
-//       $or: [{
-//         _id: variantId,
-//       }, {
-//         ancestors: {
-//           $in: [variantId],
-//         }
-//       }]
-//     };
-//     const toDelete = Products.find(selector).fetch();
-//     // out if nothing to delete
-//     if (!Array.isArray(toDelete) || toDelete.length === 0) return false;
+function deleteVariant(variantId){
+    const selector = {
+      $or: [{
+        _id: variantId,
+      }, {
+        ancestors: {
+          $in: [variantId],
+        }
+      }]
+    };
+    const toDelete = Products.find(selector).fetch();
+    // out if nothing to delete
+    if (!Array.isArray(toDelete) || toDelete.length === 0) return false;
 
-//     const deleted = Products.remove(selector);
+    const deleted = Products.remove(selector);
 
-//     // after variant were removed from product, we need to recalculate all
-//     // denormalized fields
-//     const productId = toDelete[0].ancestors[0];
-//     toDenormalize.forEach(field => denormalize(productId, field));
+    // after variant were removed from product, we need to recalculate all
+    // denormalized fields
+    const productId = toDelete[0].ancestors[0];
+    toDenormalize.forEach(field => denormalize(productId, field));
 
-//     return typeof deleted === "number" && deleted > 0;
-// }
+    return typeof deleted === "number" && deleted > 0;
+}
 
 // createVariant(product_Id);
 // var heightWidthParnetId = get(ID) // from returned variant ID: https://github.com/reactioncommerce/reaction/blob/90ce4bf67f084e0ec39bf7eaf2c80b5bc0ed902f/server/methods/catalog.js#L444
@@ -320,3 +414,5 @@ function addNewVariant(parentId, newVariant, cb){
 //   }
 //   return product;
 // }
+
+export { emptyOldVariants };

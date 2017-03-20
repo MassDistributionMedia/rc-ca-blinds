@@ -28,23 +28,23 @@
 //   // if(ReactionProduct.get("productId"))
 //     // debugger;
 
-//   function heightWidthOptions(){
-//     var oldVariants = ReactionProduct.getTopVariants();
-//     var toRemove = oldVariants.filter(function(variant) {
-//       return variant.variantType === "Height & Width"
-//     });
-//     // var clearVariants = ReactionProduct.getVariants(hwId);
-//     toRemove.forEach(function(item){
-//       Meteor.call("products/deleteVariant", item._id);
-//     });
-//     ProdPrices.forEach((element, index) => {
-//       Meteor.call("products/createVariant", ReactionProduct.selectedVariantId(), prodProps(index));
-//     });
-//     // clearVariants.forEach(e => {
-//     // });
+  // function heightWidthOptions(){
+  //   var oldVariants = ReactionProduct.getTopVariants();
+  //   var toRemove = oldVariants.filter(function(variant) {
+  //     return variant.variantType === "Height & Width"
+  //   });
+  //   // var clearVariants = ReactionProduct.getVariants(hwId);
+  //   toRemove.forEach(function(item){
+  //     Meteor.call("products/deleteVariant", item._id);
+  //   });
+  //   ProdPrices.forEach((element, index) => {
+  //     Meteor.call("products/createVariant", ReactionProduct.selectedVariantId(), prodProps(index));
+  //   });
+  //   // clearVariants.forEach(e => {
+  //   // });
 
-//     hwRan = true;
-//   }
+  //   hwRan = true;
+  // }
 
 //   return this.autorun(() => {
 //     // if(_.find(ReactionProduct.getTopVariants(), o => o.variantType === "Height & Width") && hwRan === false) {

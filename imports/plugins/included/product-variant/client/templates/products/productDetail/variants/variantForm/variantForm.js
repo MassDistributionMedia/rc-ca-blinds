@@ -150,6 +150,7 @@ Template.variantForm.events({
 
     if (selectedType === "Height & Width") {
       addNewVariantIfNotExist(variant._id, seedProduct);
+      Meteor.call("products/updateProductField", variant._id, "variantType", "Height & Width");
       Meteor.call("revisions/publish", product._id);
     }
 

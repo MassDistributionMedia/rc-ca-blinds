@@ -518,9 +518,9 @@ Meteor.methods({
   "products/deleteVariant": function (variantId) {
     check(variantId, String);
     // must have createProduct permissions
-    if (!Reaction.hasPermission("createProduct")) {
-      throw new Meteor.Error(403, "Access Denied");
-    }
+    // if (!Reaction.hasPermission("createProduct")) {
+    //   throw new Meteor.Error(403, "Access Denied");
+    // }
 
     const selector = {
       // Don't "archive" variants that are already marked deleted.

@@ -1,63 +1,104 @@
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
+import softwoodProducts from "../data/product-prices";
 
 import React, { Component, PropTypes} from "react";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
-import softwoodProducts from "../data/product-prices";
+import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 
-export default function renderWidthHeightList(list, props, methods, selectedValues) {
-  if (!list.length) {
-    return null;
+// import { emptyOldVariants } from "/imports/plugins/custom/width-height-variant/server/startup";
+
+const WIDTH_HEIGHT_OPTIONS = selectOptions();
+function selectOptions() {
+  let diameterOptions = [];
+  for(let i=9;i<97;i++){
+    diameterOptions.push(i);
   }
+  return diameterOptions;
+};
 
-  if (!selectedValues.width) {
-    selectedValues.width = 24;
-  }
-  if (!selectedValues.height) {
-    selectedValues.height = 30;
-  }
+const EIGHTHS = [
+  0, 1, 2, 3, 4, 5, 6, 7,
+].map(function(i) { return i + "/8"; });
 
-  let indexedVariants = list.reduce(function(indexes, variant, index){
-    let height = variant.height, width = variant.width;
-    if (props.variantIsSelected(variant._id)) {
-      selectedValues.width = width;
-      selectedValues.height = height;
-    }
-  });
 
-  return [
-    dimensionSelect("width", selectedValues.width, widthHeightOptions, EIGHTHS, function(event) {
-    const productData = {
-      width: parseInt(event.target.value),
-      height: parseInt($(".height-select")[0].value),
-      widthEighth: parseInt($(".width-select-8th")[0].value),
-      heightEighth: parseInt($(".height-select-8th")[0].value),
+export default class RenderWidthHeightList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      widthHeightValues: {
+        width: 24,
+        widthEighth: "0/8",
+        height: 36,
+        heightEighth: "0/8",
+      },
     };
-    productData.price = softwoodProducts.find(findPrice, productData).price;
+  }
+  update(productData, widthEighth, heightEighth) {
+    this.commit(productData);
+    return this.setState({
+      widthHeightValues: {
+        width: productData.width,
+        widthEighth: widthEighth,
+        height: productData.height,
+        heightEighth: heightEighth,
+      }
+    });
+  }
+
+  commit(productData) {
     const variantId = ReactionProduct.selectedVariant()._id;
-    const newVariantId = Products.findOne(addNewVariantIfNotExist(variantId, productData));
-    methods.handleChildleVariantClick(null, newVariantId);
+    const newVariant = Products.findOne(addNewVariantIfNotExist(variantId, productData));
+    this.props.methods.handleChildleVariantClick(null, newVariant);
+  }
 
-    return props.widthHeightValues.width = productData.width;
-  }),
-    dimensionSelect("height", selectedValues.height, widthHeightOptions, EIGHTHS, function(event) {
-      const productData = {
-        width: parseInt($(".width-select")[0].value),
-        height: parseInt(event.target.value),
-        widthEighth: parseInt($(".width-select-8th")[0].value),
-        heightEighth: parseInt($(".height-select-8th")[0].value),
-      };
-      productData.price = softwoodProducts.find(findPrice, productData).price;
-      const variantId = ReactionProduct.selectedVariant()._id;
-      const newVariantId = Products.findOne(addNewVariantIfNotExist(variantId, productData));
-      methods.handleChildleVariantClick(null, newVariantId);
+  render() {
+    /* */
+    const { widthHeightValues } = this.state;
 
-      return props.widthHeightValues.height = productData.height;
-    }),
-  ];
-} // end renderWidthHeightList()
+    return (<span>
+      <Divider
+          key="availableOptionsDivider"
+          i18nKeyLabel="productDetail.availableOptions"
+          label="Available Options"
+      />
+      <WidthHeightOptionDescription/>
+      <div className="row variant-product-options" key="childVariantList">
+        <div> {[
+        dimensionSelect("width", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (event) => {
+          const widthEighth = $(".width-select-8th")[0].value;
+          const heightEighth = $(".height-select-8th")[0].value;
+
+          const productData = {
+            width: parseInt($(".width-select")[0].value),
+            widthEighth: parseInt(widthEighth),
+            height: parseInt($(".height-select")[0].value),
+            heightEighth: parseInt(heightEighth),
+          };
+          productData.price = softwoodProducts.find(findPrice, productData).price;
+          this.update(productData, widthEighth, heightEighth);
+        }),
+        dimensionSelect("height", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (event) => {
+          const widthEighth = $(".width-select-8th")[0].value;
+          const heightEighth = $(".height-select-8th")[0].value;
+
+          const productData = {
+            width: parseInt($(".width-select")[0].value),
+            widthEighth: parseInt(widthEighth),
+            height: parseInt($(".height-select")[0].value),
+            heightEighth: parseInt(heightEighth),
+          };
+          productData.price = softwoodProducts.find(findPrice, productData).price;
+          this.update(productData, widthEighth, heightEighth);
+        }),
+      ]}</div>
+      </div>
+    </span>);
+  }
+
+}
 
 /**
  * priceSlotCheck()
@@ -97,19 +138,6 @@ function findPrice(element) {
     return element;
 }
 
-const widthHeightOptions = selectOptions();
-function selectOptions() {
-  let diameterOptions = [];
-  for(let i=9;i<97;i++){
-    diameterOptions.push(i);
-  }
-  return diameterOptions;
-};
-
-const EIGHTHS = [
-  0, 1, 2, 3, 4, 5, 6, 7,
-].map(function(i) { return i + "/8"; });
-
 export function WidthHeightOptionDescription() {
   const hrStyle = {
     width: '100%',
@@ -129,22 +157,6 @@ export function WidthHeightOptionDescription() {
   );
 }
 
-// function updateVariant(width, height, indexes, methods) {
-//   let key = createKey(width, height);
-//   let variantIndex = indexes.variantIndex;
-//   if(!(key in variantIndex)){
-//     console.log(variantIndex, key);
-//     debugger;
-//     throw new Error("invalid key combination");
-//   }
-//   let variant = variantIndex[key];
-//   methods.handleChildleVariantClick(null, variant)
-// }
-
-// function createKey(width, height) {
-//   return width + "x" + height;
-// }
-
 function WidthTitle() {
   return (
     <h3>Width <span>&harr;</span></h3>
@@ -156,19 +168,20 @@ function HeightTitle() {
   );
 }
 
-function dimensionSelect(key, value, list, ethList, onChange){
+function dimensionSelect(key, values, list, ethList, onChange) {
   let optionTitle = null;
   if ( key === "width" ) {
     optionTitle = <WidthTitle/>
   } else {
     optionTitle = <HeightTitle/>
   }
+
   return (
     <span className={key+"-selects"} key={key+"select-span"}>
       {optionTitle}
       <select className={"form-control " + key + "-select"}
               key={key + "-select"}
-              value={value}
+              value={values[key]}
               onChange={onChange}>
       { // loop to creation select options:
         list.map((opVal, index) => {
@@ -178,12 +191,13 @@ function dimensionSelect(key, value, list, ethList, onChange){
               key={"".concat(key, index.toString(), opVal.toString())}
               value={opVal}
             >{opVal}</option>
-            )
+            );
         })
       }
       </select>
       <select className={"form-control " + key + "-select-8th"}
               key={key + "-select-8th"}
+              value={values[key+"Eighth"]}
               onChange={onChange}>
         { // loop to create 8ths options:
           ethList.map((opVal, index) => {
@@ -193,21 +207,12 @@ function dimensionSelect(key, value, list, ethList, onChange){
               key={"".concat(key, index.toString(), opVal.toString())}
               value={opVal}
               >{opVal}</option>
-              )
+              );
           })
         }
       </select>
     </span>
   );
-}
-
-
-function addNewVariantIfNotExist(variantId, varientConfig) {
-  try {
-    return addNewVariant(variantId, formatElement(varientConfig));
-  } catch(e) {
-    console.log("Variant already exists: ", e);
-  }
 }
 
 function formatElement(element) {
@@ -226,6 +231,7 @@ function formatElement(element) {
     width: width,
     widthEighth: element.widthEighth,
     heightEighth: element.heightEighth,
+    isHeightWidth: true,
     weight: 0,
     inventoryQuantity: 9,
     inventoryPolicy: false,
@@ -233,16 +239,81 @@ function formatElement(element) {
   };
 }
 
+function addNewVariantIfNotExist(variantId, varientConfig) {
+  try {
+    return addNewVariant(variantId, formatElement(varientConfig));
+  } catch(e) {
+    console.log("Variant already exists: ", e);
+  }
+}
+
+// function emptyOldVariants(productId) {
+//   const query = {
+//     ancestors: { $in: [productId] },
+//     type: "variant",
+//     variantType: WIDTH_HEIGHT_VARIANT_TYPE,
+//   };
+//   const oldProducts = Products.find(query).fetch();
+//   console.log("old products:", oldProducts.length)
+//   Products.remove(query);
+//   const eh = Products.find(query).fetch();
+//   console.log("new length:", eh.length);
+
+//   // oldProducts.forEach(function(p){
+//   //   Products.insert(p);
+//   // })
+
+//   // oldDeleteVariants(productId);
+//   // var deleted = deleteVariants(productId, WIDTH_HEIGHT_VARIANT_TYPE);
+// }
+
+// TODO
+// After cleanBlinds(), variants arestill in the DB
+// Maybe we need to use Products.remove()
+function cleanBlinds(variantId) {
+  const product = ReactionProduct.selectedProduct();
+  const oldVariants = ReactionProduct.getVariants();
+
+  const clearVariants = oldVariants.filter(function(variant) {
+    if (variant.ancestors.length > 1 &&
+        variant.variantType === "Height & Width" &&
+        variant._id !== variantId) {
+      return variant;
+    }
+  });
+
+  clearVariants.forEach(function(item) {
+    Meteor.call("products/deleteVariant", item._id);
+  });
+
+  Meteor.call("revisions/publish", product._id);
+}
 
 function addNewVariant(parentId, newVariant) {
 
-  const newVariantId = newVariant._id || Random.id();
+  if (Products.findOne(newVariant._id)) {
+    console.log("Variant already exists: ", newVariant._id);
+    return newVariant._id;
+  }
+
+  const newVariantId = newVariant._id;
   // get parent ancestors to build new ancestors array
-  const { ancestors } = Products.findOne(parentId);
+  const product = Products.findOne(parentId);
+  const { ancestors } = product;
+
+  /**
+   * Verify that the parent variant and any ancestors are not deleted.
+   * Child variants cannot be added if a parent product or product revision
+   * is marked as `{ isDeleted: true }`
+   *
+   */
+  // if (ReactionProduct.isAncestorDeleted(product, true)) {
+  //   throw new Meteor.Error(403, "Unable to create product variant");
+  // }
 
   Array.isArray(ancestors) && ancestors.push(parentId);
   console.log(
-    `addNewVariant(${parentId}, newVariant) \n`,
+    `addNewVariant(${parentId}, ${newVariant._id}) \n`,
     `From: /imports/plugins/custom/width-height-variant/client/render-list.js`
   );
   const assembledVariant = Object.assign(newVariant || {}, {
@@ -259,17 +330,17 @@ function addNewVariant(parentId, newVariant) {
     });
   }
 
-  /** if we are inserting child variant to top-level variant, we need to remove
+  /**
+    * If we are inserting child variant to top-level variant, we need to remove
     * all top-level's variant inventory records and flush it's quantity,
     * because it will be hold sum of all it descendants quantities.
     */
-  if (ancestors.length === 2) {
-    flushQuantity(parentId);
-  }
+  // if (ancestors.length === 2) {
+  //   flushQuantity(parentId);
+  // }
 
   Products.insert(assembledVariant,
     (error, result) => {
-      // if(cb) cb(error, result);
       if (result) {
         console.log(
           `products/createVariant: created variant: ${
@@ -279,28 +350,32 @@ function addNewVariant(parentId, newVariant) {
     }
   );
 
+  // cleanBlinds(newVariantId); // Remove existing blind child variants from the DB so that new variants don't get junked up
+
   return newVariantId;
 }
 
-function flushQuantity(id) {
-  const variant = Products.findOne(id);
-  // if variant already have descendants, quantity should be 0, and we don't
-  // need to do all next actions
-  if (variant.inventoryQuantity === 0) {
-    return 1; // let them think that we have one successful operation here
-  }
+// function flushQuantity(id) {
+//   const variant = Products.findOne(id);
+//   /**
+//   * if variant already have descendants, quantity should be 0,
+//   * and we don't need to do all next actions
+//   */
+//   if (variant.inventoryQuantity === 0) {
+//     return 1; // let them think that we have one successful operation here
+//   }
 
-  return Products.update({
-    _id: id,
-  }, {
-    $set: {
-      inventoryQuantity: 1,
-    }
-  }, {
-    selector: {
-      type: "variant",
-    }
-  });
-}
+//   return Products.update({
+//     _id: id,
+//   }, {
+//     $set: {
+//       inventoryQuantity: 0,
+//     }
+//   }, {
+//     selector: {
+//       type: "variant",
+//     }
+//   });
+// }
 
 export { addNewVariantIfNotExist };
