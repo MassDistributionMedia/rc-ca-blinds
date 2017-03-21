@@ -183,24 +183,6 @@ VariantList.propTypes = {
 
 export default VariantList;
 
-/**
- * isBlind()
- *
- * Checking the product and variant if they
- *  have `isHeightWidth` to decide to
- *  render `<WidthHeightOptionDescription/>`
- */
-function isBlind() {
-  const variant = ReactionProduct.selectedVariant();
-  const product = ReactionProduct.selectedProduct();
-  if (variant && variant.isHeightWidth && variant.isHeightWidth === true) {
-    return true;
-  } else if (product && product.isHeightWidth && product.isHeightWidth === true) {
-    return true;
-  }
-  return false;
-}
-
 function RenderList(props) {
   const {
     renderType,
@@ -274,5 +256,5 @@ function RenderVariantList({ renderList, parentProps, methods }) {
         }</div>
       </div>
     </span>);
-}
+}  // end RenderVariantList()
 

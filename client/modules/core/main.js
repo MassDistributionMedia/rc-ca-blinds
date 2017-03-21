@@ -220,6 +220,14 @@ export default {
     return false;
   },
 
+  updateUserPreferences(packageName, preference, values) {
+    const currentPreference = this.getUserPreferences(packageName, preference, {});
+    return this.setUserPreferences(packageName, preference, {
+      ...currentPreference,
+      ...values
+    });
+  },
+
   getShopId() {
     return this.shopId;
   },
@@ -238,6 +246,14 @@ export default {
       shopId: this.shopId
     }) || {};
     return settings.settings || {};
+  },
+
+  getShopCurrency() {
+    const shop = Shops.findOne({
+      _id: this.shopId
+    });
+
+    return shop && shop.currency || "USD";
   },
 
   isPreview() {
