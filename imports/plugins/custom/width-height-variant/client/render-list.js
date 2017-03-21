@@ -96,9 +96,8 @@ export default class RenderWidthHeightList extends Component {
       ]}</div>
       </div>
     </span>);
-  }
-
-}
+  } // end RenderWidthHeightList.render()
+}  // end RenderWidthHeightList()
 
 /**
  * priceSlotCheck()
@@ -270,24 +269,24 @@ function addNewVariantIfNotExist(variantId, varientConfig) {
 // TODO
 // After cleanBlinds(), variants arestill in the DB
 // Maybe we need to use Products.remove()
-function cleanBlinds(variantId) {
-  const product = ReactionProduct.selectedProduct();
-  const oldVariants = ReactionProduct.getVariants();
+// function cleanBlinds(variantId) {
+//   const product = ReactionProduct.selectedProduct();
+//   const oldVariants = ReactionProduct.getVariants();
 
-  const clearVariants = oldVariants.filter(function(variant) {
-    if (variant.ancestors.length > 1 &&
-        variant.variantType === "Height & Width" &&
-        variant._id !== variantId) {
-      return variant;
-    }
-  });
+//   const clearVariants = oldVariants.filter(function(variant) {
+//     if (variant.ancestors.length > 1 &&
+//         variant.variantType === "Height & Width" &&
+//         variant._id !== variantId) {
+//       return variant;
+//     }
+//   });
 
-  clearVariants.forEach(function(item) {
-    Meteor.call("products/deleteVariant", item._id);
-  });
+//   clearVariants.forEach(function(item) {
+//     Meteor.call("products/deleteVariant", item._id);
+//   });
 
-  Meteor.call("revisions/publish", product._id);
-}
+//   Meteor.call("revisions/publish", product._id);
+// }
 
 function addNewVariant(parentId, newVariant) {
 

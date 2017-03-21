@@ -3,6 +3,8 @@ import { Cart } from "/lib/collections";
 import { Meteor } from "meteor/meteor";
 import { Template } from "meteor/templating";
 import "./checkout.html";
+import { Session } from "meteor/session";
+import Swiper from "swiper";
 
 //
 // cartCheckout is a wrapper template
@@ -63,3 +65,31 @@ Template.checkoutStepBadge.helpers({
     return "";
   }
 });
+
+Template.checkoutCartDrawer.helpers({
+  cartItems: function () {
+    return Cart.findOne().items;
+  }
+});
+
+/**
+ * openCartDrawer events
+ *
+ */
+Template.checkoutCartDrawer.events({
+  "click #btn-checkout": function () {
+    $("#cart-drawer-container").fadeOut();
+    Session.set("displayCart", false);
+    return Reaction.Router.go("cart/checkout");
+  },
+  "click .remove-cart-item": function (event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const currentCartItemId = this._id;
+
+    return Template.instance().$(event.currentTarget).fadeOut(300, function () {
+      return Meteor.call("cart/removeFromCart", currentCartItemId);
+    });
+  }
+});
+

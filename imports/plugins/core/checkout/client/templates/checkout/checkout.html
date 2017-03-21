@@ -7,6 +7,12 @@
       </div>
     </div>
 
+    <div class="checkout-cart">
+      <div class="container">
+        {{>checkoutCartDrawer}}
+      </div>
+    </div>
+
     <div class="checkout">
       <div class="container container-lg">
         <div class="checkout-steps">
@@ -29,6 +35,24 @@
   {{/if}}
 </template>
 
+
+<template name="checkoutCartDrawer">
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cart-drawer-swiper-container">
+    <div class="cart-drawer-swiper-wrapper">
+      <div class="cart-drawer-swiper-slide">
+        {{>cartSubTotals}}
+      </div>
+      {{#each cartItems}}
+      <div class="cart-drawer-swiper-slide">
+        {{>cartDrawerItems}}
+      </div>
+      {{/each}}
+    </div>
+  </div>
+  <div class="cart-drawer-pagination"></div>
+</div>
+</template>
 
 
 <template name="checkoutSteps">

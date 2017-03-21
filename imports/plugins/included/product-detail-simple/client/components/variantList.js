@@ -222,7 +222,7 @@ function RenderList(props) {
       return (<RenderWidthHeightList
         renderList={renderList}
         methods={parentMethods}
-      />)
+      />);
     }
   }
 }
