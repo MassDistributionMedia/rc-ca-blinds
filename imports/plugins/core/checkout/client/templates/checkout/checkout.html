@@ -35,17 +35,48 @@
   {{/if}}
 </template>
 
+<template name="checkoutCartDrawerItems">
+<div class="cart-items" id="{{productId}}{{variants._id}}">
+  <div class="cart-labels" style="margin:0px">
+    {{#if cart.showItemLowInventoryWarning variants}}
+    <div class="badge badge-low-inv-warning" title="{{variants.inventoryQuantity}}" data-i18n="cartDrawerItems.left">!</div>
+    {{/if}}
+    <span class="badge">{{quantity}}</span>
+    <span class="cart-item-title">
+        <a
+          href="{{pathFor 'product' handle=productId variantId=variants._id}}"
+          data-event-category="cart"
+          data-event-action="product-click"
+          data-event-label="Cart product click"
+          data-event-value="{{productId}}"
+        >{{title}} <small>{{variants.title}}</small></a>
+    </span>
+  </div>
+  {{#if variants.metafields}}
+  <div class="meta-data">
+    {{#each variants.metafields}}
+    <div className="meta-item">
+      <span className="meta-key">{{key}}</span>:
+      <span className="meta-value">{{value}}</span>
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+</div>
+</template>
+
+
 
 <template name="checkoutCartDrawer">
 <div class="cart-drawer" id="cart-drawer">
-  <div class="cart-drawer-swiper-container">
-    <div class="cart-drawer-swiper-wrapper">
-      <div class="cart-drawer-swiper-slide">
+  <div class="cart-drawer-swiper-container" style="height:auto;overflow:auto">
+    <div class="cart-drawer-swiper-wrapper" style="text-align:left">
+      <div class="cart-drawer-swiper-slide" style="float:none;display:inline-block;vertical-align:top">
         {{>cartSubTotals}}
       </div>
       {{#each cartItems}}
-      <div class="cart-drawer-swiper-slide">
-        {{>cartDrawerItems}}
+      <div class="cart-drawer-swiper-slide" style="height:auto;float:none;display:inline-block;vertical-align:top">
+        {{>checkoutCartDrawerItems}}
       </div>
       {{/each}}
     </div>

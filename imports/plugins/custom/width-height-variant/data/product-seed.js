@@ -4,7 +4,7 @@
 export default {
   "price": 147,
   "width": 24,
-  "widthEighth": 0,
+  "widthEighth": "0",
   "height": 30,
-  "heightEighth": 0,
+  "heightEighth": "0",
 };

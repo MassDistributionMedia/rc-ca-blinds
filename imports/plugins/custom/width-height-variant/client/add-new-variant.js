@@ -51,6 +51,63 @@ function addNewVariant(parentId, newVariant, cb){
     ancestors: ancestors,
     type: "variant",
     isVisible: true,
+    metafields: [
+      {
+        key: "Room",
+        value: "",
+        scope: "detail"
+      },
+      {
+        key: "Window Name",
+        value: "",
+        scope: "detail"
+      },
+      {
+        key: "Mount",
+        value: "",
+        scope: "detail"
+      },
+      {
+        key: "Height",
+        value: newVariant.height,
+        scope: "detail"
+      },
+      {
+        key: "Width",
+        value: newVariant.width,
+        scope: "detail"
+      },
+      {
+        key: "Color",
+        value: "",
+        scope: "detail"
+      },
+      {
+        key: "Slate Size",
+        value: "",
+        scope: "detail"
+      },
+      {
+        key: "Lift",
+        value: "",
+        scope: "detail"
+      },
+      {
+        key: "Lift Side",
+        value: "",
+        scope: "detail"
+      },
+      {
+        key: "Tilt",
+        value: "",
+        scope: "detail"
+      },
+      {
+        key: "Tilt Side",
+        value: "",
+        scope: "detail"
+      },
+    ]
   });
 
   if (!newVariant) {
@@ -59,6 +116,7 @@ function addNewVariant(parentId, newVariant, cb){
       price: 0.00,
     });
   }
+
 
   // if we are inserting child variant to top-level variant, we need to remove
   // all top-level's variant inventory records and flush it's quantity,

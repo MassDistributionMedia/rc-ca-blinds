@@ -17,7 +17,11 @@ class ProductDetailContainer extends Component {
     super(props);
 
     this.state = {
-      cartQuantity: 1
+      cartQuantity: 1,
+      variantPicks : {},
+      requiredVariants: ReactionProduct.getVariants().filter(function(variant){
+        return variant.variantType !== "make-shift";
+      })
     };
   }
 
@@ -30,110 +34,84 @@ class ProductDetailContainer extends Component {
   handleAddToCart = () => {
     let productId;
     let quantity;
-    const currentVariant = ReactionProduct.selectedVariant();
     const currentProduct = ReactionProduct.selectedProduct();
 
-    console.log(currentVariant);
-
-    if (currentVariant) {
-      if (currentVariant.ancestors.length === 1) {
-        const options = ReactionProduct.getVariants(currentVariant._id);
-
-        if (options.length > 0) {
-          Alerts.inline("Please choose options before adding to cart", "warning", {
-            placement: "productDetail",
-            i18nKey: "productDetail.chooseOptions",
-            autoHide: 10000
-          });
-          return [];
-        }
-      }
-
-      if (currentVariant.inventoryPolicy && currentVariant.inventoryQuantity < 1) {
-        Alerts.inline("Sorry, this item is out of stock!", "warning", {
-          placement: "productDetail",
-          i18nKey: "productDetail.outOfStock",
-          autoHide: 10000
-        });
-        return [];
-      }
-
-      quantity = parseInt(this.state.cartQuantity, 10);
-
-      if (quantity < 1) {
-        quantity = 1;
-      }
-
-      if (!currentProduct.isVisible) {
-        Alerts.inline("Publish product before adding to cart.", "error", {
-          placement: "productDetail",
-          i18nKey: "productDetail.publishFirst",
-          autoHide: 10000
-        });
-      } else {
-        productId = currentProduct._id;
-
-        if (productId) {
-          Meteor.call("cart/addToCart", productId, currentVariant._id, quantity, (error) => {
-            if (error) {
-              Logger.error("Failed to add to cart.", error);
-              return error;
-            }
-            // Reset cart quantity on success
-            this.handleCartQuantityChange(null, 1);
-
-            return true;
-          });
-        }
-
-        // template.$(".variant-select-option").removeClass("active");
-        ReactionProduct.setCurrentVariant(null);
-        // qtyField.val(1);
-        // scroll to top on cart add
-        $("html,body").animate({
-          scrollTop: 0
-        }, 0);
-        // slide out label
-        const addToCartText = i18next.t("productDetail.addedToCart");
-        const addToCartTitle = currentVariant.title || "";
-        $(".cart-alert-text").text(`${quantity} ${addToCartTitle} ${addToCartText}`);
-
-        // Grab and cache the width of the alert to be used in animation
-        const alertWidth = $(".cart-alert").width();
-        const direction = i18next.dir() === "rtl" ? "left" : "right";
-        const oppositeDirection = i18next.dir() === "rtl" ? "right" : "left";
-
-        // Animate
-        return $(".cart-alert")
-          .show()
-          .css({
-            [oppositeDirection]: "auto",
-            [direction]: -alertWidth
-          })
-          .animate({
-            [oppositeDirection]: "auto",
-            [direction]: 0
-          }, 600)
-          .delay(4000)
-          .animate({
-            [oppositeDirection]: "auto",
-            [direction]: -alertWidth
-          }, {
-            duration: 600,
-            complete() {
-              $(".cart-alert").hide();
-            }
-          });
-      }
-    } else {
+    if(this.state.requiredVariants.some((variant) =>{
+      return !(variant._id in this.state.variantPicks)
+    })){
       Alerts.inline("Select an option before adding to cart", "warning", {
         placement: "productDetail",
         i18nKey: "productDetail.selectOption",
         autoHide: 8000
       });
+      return [];
+    }
+    if (!currentProduct.isVisible) {
+      Alerts.inline("Publish product before adding to cart.", "error", {
+        placement: "productDetail",
+        i18nKey: "productDetail.publishFirst",
+        autoHide: 10000
+      });
+      return [];
+    }
+    quantity = parseInt(this.state.cartQuantity, 10);
+
+    if (quantity < 1) {
+      quantity = 1;
+    }
+    productId = currentProduct._id;
+
+    if (productId) {
+      Meteor.call("cart/addToCart", productId, currentVariant._id, quantity, (error) => {
+        if (error) {
+          Logger.error("Failed to add to cart.", error);
+          return error;
+        }
+        // Reset cart quantity on success
+        this.handleCartQuantityChange(null, 1);
+
+        return true;
+      });
     }
 
-    return null;
+    // template.$(".variant-select-option").removeClass("active");
+    ReactionProduct.setCurrentVariant(null);
+    // qtyField.val(1);
+    // scroll to top on cart add
+    $("html,body").animate({
+      scrollTop: 0
+    }, 0);
+    // slide out label
+    const addToCartText = i18next.t("productDetail.addedToCart");
+    const addToCartTitle = currentVariant.title || "";
+    $(".cart-alert-text").text(`${quantity} ${addToCartTitle} ${addToCartText}`);
+
+    // Grab and cache the width of the alert to be used in animation
+    const alertWidth = $(".cart-alert").width();
+    const direction = i18next.dir() === "rtl" ? "left" : "right";
+    const oppositeDirection = i18next.dir() === "rtl" ? "right" : "left";
+
+    // Animate
+    return $(".cart-alert")
+      .show()
+      .css({
+        [oppositeDirection]: "auto",
+        [direction]: -alertWidth
+      })
+      .animate({
+        [oppositeDirection]: "auto",
+        [direction]: 0
+      }, 600)
+      .delay(4000)
+      .animate({
+        [oppositeDirection]: "auto",
+        [direction]: -alertWidth
+      }, {
+        duration: 600,
+        complete() {
+          $(".cart-alert").hide();
+        }
+      });
   }
 
   handleProductFieldChange = (productId, fieldName, value) => {
@@ -153,6 +131,23 @@ class ProductDetailContainer extends Component {
     ReactionProduct.maybeDeleteProduct(this.props.product);
   }
 
+  handleVariantChoice = (variant) => {
+    this.state.requiredVariants.some((reqVariant) => {
+      if(reqVariant._id === variant._id){
+        return true;
+      }
+      if(variant.ancestors.indexOf(variant._id) === -1){
+        return false;
+      }
+      var oldVariantPicks = this.state.variantPicks;
+      oldVariantPicks[variant._id] = variant._id;
+      this.setState({
+        variantPicks : oldVariantPicks,
+      });
+      return true;
+    });
+  }
+
   render() {
     if (isEmpty(this.props.product)) {
       return (
@@ -165,13 +160,14 @@ class ProductDetailContainer extends Component {
           <StyleRoot>
             <ProductDetail
               cartQuantity={this.state.cartQuantity}
-              mediaGalleryComponent={<MediaGalleryContainer media={this.props.media} />}
+              ProductDetail={<MediaGalleryContainer media={this.props.media} />}
               onAddToCart={this.handleAddToCart}
               onCartQuantityChange={this.handleCartQuantityChange}
               onViewContextChange={this.handleViewContextChange}
               socialComponent={<SocialContainer />}
               topVariantComponent={<VariantListContainer />}
               onDeleteProduct={this.handleDeleteProduct}
+              handleVariantChoice={this.handleVariantChoice}
               onProductFieldChange={this.handleProductFieldChange}
               {...this.props}
             />

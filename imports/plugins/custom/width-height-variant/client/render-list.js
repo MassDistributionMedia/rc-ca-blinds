@@ -21,36 +21,45 @@ function selectOptions() {
 
 const EIGHTHS = [
   0, 1, 2, 3, 4, 5, 6, 7,
-].map(function(i) { return i + "/8"; });
+].map(function(num){
+  return num.toString();
+});
 
 
 export default class RenderWidthHeightList extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      widthHeightValues: {
-        width: 24,
-        widthEighth: "0/8",
-        height: 36,
-        heightEighth: "0/8",
-      },
-    };
+    var curProduct = ReactionProduct.selectedVariant()
+    if(!curProduct || !curProduct.width && !curProduct.height){
+      this.state = {
+        widthHeightValues: {
+          width: 24,
+          widthEighth: "0",
+          height: 36,
+          heightEighth: "0",
+        },
+      };
+    }else{
+      this.state = {
+        widthHeightValues: {
+          width: curProduct.width,
+          widthEighth: curProduct.widthEighth,
+          height: curProduct.height,
+          heightEighth: curProduct.heightEighth,
+        },
+      };
+    }
   }
   update(productData, widthEighth, heightEighth) {
     this.commit(productData);
     return this.setState({
-      widthHeightValues: {
-        width: productData.width,
-        widthEighth: widthEighth,
-        height: productData.height,
-        heightEighth: heightEighth,
-      }
+      widthHeightValues: productData
     });
   }
 
   commit(productData) {
-    const variantId = ReactionProduct.selectedVariant()._id;
-    const newVariant = Products.findOne(addNewVariantIfNotExist(variantId, productData));
+    const parent = ReactionProduct.selectedVariant()._id;
+    const newVariant = Products.findOne(addNewVariantIfNotExist(parent, productData));
     this.props.methods.handleChildleVariantClick(null, newVariant);
   }
 
@@ -67,31 +76,27 @@ export default class RenderWidthHeightList extends Component {
       <WidthHeightOptionDescription/>
       <div className="row variant-product-options" key="childVariantList">
         <div> {[
-        dimensionSelect("width", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (event) => {
-          const widthEighth = $(".width-select-8th")[0].value;
-          const heightEighth = $(".height-select-8th")[0].value;
+        dimensionSelect.call(this, "width", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
 
           const productData = {
-            width: parseInt($(".width-select")[0].value),
-            widthEighth: parseInt(widthEighth),
-            height: parseInt($(".height-select")[0].value),
-            heightEighth: parseInt(heightEighth),
+            width: val,
+            widthEighth: eighth,
+            height: this.state.widthHeightValues.height,
+            heightEighth: this.state.widthHeightValues.heightEighth,
           };
           productData.price = softwoodProducts.find(findPrice, productData).price;
-          this.update(productData, widthEighth, heightEighth);
+          this.update(productData);
         }),
-        dimensionSelect("height", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (event) => {
-          const widthEighth = $(".width-select-8th")[0].value;
-          const heightEighth = $(".height-select-8th")[0].value;
+        dimensionSelect.call(this, "height", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
 
           const productData = {
-            width: parseInt($(".width-select")[0].value),
-            widthEighth: parseInt(widthEighth),
-            height: parseInt($(".height-select")[0].value),
-            heightEighth: parseInt(heightEighth),
+            width: this.state.widthHeightValues.width,
+            widthEighth: this.state.widthHeightValues.widthEighth,
+            height: val,
+            heightEighth: eighth,
           };
           productData.price = softwoodProducts.find(findPrice, productData).price;
-          this.update(productData, widthEighth, heightEighth);
+          this.update(productData);
         }),
       ]}</div>
       </div>
@@ -125,12 +130,12 @@ function priceSlotCheck(dimension, eighth) {
   * matching the currently selected width/height.
   */
 function findPrice(element) {
-  if ( this.width < 24 ) {
-    this.width = 24;
-  }
-  if ( this.height < 30 ) {
-    this.height = 30;
-  }
+  // if ( this.width < 24 ) {
+  //   this.width = 24;
+  // }
+  // if ( this.height < 30 ) {
+  //   this.height = 30;
+  // }
   let widthPrice = priceSlotCheck(this.width, this.widthEighth);
   let heightPrice = priceSlotCheck(this.height, this.heightEighth);
   if (element.width === widthPrice && element.height === heightPrice)
@@ -178,10 +183,15 @@ function dimensionSelect(key, values, list, ethList, onChange) {
   return (
     <span className={key+"-selects"} key={key+"select-span"}>
       {optionTitle}
-      <select className={"form-control " + key + "-select"}
-              key={key + "-select"}
-              value={values[key]}
-              onChange={onChange}>
+      <select
+        className={"form-control " + key + "-select"}
+        key={key + "-select"}
+        value={values[key]}
+        onChange={(e) =>{
+          console.log(key, e.target.value);
+          onChange(parseInt(e.target.value), values[key+"Eighth"])
+        }}
+      >
       { // loop to creation select options:
         list.map((opVal, index) => {
           return (
@@ -194,10 +204,15 @@ function dimensionSelect(key, values, list, ethList, onChange) {
         })
       }
       </select>
-      <select className={"form-control " + key + "-select-8th"}
-              key={key + "-select-8th"}
-              value={values[key+"Eighth"]}
-              onChange={onChange}>
+      <select
+        className={"form-control " + key + "-select-8th"}
+        key={key + "-select-8th"}
+        value={values[key+"Eighth"]}
+        onChange={(e) =>{
+          console.log(key+"Eighth", e.target.value);
+          onChange(values[key], parseInt(e.target.value))
+        }}
+      >
         { // loop to create 8ths options:
           ethList.map((opVal, index) => {
             return (
@@ -205,7 +220,7 @@ function dimensionSelect(key, values, list, ethList, onChange) {
               className={"form-control" + key + "-select-8th"}
               key={"".concat(key, index.toString(), opVal.toString())}
               value={opVal}
-              >{opVal}</option>
+              >{opVal}/8</option>
               );
           })
         }
@@ -217,11 +232,11 @@ function dimensionSelect(key, values, list, ethList, onChange) {
 function formatElement(element) {
   const width = element.width;
   const height = element.height;
-  const widthEighth = element.widthEighth + "8th";
-  const heightEighth = element.heightEighth + '8th';
-  const unique_key = width + "-" + widthEighth + "x" + height + "-" + heightEighth;
+  const widthEighth = element.widthEighth;
+  const heightEighth = element.heightEighth;
+  const unique_key = width + " " + widthEighth + "/8 x " + height + " " + heightEighth + "/8";
   return {
-    _id: "Softwood" + unique_key + "Price" + element.price,
+    _id: formatID(element),
     variantType: WIDTH_HEIGHT_VARIANT_TYPE,
     title: "Softwood " + unique_key,
     optionTitle: "Softwood " + unique_key,
@@ -235,12 +250,58 @@ function formatElement(element) {
     inventoryQuantity: 9,
     inventoryPolicy: false,
     title: "Softwood " + unique_key,
+    metafields: [
+      {
+        key: "Room",
+        value: "",
+      },
+      {
+        key: "Window Name",
+        value: "",
+      },
+      {
+        key: "Mount",
+        value: "",
+      },
+      {
+        key: "Height",
+        value: element.height + " " + element.heightEighth + "/8th",
+      },
+      {
+        key: "Width",
+        value: element.width + " " + element.widthEighth + "/8th",
+      },
+      {
+        key: "Color",
+        value: "",
+      },
+      {
+        key: "Slate Size",
+        value: "",
+      },
+      {
+        key: "Lift",
+        value: "",
+      },
+      {
+        key: "Lift Side",
+        value: "",
+      },
+      {
+        key: "Tilt",
+        value: "",
+      },
+      {
+        key: "Tilt Side",
+        value: "",
+      },
+    ]
   };
 }
 
-function addNewVariantIfNotExist(variantId, varientConfig) {
-  try {
-    return addNewVariant(variantId, formatElement(varientConfig));
+function addNewVariantIfNotExist(parent, varientConfig) {
+   try {
+    return addNewVariant(parent, formatElement(varientConfig));
   } catch(e) {
     console.log("Variant already exists: ", e);
   }
@@ -288,8 +349,18 @@ function addNewVariantIfNotExist(variantId, varientConfig) {
 //   Meteor.call("revisions/publish", product._id);
 // }
 
+function formatID(element){
+  const width = element.width;
+  const height = element.height;
+  const widthEighth = element.widthEighth;
+  const heightEighth = element.heightEighth;
+  const unique_key = width + "-" + widthEighth + "x" + height + "-" + heightEighth;
+  return "Softwood" + unique_key + "Price" + element.price;
+}
+
 function addNewVariant(parentId, newVariant) {
 
+  console.log(newVariant._id);
   if (Products.findOne(newVariant._id)) {
     console.log("Variant already exists: ", newVariant._id);
     return newVariant._id;
@@ -315,6 +386,7 @@ function addNewVariant(parentId, newVariant) {
     `addNewVariant(${parentId}, ${newVariant._id}) \n`,
     `From: /imports/plugins/custom/width-height-variant/client/render-list.js`
   );
+
   const assembledVariant = Object.assign(newVariant || {}, {
     _id: newVariantId,
     ancestors: ancestors,
@@ -326,6 +398,7 @@ function addNewVariant(parentId, newVariant) {
     Object.assign(assembledVariant, {
       title: "",
       price: 0.00,
+
     });
   }
 
@@ -338,8 +411,13 @@ function addNewVariant(parentId, newVariant) {
   //   flushQuantity(parentId);
   // }
 
+  console.log(Products, ReactionProduct, Reaction);
+
   Products.insert(assembledVariant,
     (error, result) => {
+      if(error){
+        console.error(error);
+      }
       if (result) {
         console.log(
           `products/createVariant: created variant: ${
