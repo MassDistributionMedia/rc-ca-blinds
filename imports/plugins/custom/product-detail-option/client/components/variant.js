@@ -131,17 +131,17 @@ class Variant extends Component {
 }
 
 Variant.propTypes = {
-  connectDragSource: PropTypes.func,
-  connectDropTarget: PropTypes.func,
-  displayPrice: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  editButton: PropTypes.node,
-  editable: PropTypes.bool,
-  isSelected: PropTypes.bool,
-  isHeightWidth: PropTypes.bool,
   onClick: PropTypes.func,
   soldOut: PropTypes.bool,
+  editable: PropTypes.bool,
   variant: PropTypes.object,
-  visibilityButton: PropTypes.node
+  editButton: PropTypes.node,
+  isSelected: PropTypes.bool,
+  isHeightWidth: PropTypes.bool,
+  visibilityButton: PropTypes.node,
+  connectDragSource: PropTypes.func,
+  connectDropTarget: PropTypes.func,
+  displayPrice: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
 };
 
 export default SortableItem("product-variant", Variant);

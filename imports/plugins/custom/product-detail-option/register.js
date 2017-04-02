@@ -1,14 +1,14 @@
 import { Reaction } from "/server/api";
 
 Reaction.registerPackage({
-  label: "Product Detail Simple",
-  name: "product-detail-simple",
+  label: "Product Detail Option",
+  name: "product-detail-option",
   icon: "fa fa-cubes",
   autoEnable: true,
   registry: [{
-    route: "/product/:handle/:variantId?",
-    name: "product",
-    template: "productDetailSimple",
+    route: "/not-product/:handle/:variantId?",
+    name: "not-product",
+    template: "productDetailOption",
     workflow: "coreProductWorkflow"
   }],
   layout: [{
@@ -18,11 +18,11 @@ Reaction.registerPackage({
     theme: "default",
     enabled: true,
     structure: {
-      template: "productDetailSimple",
+      template: "productDetailOption",
       layoutHeader: "layoutHeader",
       layoutFooter: "",
       notFound: "productNotFound",
-      dashboardHeader: "productDetailSimpleToolbar",
+      dashboardHeader: "productDetailOptionToolbar",  // productDetailSimpleToolbar
       dashboardControls: "productDetailDashboardControls",
       dashboardHeaderControls: "",
       adminControlsFooter: "adminControlsFooter"

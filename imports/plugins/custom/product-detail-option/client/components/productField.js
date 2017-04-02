@@ -1,12 +1,12 @@
-import React, { Component, PropTypes } from "react";
 import classnames from "classnames";
-import Velocity from "velocity-animate";
 import "velocity-animate/velocity.ui";
+import Velocity from "velocity-animate";
+import React, { Component, PropTypes } from "react";
 import { TextField } from "/imports/plugins/core/ui/client/components/";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 
 class ProductField extends Component {
-  static state = {}
+  static state = {};
 
   constructor(props) {
     super(props);
@@ -132,16 +132,16 @@ class ProductField extends Component {
 }
 
 ProductField.propTypes = {
-  editContainerProps: PropTypes.object,
   editable: PropTypes.bool,
   element: PropTypes.node,
+  product: PropTypes.object,
+  multiline: PropTypes.bool,
+  itemProp: PropTypes.string,
   fieldName: PropTypes.string,
   fieldTitle: PropTypes.string,
-  itemProp: PropTypes.string,
-  multiline: PropTypes.bool,
-  onProductFieldChange: PropTypes.func,
-  product: PropTypes.object,
-  textFieldProps: PropTypes.object
+  textFieldProps: PropTypes.object,
+  editContainerProps: PropTypes.object,
+  onProductFieldChange: PropTypes.func
 };
 
 export default ProductField;

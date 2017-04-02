@@ -1,7 +1,7 @@
-import React, { Component, PropTypes } from "react";
 import classnames from "classnames";
-import { Translation } from "/imports/plugins/core/ui/client/components";
+import React, { Component, PropTypes } from "react";
 import { MediaItem } from "/imports/plugins/core/ui/client/components";
+import { Translation } from "/imports/plugins/core/ui/client/components";
 
 class ChildVariant extends Component {
   handleClick = (event, index) => {

@@ -1,8 +1,10 @@
-import React, { Component, PropTypes } from "react";
 import classnames from "classnames";
-import { Metadata, Translation } from "/imports/plugins/core/ui/client/components/";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { ReactionProduct } from "/lib/api";
+import React, { Component, PropTypes } from "react";
+import { EditContainer } from "/imports/plugins/core/ui/client/containers";
+import { Metadata, Translation } from "/imports/plugins/core/ui/client/components/";
+
+import * as SelectedVariants from "../stores/selected-variants";
 
 class ProductMetadata extends Component {
   get metafields() {
@@ -22,19 +24,20 @@ class ProductMetadata extends Component {
       }));
     }
 
-    var selected = ReactionProduct.selectedVariant();
-    if(selected && selected.metafields){
-      metafields = metafields.concat(selected.metafields.filter(function(meta){
-        for(var i = 0; i < metafields.length; i++){
-          if(metafields[i].key === meta.key){
-            return false;
-          }
-          return true;
-        }
-      }));
-    }
+    metafields = metafields.concat(SelectedVariants.retrieveMetaValues());
 
     return metafields;
+  }
+
+  componentDidMount(){
+    this.updateListener = ()=>{
+      this.setState({ timestamp: Date.now() });
+    };
+    SelectedVariants.onUpdate(this.updateListener);
+  }
+
+  componentWillUnmount(){
+    SelectedVariants.offUpdate(this.updateListener);
   }
 
   get showEditControls() {
@@ -86,10 +89,10 @@ class ProductMetadata extends Component {
 }
 
 ProductMetadata.propTypes = {
-  editContainerProps: PropTypes.object,
   editable: PropTypes.bool,
-  metafields: PropTypes.arrayOf(PropTypes.object),
-  product: PropTypes.object
+  product: PropTypes.object,
+  editContainerProps: PropTypes.object,
+  metafields: PropTypes.arrayOf(PropTypes.object)
 };
 
 export default ProductMetadata;

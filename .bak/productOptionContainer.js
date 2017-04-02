@@ -12,17 +12,16 @@ import { SocialContainer, VariantListContainer } from "./";
 import { MediaGalleryContainer } from "/imports/plugins/core/ui/client/containers";
 import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/client/providers";
 
-import * as SelectedVariants from "../stores/selected-variants";
-
-
-class ProductOptionContainer extends Component {
+class ProductDetailContainer extends Component {
   constructor(props) {
     super(props);
 
-    SelectedVariants.setProduct(ReactionProduct.selectedProduct());
-
     this.state = {
       cartQuantity: 1,
+      variantPicks : {},
+      requiredVariants: ReactionProduct.getVariants().filter(function(variant){
+        return variant.variantType !== "make-shift";
+      })
     };
   }
 
@@ -37,30 +36,24 @@ class ProductOptionContainer extends Component {
     let quantity;
     const currentProduct = ReactionProduct.selectedProduct();
 
-    // if (!currentProduct.isVisible) {
-    //   console.log('current product is not visible');
-    //   Alerts.inline("Publish product before adding to cart.", "error", {
-    //     placement: "productDetail",
-    //     i18nKey: "productDetail.publishFirst",
-    //     autoHide: 10000
-    //   });
-    //   return [];
-    // }
-
-    var newVariant;
-    console.log('currentProduct', currentProduct.isVisible, SelectedVariants.composeNewVariant);
-    try{
-      newVariant = SelectedVariants.composeNewVariant();
-    }catch(e){
-      console.log(e);
-      Alerts.inline(e.message, "error", {
+    if(this.state.requiredVariants.some((variant) =>{
+      return !(variant._id in this.state.variantPicks)
+    })){
+      Alerts.inline("Select an option before adding to cart", "warning", {
+        placement: "productDetail",
+        i18nKey: "productDetail.selectOption",
+        autoHide: 8000
+      });
+      return [];
+    }
+    if (!currentProduct.isVisible) {
+      Alerts.inline("Publish product before adding to cart.", "error", {
         placement: "productDetail",
         i18nKey: "productDetail.publishFirst",
         autoHide: 10000
       });
       return [];
     }
-
     quantity = parseInt(this.state.cartQuantity, 10);
 
     if (quantity < 1) {
@@ -69,7 +62,7 @@ class ProductOptionContainer extends Component {
     productId = currentProduct._id;
 
     if (productId) {
-      Meteor.call("cart/addToCart", productId, newVariant._id, quantity, (error) => {
+      Meteor.call("cart/addToCart", productId, currentVariant._id, quantity, (error) => {
         if (error) {
           Logger.error("Failed to add to cart.", error);
           return error;
@@ -185,7 +178,7 @@ class ProductOptionContainer extends Component {
   }
 }
 
-ProductOptionContainer.propTypes = {
+ProductDetailContainer.propTypes = {
   media: PropTypes.arrayOf(PropTypes.object),
   product: PropTypes.object
 };
@@ -306,4 +299,4 @@ function composer(props, onData) {
 }
 
 // Decorate component and export
-export default composeWithTracker(composer, Loading)(ProductOptionContainer);
+export default composeWithTracker(composer, Loading)(ProductDetailContainer);

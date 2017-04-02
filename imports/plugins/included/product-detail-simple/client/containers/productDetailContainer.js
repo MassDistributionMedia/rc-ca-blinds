@@ -12,7 +12,26 @@ import { SocialContainer, VariantListContainer } from "./";
 import { MediaGalleryContainer } from "/imports/plugins/core/ui/client/containers";
 import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/client/providers";
 
-class ProductDetailContainer extends Component {
+
+import OptionProductDetailContainer from "/imports/plugins/custom/product-detail-option/client/containers/productDetailContainer";
+
+export default OptionProductDetailContainer;
+
+function FAKEProductDetailContainer(props){
+  var product = ReactionProduct.selectedProduct();
+  console.log("FAKE COMPONENT");
+  return <OptionProductDetailContainer {...props} />
+  // switch(product.type){
+  //   case "somethingNew": {
+  //     return <OptionProductDetailContainer {...props} />
+  //   }
+  //   default: {
+  //     return <REALProductDetailContainer {...props} />
+  //   }
+  // }
+}
+
+class REALProductDetailContainer extends Component {
   constructor(props) {
     super(props);
 
@@ -182,7 +201,7 @@ class ProductDetailContainer extends Component {
   }
 }
 
-ProductDetailContainer.propTypes = {
+REALProductDetailContainer.propTypes = {
   media: PropTypes.arrayOf(PropTypes.object),
   product: PropTypes.object
 };
@@ -303,4 +322,4 @@ function composer(props, onData) {
 }
 
 // Decorate component and export
-export default composeWithTracker(composer, Loading)(ProductDetailContainer);
+// export default composeWithTracker(composer, Loading)(FAKEProductDetailContainer);

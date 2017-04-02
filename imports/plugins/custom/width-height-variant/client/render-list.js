@@ -21,7 +21,7 @@ function selectOptions() {
 
 const EIGHTHS = [
   0, 1, 2, 3, 4, 5, 6, 7,
-].map(function(num){
+].map(function(num) {
   return num.toString();
 });
 
@@ -30,7 +30,7 @@ export default class RenderWidthHeightList extends Component {
   constructor(props) {
     super(props);
     var curProduct = ReactionProduct.selectedVariant()
-    if(!curProduct || !curProduct.width && !curProduct.height){
+    if (!curProduct || !curProduct.width && !curProduct.height) {
       this.state = {
         widthHeightValues: {
           width: 24,
@@ -39,7 +39,7 @@ export default class RenderWidthHeightList extends Component {
           heightEighth: "0",
         },
       };
-    }else{
+    } else {
       this.state = {
         widthHeightValues: {
           width: curProduct.width,
@@ -53,12 +53,19 @@ export default class RenderWidthHeightList extends Component {
   update(productData, widthEighth, heightEighth) {
     this.commit(productData);
     return this.setState({
-      widthHeightValues: productData
+      widthHeightValues: productData,
     });
   }
 
   commit(productData) {
-    const parent = ReactionProduct.selectedVariant()._id;
+    var product = ReactionProduct.selectedProduct();
+    var variant = ReactionProduct.selectedVariant();
+    var parent;
+    if(variant.ancestors[variant.ancestors.length - 1] === product._id){
+      parent = variant._id;
+    } else {
+      parent = variant.ancestors[variant.ancestors.length - 1];
+    }
     const newVariant = Products.findOne(addNewVariantIfNotExist(parent, productData));
     this.props.methods.handleChildleVariantClick(null, newVariant);
   }
@@ -187,7 +194,7 @@ function dimensionSelect(key, values, list, ethList, onChange) {
         className={"form-control " + key + "-select"}
         key={key + "-select"}
         value={values[key]}
-        onChange={(e) =>{
+        onChange={(e) => {
           console.log(key, e.target.value);
           onChange(parseInt(e.target.value), values[key+"Eighth"])
         }}
@@ -208,7 +215,7 @@ function dimensionSelect(key, values, list, ethList, onChange) {
         className={"form-control " + key + "-select-8th"}
         key={key + "-select-8th"}
         value={values[key+"Eighth"]}
-        onChange={(e) =>{
+        onChange={(e) => {
           console.log(key+"Eighth", e.target.value);
           onChange(values[key], parseInt(e.target.value))
         }}
@@ -398,7 +405,6 @@ function addNewVariant(parentId, newVariant) {
     Object.assign(assembledVariant, {
       title: "",
       price: 0.00,
-
     });
   }
 
@@ -415,7 +421,7 @@ function addNewVariant(parentId, newVariant) {
 
   Products.insert(assembledVariant,
     (error, result) => {
-      if(error){
+      if (error) {
         console.error(error);
       }
       if (result) {

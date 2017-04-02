@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from "react";
-import { AlertContainer } from "/imports/plugins/core/ui/client/containers";
 import { ReactionLayout } from "/imports/plugins/core/layout/lib";
+import { AlertContainer } from "/imports/plugins/core/ui/client/containers";
 
 class ProductDetail extends Component {
   get tags() {
@@ -34,24 +34,24 @@ class ProductDetail extends Component {
 }
 
 ProductDetail.propTypes = {
-  cartQuantity: PropTypes.number,
   editable: PropTypes.bool,
-  hasAdminPermission: PropTypes.bool,
   layout: PropTypes.string,
-  layoutName: PropTypes.string,
-  mediaGalleryComponent: PropTypes.node,
-  onAddToCart: PropTypes.func,
-  onCartQuantityChange: PropTypes.func,
-  onDeleteProduct: PropTypes.func,
-  handleVariantChoice: PropTypes.func,
-  onProductFieldChange: PropTypes.func,
-  onViewContextChange: PropTypes.func,
-  priceRange: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  viewAs: PropTypes.string,
   product: PropTypes.object,
+  onAddToCart: PropTypes.func,
+  layoutName: PropTypes.string,
+  cartQuantity: PropTypes.number,
+  onDeleteProduct: PropTypes.func,
   socialComponent: PropTypes.node,
-  tags: PropTypes.arrayOf(PropTypes.object),
+  hasAdminPermission: PropTypes.bool,
+  handleVariantChoice: PropTypes.func,
   topVariantComponent: PropTypes.node,
-  viewAs: PropTypes.string
+  onViewContextChange: PropTypes.func,
+  onCartQuantityChange: PropTypes.func,
+  onProductFieldChange: PropTypes.func,
+  mediaGalleryComponent: PropTypes.node,
+  tags: PropTypes.arrayOf(PropTypes.object),
+  priceRange: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 export default ProductDetail;

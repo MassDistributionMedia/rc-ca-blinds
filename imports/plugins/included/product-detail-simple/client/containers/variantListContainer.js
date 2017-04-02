@@ -103,6 +103,9 @@ class VariantListContainer extends Component {
     if (Reaction.isActionViewOpen()) {
       this.handleEditVariant(event, variant, ancestors);
     } else {
+      console.log(variant);
+
+
       ReactionProduct.setCurrentVariant(variant._id);
       Session.set("variant-form-" + variant._id, true);
       Reaction.Router.go("product", {

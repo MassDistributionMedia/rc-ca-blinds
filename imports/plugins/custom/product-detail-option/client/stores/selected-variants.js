@@ -1,9 +1,12 @@
+import { ReactionProduct } from "/lib/api";
+import { Products } from "/lib/collections";
 
 var currentProduct;
 var variantsToSet;
 var variantMap;
+var listeners = [];
 
-module.exports.setProduct = function(nextProduct){
+export function setProduct(nextProduct){
   if(currentProduct && currentProduct._id === nextProduct._id){
     return;
   }
@@ -15,52 +18,134 @@ module.exports.setProduct = function(nextProduct){
     return a._id - b._id;
   });
   variantMap = {};
+  listeners = [];
 }
 
-module.exports.setVariant = function(parentVariant, childVariant){
-  if(!variantsToSet.some(function(varient){
-    return variant._id === parentVariant._id;
-  })){
+export function handelingProduct(){
+  return !!currentProduct;
+}
+
+export function onUpdate(fn){
+  listeners.push(fn);
+}
+export function offUpdate(fn){
+  var i = listeners.indexOf(fn);
+  i > -1 && listeners.splice(i, 1);
+}
+
+export function setVariant(childVariant){
+  var parentVariantId = childVariant.ancestors[childVariant.ancestors.length -1];
+  if(parentVariantId === currentProduct._id){
+    return;
+  }
+  if(!variantsToSet.some((variant) =>
+    variant._id === parentVariantId
+  )){
     throw new Error("This variant does not have valid ancestry");
   }
-  variantMap[parentVariant._id] = childVariant._id;
+  variantMap[parentVariantId] = childVariant._id;
 
+  listeners.forEach((function(fn){
+    fn();
+  }));
 }
 
-module.exports.composeNewVariant = function(){
-  var newVariant = variantsToSet.reduce(function(netVariant, reqVarient){
-    if(!(reqVarient._id in variantMap)){
+export function retrieveCurrentPrice(){
+  if(!currentProduct){
+    return 0;
+  }
+  return Object.keys(variantMap).reduce(function(price, parentID){
+    var setVariant = Products.findOne(variantMap[parentID]);
+    if(!setVariant){
+      throw new Error("This variant does not exist");
+    }
+    return p + setVariant.price;
+  }, 0);
+}
+
+export function retrieveMetaValues(){
+  if(!currentProduct){
+    return [];
+  }
+  return Object.keys(variantMap).reduce(function(netArray, parentID){
+    var reqVariant = Products.findOne(parentID);
+    var setVariant = Products.findOne(variantMap[parentID]);
+    if(!setVariant){
+      throw new Error("This variant does not exist");
+    }
+    var values = extractValuesFromVariant(setVariant, reqVariant);
+    var metafields = valuesToMetaFields(values);
+    return netArray.concat(metafields);
+  }, []);
+}
+
+export function composeNewVariant(){
+  console.log('variantMap', variantMap, variantsToSet);
+  var newVariantConfig = variantsToSet.reduce(function(netVariant, reqVariant){
+    console.log('reqVariant', reqVariant._id);
+    if(!(reqVariant._id in variantMap)){
       throw new Error("A variant option is missing");
     }
-    var setVariant = Products.findOne(variantMap[reqVarient._id]);
-    var values = extractValuesFromVariant(setVariant);
-    var metafields = valuesToMetaFields(value);
 
-    netVariant.values = netVariant.values.concat(value);
+    var setVariant = Products.findOne(variantMap[reqVariant._id]);
+    if(!setVariant){
+      throw new Error("This variant does not exist");
+    }
+
+    var values = extractValuesFromVariant(setVariant, reqVariant);
+    var metafields = valuesToMetaFields(values);
+
+    netVariant.values = Object.assign({}, values, netVariant.values);
     netVariant.metafields = netVariant.metafields.concat(metafields);
     netVariant.price += setVariant.price;
-    netVariant._id += hash(reqVarient._id).toString(32) + hash(setVariant).toString(32);
+    netVariant._id += hash(reqVariant._id).toString(32) + hash(setVariant._id).toString(32);
     return netVariant;
   }, { _id: "", values: [], metafields: [], price: 0 });
 
-  newVariant.title = "Custom " + currentProduct.title;
+  newVariantConfig.title = "Custom " + currentProduct.title;
 
-  newVariant.type = "make-shift";
+  newVariantConfig.type = "make-shift";
 
-  addNewVariant(currentProduct._id, newVariant);
-
+  return addNewVariant(currentProduct._id, newVariantConfig);
 }
 
 const MULTIPLIER = 37;
 function hash(str){
-  return str.split('').reduce(function(h, char){
+  return str.split('').reduce(function(h, char) {
     return MULTIPLIER * h + char.charCodeAt(0);
   }, 0);
 }
 
+
+function extractValuesFromVariant(variant, parent) {
+  switch(variant.variantType) {
+    case "variant":
+      return {
+        [parent.title]: variant.optionTitle
+      };
+    case "Height & Width":
+      return {
+        Width: variant.width + " " + variant.widthEighth  + "/8",
+        Height: variant.height + " " + variant.heightEighth  + "/8",
+      }
+    default:
+      return {
+        [parent.title]: variant.optionTitle
+      };
+  }
+}
+
+function valuesToMetaFields(values){
+  return Object.keys(values).reduce(function(netArray, key) {
+    var newObj = {};
+    newObj.key = key;
+    newObj.value = values[key];
+    return netArray.concat([ newObj ]);
+  }, []);
+}
+
 function addNewVariant(parentId, newVariant) {
 
-  console.log(newVariant._id);
   if (Products.findOne(newVariant._id)) {
     console.log("Variant already exists: ", newVariant._id);
     return newVariant._id;
@@ -70,16 +155,6 @@ function addNewVariant(parentId, newVariant) {
   // get parent ancestors to build new ancestors array
   const product = Products.findOne(parentId);
   const { ancestors } = product;
-
-  /**
-   * Verify that the parent variant and any ancestors are not deleted.
-   * Child variants cannot be added if a parent product or product revision
-   * is marked as `{ isDeleted: true }`
-   *
-   */
-  // if (ReactionProduct.isAncestorDeleted(product, true)) {
-  //   throw new Meteor.Error(403, "Unable to create product variant");
-  // }
 
   Array.isArray(ancestors) && ancestors.push(parentId);
   console.log(
@@ -102,17 +177,6 @@ function addNewVariant(parentId, newVariant) {
     });
   }
 
-  /**
-    * If we are inserting child variant to top-level variant, we need to remove
-    * all top-level's variant inventory records and flush it's quantity,
-    * because it will be hold sum of all it descendants quantities.
-    */
-  // if (ancestors.length === 2) {
-  //   flushQuantity(parentId);
-  // }
-
-  console.log(Products, ReactionProduct, Reaction);
-
   Products.insert(assembledVariant,
     (error, result) => {
       if(error){
@@ -126,8 +190,6 @@ function addNewVariant(parentId, newVariant) {
       }
     }
   );
-
-  // cleanBlinds(newVariantId); // Remove existing blind child variants from the DB so that new variants don't get junked up
 
   return newVariantId;
 }

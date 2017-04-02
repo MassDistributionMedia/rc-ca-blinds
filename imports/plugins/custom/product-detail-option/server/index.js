@@ -4,8 +4,8 @@ import TwoColumnLayout from "../lib/layout/twoColumn";
 import "./i18n";
 
 Reaction.registerTemplate({
-  name: "productDetailSimple",
-  title: "Product Detail Simple Layout",
+  name: "productDetailOption",
+  title: "Product Detail Option Layout",
   type: "react",
   templateFor: ["pdp"],
   permissions: ["admin", "owner"],
@@ -14,7 +14,7 @@ Reaction.registerTemplate({
 });
 
 Reaction.registerTemplate({
-  name: "productDetailTwoColumn",
+  name: "productOptionTwoColumn",
   title: "Product Detail Two Column Layout",
   type: "react",
   templateFor: ["pdp"],

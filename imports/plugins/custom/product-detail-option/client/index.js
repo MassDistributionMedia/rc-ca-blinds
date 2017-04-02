@@ -1,5 +1,5 @@
-import "./templates/productDetailSimple.html";
-import "./templates/productDetailSimple.js";
+import "./templates/productDetailOption.html";
+import "./templates/productDetailOption.js";
 import { registerComponent } from "/imports/plugins/core/layout/lib/components";
 
 import {

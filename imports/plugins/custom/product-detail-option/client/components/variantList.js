@@ -1,11 +1,11 @@
-import React, { Component, PropTypes } from "react";
 import Variant from "./variant";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 import { ChildVariant } from "./";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
+import React, { Component, PropTypes } from "react";
+import { EditContainer } from "/imports/plugins/core/ui/client/containers";
+import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 
 import RenderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
@@ -32,6 +32,7 @@ class VariantList extends Component {
   handleChildleVariantClick = (event, variant) => {
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
+      console.log('variant', variant);
     }
   }
 
@@ -167,18 +168,18 @@ class VariantList extends Component {
 }
 
 VariantList.propTypes = {
-  childVariantMedia: PropTypes.arrayOf(PropTypes.any),
-  childVariants: PropTypes.arrayOf(PropTypes.object),
-  displayPrice: PropTypes.func,
   editable: PropTypes.bool,
   isSoldOut: PropTypes.func,
-  onCreateVariant: PropTypes.func,
+  displayPrice: PropTypes.func,
   onEditVariant: PropTypes.func,
   onMoveVariant: PropTypes.func,
   onVariantClick: PropTypes.func,
-  onVariantVisibiltyToggle: PropTypes.func,
+  onCreateVariant: PropTypes.func,
   variantIsSelected: PropTypes.func,
+  onVariantVisibiltyToggle: PropTypes.func,
   variants: PropTypes.arrayOf(PropTypes.object),
+  childVariants: PropTypes.arrayOf(PropTypes.object),
+  childVariantMedia: PropTypes.arrayOf(PropTypes.any)
 };
 
 export default VariantList;
@@ -210,7 +211,7 @@ function RenderList(props) {
 }
 
 function RenderVariantList({ renderList, parentProps, methods }) {
-    if (!renderList) {
+  if (!renderList) {
     return null;
   }
 

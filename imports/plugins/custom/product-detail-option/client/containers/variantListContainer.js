@@ -9,6 +9,8 @@ import update from "react/lib/update";
 import { getVariantIds } from "/lib/selectors/variants";
 import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
+import * as SelectedVariants from "../stores/selected-variants";
+
 function variantIsSelected(variantId) {
   const current = ReactionProduct.selectedVariant();
   if (current && typeof current === "object" && (variantId === current._id || ~current.ancestors.indexOf(variantId))) {
@@ -105,6 +107,7 @@ class VariantListContainer extends Component {
     } else {
       ReactionProduct.setCurrentVariant(variant._id);
       Session.set("variant-form-" + variant._id, true);
+      SelectedVariants.setVariant(variant);
       Reaction.Router.go("product", {
         handle: this.productHandle,
         variantId: variant._id
@@ -216,7 +219,7 @@ function composer(props, onData) {
     variantIsInActionView,
     childVariants,
     childVariantMedia,
-    displayPrice: ReactionProduct.getVariantPriceRange,
+    // displayPrice: ReactionProduct.getVariantPriceRange,
     isSoldOut: isSoldOut,
     editable
   });
