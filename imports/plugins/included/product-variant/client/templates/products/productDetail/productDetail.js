@@ -509,7 +509,7 @@ Template.productDetail.events({
     ReactionProduct.cloneProduct(this);
   },
   "click [data-event-action=deleteProduct]": function () {
-    ReactionProduct.maybeDeleteProduct(this);
+    ReactionProduct.archiveProduct(this);
   }
 });
 
@@ -595,7 +595,7 @@ Template.productDetailForm.events({
   },
   "click [data-event-action=deleteProduct]": function (event, instance) {
     const product = instance.state.get("product");
-    ReactionProduct.maybeDeleteProduct(product);
+    ReactionProduct.archiveProduct(product);
   },
   "click [data-event-action=cloneProduct]": function (event, instance) {
     const product = instance.state.get("product");
