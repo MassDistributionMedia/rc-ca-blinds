@@ -48,7 +48,7 @@ class ProductOptionContainer extends Component {
     // }
 
     var newVariant;
-    console.log('currentProduct', currentProduct.isVisible, SelectedVariants.composeNewVariant);
+    // console.log('currentProduct', currentProduct.isVisible, SelectedVariants.composeNewVariant);
     try{
       newVariant = SelectedVariants.composeNewVariant();
     }catch(e){

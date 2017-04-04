@@ -52,7 +52,7 @@ class REALProductDetailContainer extends Component {
     const currentVariant = ReactionProduct.selectedVariant();
     const currentProduct = ReactionProduct.selectedProduct();
 
-    console.log(currentVariant);
+    // console.log(currentVariant);
 
     if (currentVariant) {
       if (currentVariant.ancestors.length === 1) {

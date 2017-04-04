@@ -1,10 +1,12 @@
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
 
-var currentProduct;
-var variantsToSet;
 var variantMap;
+var variantsToSet;
+var currentProduct;
 var listeners = [];
+var productObject = {};
+var variantOptions = [];
 
 export function setProduct(nextProduct){
   if(currentProduct && currentProduct._id === nextProduct._id){
@@ -48,6 +50,43 @@ export function setVariant(childVariant){
   listeners.forEach((function(fn){
     fn();
   }));
+
+  setProductObject();
+  setChildVariants();
+}
+
+export function setProductObject() {
+  for(let index in variantsToSet) {
+    if(variantsToSet[index].ancestors.length === 1) {
+      let key = variantsToSet[index].title;
+
+      productObject[key] = [];
+      variantOptions.push(variantsToSet[index]);
+    }
+  }
+}
+
+export function setChildVariants() {
+  for(let index in variantsToSet) {
+    if(variantsToSet[index].ancestors.length >= 2) {
+      let ancestors = variantsToSet[index].ancestors;
+
+      for(let i in ancestors) {
+        let parentKey = findParentVariant(ancestors[i]);
+
+        parentKey ? productObject[parentKey].push(variantsToSet[index]): null;
+      }
+    }
+  }
+}
+
+export function findParentVariant(id) {
+  for(let index in variantOptions) {
+    if(variantOptions[index]._id === id) {
+      return variantOptions[index].title;
+    }
+  }
+  return null;
 }
 
 export function retrieveCurrentPrice(){
@@ -80,27 +119,39 @@ export function retrieveMetaValues(){
 }
 
 export function composeNewVariant(){
-  console.log('variantMap', variantMap, variantsToSet);
-  var newVariantConfig = variantsToSet.reduce(function(netVariant, reqVariant){
-    console.log('reqVariant', reqVariant._id);
-    if(!(reqVariant._id in variantMap)){
+  console.log('here', _.size(variantMap), variantOptions.length, variantOptions);
+  let variantMapLength = _.size(variantMap);
+  if(variantMapLength < variantOptions.length) {
+    throw new Error('A variant option is missing. Please select all the variants');
+  }
+
+  var newVariantConfig = {
+    _id: '',
+    price: 0,
+    values: [],
+    metafields: []
+  };
+
+  for(let reqVariant in variantMap) {
+    if(!(reqVariant in variantOptions)) {
       throw new Error("A variant option is missing");
     }
 
-    var setVariant = Products.findOne(variantMap[reqVariant._id]);
-    if(!setVariant){
+    let setVariant = Products.findOne(variantMap[reqVariant]);
+    console.log('setVariant', setVariant);
+
+    if(!setVariant) {
       throw new Error("This variant does not exist");
     }
 
     var values = extractValuesFromVariant(setVariant, reqVariant);
     var metafields = valuesToMetaFields(values);
 
-    netVariant.values = Object.assign({}, values, netVariant.values);
-    netVariant.metafields = netVariant.metafields.concat(metafields);
-    netVariant.price += setVariant.price;
-    netVariant._id += hash(reqVariant._id).toString(32) + hash(setVariant._id).toString(32);
-    return netVariant;
-  }, { _id: "", values: [], metafields: [], price: 0 });
+    newVariantConfig.values = Object.assign({}, values, netVariant.values);
+    newVariantConfig.metafields = netVariant.metafields.concat(metafields);
+    newVariantConfig.price += setVariant.price;
+    newVariantConfig._id += hash(reqVariant._id).toString(32) + hash(setVariant._id).toString(32);
+  }
 
   newVariantConfig.title = "Custom " + currentProduct.title;
 

@@ -121,13 +121,15 @@ export default class RenderWidthHeightList extends Component {
  * @return {Number} Returns the found/valid price from product-prices.js
  */
 function priceSlotCheck(dimension, eighth) {
+  let dimensionOutput = dimension;
   if (dimension % 6 !== 0) {
-    let subtract = dimension % 6;
-    return dimension = dimension - subtract + 6; // + 6 to round up to the next price
-  } else if (eighth !== 0) {
-    return dimension = dimension + 6;
+    const subtract = dimension % 6;
+    dimensionOutput = dimension - subtract + 6; // + 6 to round up to the next price
+  } // end if (dimension % 6)
+  if (eighth !== 0) {
+    return dimensionOutput = dimensionOutput + 6;
   } else {
-    return dimension;
+    return dimensionOutput;
   }
 }
 
@@ -137,14 +139,16 @@ function priceSlotCheck(dimension, eighth) {
   * matching the currently selected width/height.
   */
 function findPrice(element) {
-  // if ( this.width < 24 ) {
-  //   this.width = 24;
-  // }
-  // if ( this.height < 30 ) {
-  //   this.height = 30;
-  // }
-  let widthPrice = priceSlotCheck(this.width, this.widthEighth);
-  let heightPrice = priceSlotCheck(this.height, this.heightEighth);
+  let originWidth = this.width;
+  let originHeight = this.height;
+  if ( originWidth < 24 ) {
+    originWidth = 24;
+  }
+  if ( originHeight < 30 ) {
+    originHeight = 30;
+  }
+  let widthPrice = priceSlotCheck(originWidth, this.widthEighth);
+  let heightPrice = priceSlotCheck(originHeight, this.heightEighth);
   if (element.width === widthPrice && element.height === heightPrice)
     return element;
 }

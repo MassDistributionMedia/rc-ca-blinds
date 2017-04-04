@@ -32,7 +32,7 @@ class VariantList extends Component {
   handleChildleVariantClick = (event, variant) => {
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
-      console.log('variant', variant);
+      // console.log('variant', variant);
     }
   }
 
