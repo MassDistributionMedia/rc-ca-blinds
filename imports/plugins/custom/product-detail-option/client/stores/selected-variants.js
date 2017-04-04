@@ -119,39 +119,54 @@ export function retrieveMetaValues(){
 }
 
 export function composeNewVariant(){
-  console.log('here', _.size(variantMap), variantOptions.length, variantOptions);
-  let variantMapLength = _.size(variantMap);
-  if(variantMapLength < variantOptions.length) {
-    throw new Error('A variant option is missing. Please select all the variants');
-  }
+  // console.log('here', _.size(variantMap), variantOptions.length, variantOptions);
+  // let variantMapLength = _.size(variantMap);
+  // if(variantMapLength < variantOptions.length) {
+  //   throw new Error('A variant option is missing. Please select all the variants');
+  // }
 
-  var newVariantConfig = {
-    _id: '',
-    price: 0,
-    values: [],
-    metafields: []
-  };
+  // var newVariantConfig = {
+  //   _id: '',
+  //   price: 0,
+  //   values: [],
+  //   metafields: []
+  // };
 
-  for(let reqVariant in variantMap) {
-    if(!(reqVariant in variantOptions)) {
+  // for(let reqVariant in variantMap) {
+  //   if(!(reqVariant in variantOptions)) {
+  //     throw new Error("A variant option is missing");
+  //   }
+
+  //   let setVariant = Products.findOne(variantMap[reqVariant]);
+  //   console.log('setVariant', setVariant);
+
+  //   if(!setVariant) {
+  //     throw new Error("This variant does not exist");
+  //   }
+
+  //   var values = extractValuesFromVariant(setVariant, reqVariant);
+  //   var metafields = valuesToMetaFields(values);
+
+  //   newVariantConfig.values = Object.assign({}, values, netVariant.values);
+  //   newVariantConfig.metafields = netVariant.metafields.concat(metafields);
+  //   newVariantConfig.price += setVariant.price;
+  //   newVariantConfig._id += hash(reqVariant._id).toString(32) + hash(setVariant._id).toString(32);
+  // }
+
+  var newVariant = variantsToSet.reduce(function(netVariant, reqVarient){
+    if(!(reqVarient._id in variantMap)){
       throw new Error("A variant option is missing");
     }
+    var setVariant = Products.findOne(variantMap[reqVarient._id]);
+    var values = extractValuesFromVariant(setVariant);
+    var metafields = valuesToMetaFields(value);
 
-    let setVariant = Products.findOne(variantMap[reqVariant]);
-    console.log('setVariant', setVariant);
-
-    if(!setVariant) {
-      throw new Error("This variant does not exist");
-    }
-
-    var values = extractValuesFromVariant(setVariant, reqVariant);
-    var metafields = valuesToMetaFields(values);
-
-    newVariantConfig.values = Object.assign({}, values, netVariant.values);
-    newVariantConfig.metafields = netVariant.metafields.concat(metafields);
-    newVariantConfig.price += setVariant.price;
-    newVariantConfig._id += hash(reqVariant._id).toString(32) + hash(setVariant._id).toString(32);
-  }
+    netVariant.values = netVariant.values.concat(value);
+    netVariant.metafields = netVariant.metafields.concat(metafields);
+    netVariant.price += setVariant.price;
+    netVariant._id += hash(reqVarient._id).toString(32) + hash(setVariant).toString(32);
+    return netVariant;
+  }, { _id: "", values: [], metafields: [], price: 0 });
 
   newVariantConfig.title = "Custom " + currentProduct.title;
 
