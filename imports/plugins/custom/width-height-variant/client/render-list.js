@@ -71,7 +71,6 @@ export default class RenderWidthHeightList extends Component {
   }
 
   render() {
-    /* */
     const { widthHeightValues } = this.state;
 
     return (<span>
@@ -111,6 +110,7 @@ export default class RenderWidthHeightList extends Component {
   } // end RenderWidthHeightList.render()
 }  // end RenderWidthHeightList()
 
+let i = 1;
 /**
  * priceSlotCheck()
  * @summary check if the selected width/height is divisible by 6,
@@ -121,6 +121,8 @@ export default class RenderWidthHeightList extends Component {
  * @return {Number} Returns the found/valid price from product-prices.js
  */
 function priceSlotCheck(dimension, eighth) {
+  i += 1;
+  console.log(i);
   let dimensionOutput = dimension;
   if (dimension % 6 !== 0) {
     const subtract = dimension % 6;

@@ -12,7 +12,6 @@ import RenderWidthHeightList, {
   width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
-
 class VariantList extends Component {
 
   handleVariantEditClick = (event, editButtonProps) => {

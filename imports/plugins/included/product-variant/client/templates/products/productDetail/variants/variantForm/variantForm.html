@@ -77,6 +77,8 @@
                   {{>afFieldInput name='originCountry' placeholder=(i18n "productVariant.originCountry" "Origin Country")}}
                   {{#if afFieldIsInvalid name='originCountry'}}
                   <span class="help-block">{{afFieldMessage name='originCountry'}}</span>
+                  {{/if}}
+              </div>
               <div class="form-group{{#if afFieldIsInvalid name='variantType'}} has-error{{/if}}">
                   <label class="control-label">{{afFieldLabelText name='variantType'}}</label>
                   {{>afFieldInput name='variantType' type='select' options=variantTypeOptions}}
@@ -196,7 +198,7 @@
                   {{/if}}
               </div>
 
-           </div>
+            </div>
           </div>
         </fieldset>
         {{>afFieldInput name="_id" type="hidden"}}

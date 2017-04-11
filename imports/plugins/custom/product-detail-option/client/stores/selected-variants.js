@@ -119,60 +119,41 @@ export function retrieveMetaValues(){
 }
 
 export function composeNewVariant(){
-  // console.log('here', _.size(variantMap), variantOptions.length, variantOptions);
-  // let variantMapLength = _.size(variantMap);
+  /* Check if all the variants options are selected or not */
+  let variantMapLength = _.size(variantMap);
   // if(variantMapLength < variantOptions.length) {
   //   throw new Error('A variant option is missing. Please select all the variants');
   // }
 
-  // var newVariantConfig = {
-  //   _id: '',
-  //   price: 0,
-  //   values: [],
-  //   metafields: []
-  // };
+  var netVariant = {
+    _id: '',
+    price: 0,
+    values: [],
+    metafields: [],
+    isProductBundle: true,
+  };
 
-  // for(let reqVariant in variantMap) {
-  //   if(!(reqVariant in variantOptions)) {
-  //     throw new Error("A variant option is missing");
-  //   }
+  for(let reqVariant in variantMap) {
+    let parentVariant = Products.findOne(reqVariant);
+    let setVariant = Products.findOne(variantMap[reqVariant]);
 
-  //   let setVariant = Products.findOne(variantMap[reqVariant]);
-  //   console.log('setVariant', setVariant);
-
-  //   if(!setVariant) {
-  //     throw new Error("This variant does not exist");
-  //   }
-
-  //   var values = extractValuesFromVariant(setVariant, reqVariant);
-  //   var metafields = valuesToMetaFields(values);
-
-  //   newVariantConfig.values = Object.assign({}, values, netVariant.values);
-  //   newVariantConfig.metafields = netVariant.metafields.concat(metafields);
-  //   newVariantConfig.price += setVariant.price;
-  //   newVariantConfig._id += hash(reqVariant._id).toString(32) + hash(setVariant._id).toString(32);
-  // }
-
-  var newVariant = variantsToSet.reduce(function(netVariant, reqVarient){
-    if(!(reqVarient._id in variantMap)){
-      throw new Error("A variant option is missing");
+    if(!setVariant) {
+      throw new Error("This variant does not exist");
     }
-    var setVariant = Products.findOne(variantMap[reqVarient._id]);
-    var values = extractValuesFromVariant(setVariant);
-    var metafields = valuesToMetaFields(value);
 
-    netVariant.values = netVariant.values.concat(value);
-    netVariant.metafields = netVariant.metafields.concat(metafields);
+    var values = extractValuesFromVariant(setVariant, parentVariant);
+    var metafields = valuesToMetaFields(values);
+
     netVariant.price += setVariant.price;
-    netVariant._id += hash(reqVarient._id).toString(32) + hash(setVariant).toString(32);
-    return netVariant;
-  }, { _id: "", values: [], metafields: [], price: 0 });
+    netVariant.values = netVariant.values.concat(values);
+    netVariant.metafields = netVariant.metafields.concat(metafields);
+    netVariant._id += hash(parentVariant._id).toString(32) + hash(setVariant._id).toString(32);
+  }
 
-  newVariantConfig.title = "Custom " + currentProduct.title;
+  netVariant.type = "variant";
+  netVariant.title = "Custom Bundled " + currentProduct.title;
 
-  newVariantConfig.type = "make-shift";
-
-  return addNewVariant(currentProduct._id, newVariantConfig);
+  return addNewVariant(currentProduct._id, netVariant);
 }
 
 const MULTIPLIER = 37;
@@ -181,7 +162,6 @@ function hash(str){
     return MULTIPLIER * h + char.charCodeAt(0);
   }, 0);
 }
-
 
 function extractValuesFromVariant(variant, parent) {
   switch(variant.variantType) {
@@ -210,42 +190,34 @@ function valuesToMetaFields(values){
   }, []);
 }
 
-function addNewVariant(parentId, newVariant) {
-
-  if (Products.findOne(newVariant._id)) {
-    console.log("Variant already exists: ", newVariant._id);
-    return newVariant._id;
-  }
+function addNewVariant(parentId, newVariant){
 
   const newVariantId = newVariant._id;
-  // get parent ancestors to build new ancestors array
-  const product = Products.findOne(parentId);
-  const { ancestors } = product;
+  const { ancestors } = Products.findOne(parentId);
 
   Array.isArray(ancestors) && ancestors.push(parentId);
   console.log(
-    `addNewVariant(${parentId}, ${newVariant._id}) \n`,
-    `From: /imports/plugins/custom/width-height-variant/client/render-list.js`
+    `addNewVariant(${parentId}, newVariant, cb) \n`,
+    `From: /imports/plugins/custom/width-height-variant/server/startup.js`
   );
-
   const assembledVariant = Object.assign(newVariant || {}, {
     _id: newVariantId,
     ancestors: ancestors,
     type: "variant",
-    isVisible: true,
+    isVisible: true
   });
 
   if (!newVariant) {
     Object.assign(assembledVariant, {
       title: "",
       price: 0.00,
-
     });
   }
 
+  console.log('here before assembled variant');
   Products.insert(assembledVariant,
     (error, result) => {
-      if(error){
+      if(error) {
         console.error(error);
       }
       if (result) {
@@ -256,6 +228,6 @@ function addNewVariant(parentId, newVariant) {
       }
     }
   );
-
-  return newVariantId;
+  console.log('here after assembled variant');
+  return newVariant;
 }

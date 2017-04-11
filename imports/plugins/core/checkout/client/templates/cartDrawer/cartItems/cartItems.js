@@ -28,6 +28,8 @@ Template.cartDrawerItems.helpers({
         return !!defaultImage;
       });
     }
+
+    console.log(defaultImage);
     return defaultImage;
   }
 });

@@ -1,19 +1,17 @@
 import { isEmpty } from "lodash";
 import { StyleRoot } from "radium";
-import React, { Component, PropTypes } from "react";
-import { composeWithTracker } from "/lib/api/compose";
 import { Meteor } from "meteor/meteor";
 import { ReactionProduct } from "/lib/api";
-import { Reaction, i18next, Logger } from "/client/api";
 import { Tags, Media } from "/lib/collections";
-import { Loading } from "/imports/plugins/core/ui/client/components";
-import { ProductDetail, ProductNotFound } from "../components";
+import React, { Component, PropTypes } from "react";
+import { composeWithTracker } from "/lib/api/compose";
+import { Reaction, i18next, Logger } from "/client/api";
 import { SocialContainer, VariantListContainer } from "./";
+import { ProductDetail, ProductNotFound } from "../components";
+import * as SelectedVariants from "../stores/selected-variants";
+import { Loading } from "/imports/plugins/core/ui/client/components";
 import { MediaGalleryContainer } from "/imports/plugins/core/ui/client/containers";
 import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/client/providers";
-
-import * as SelectedVariants from "../stores/selected-variants";
-
 
 class ProductOptionContainer extends Component {
   constructor(props) {
@@ -48,10 +46,10 @@ class ProductOptionContainer extends Component {
     // }
 
     var newVariant;
-    // console.log('currentProduct', currentProduct.isVisible, SelectedVariants.composeNewVariant);
+
     try{
       newVariant = SelectedVariants.composeNewVariant();
-    }catch(e){
+    } catch(e){
       console.log(e);
       Alerts.inline(e.message, "error", {
         placement: "productDetail",
@@ -76,6 +74,7 @@ class ProductOptionContainer extends Component {
         }
         // Reset cart quantity on success
         this.handleCartQuantityChange(null, 1);
+        console.log('here', currentProduct);
 
         return true;
       });
@@ -90,7 +89,7 @@ class ProductOptionContainer extends Component {
     }, 0);
     // slide out label
     const addToCartText = i18next.t("productDetail.addedToCart");
-    const addToCartTitle = currentVariant.title || "";
+    const addToCartTitle = currentProduct.title || "";
     $(".cart-alert-text").text(`${quantity} ${addToCartTitle} ${addToCartText}`);
 
     // Grab and cache the width of the alert to be used in animation

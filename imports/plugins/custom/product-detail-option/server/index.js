@@ -14,8 +14,8 @@ Reaction.registerTemplate({
 });
 
 Reaction.registerTemplate({
-  name: "productOptionTwoColumn",
-  title: "Product Detail Two Column Layout",
+  name: "productDetailOptionTwoColumn",
+  title: "Product Detail Option Two Column Layout",
   type: "react",
   templateFor: ["pdp"],
   permissions: ["admin", "owner"],
