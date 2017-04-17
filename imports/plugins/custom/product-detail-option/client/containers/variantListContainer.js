@@ -7,9 +7,8 @@ import React, { Component, PropTypes } from "react";
 import { composeWithTracker } from "/lib/api/compose";
 import { getVariantIds } from "/lib/selectors/variants";
 import { getChildVariants } from "../selectors/variants";
-import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
-
 import * as SelectedVariants from "../stores/selected-variants";
+import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
 function variantIsSelected(variantId) {
   const current = ReactionProduct.selectedVariant();

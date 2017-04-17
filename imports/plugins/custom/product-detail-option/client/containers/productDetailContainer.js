@@ -74,7 +74,6 @@ class ProductOptionContainer extends Component {
         }
         // Reset cart quantity on success
         this.handleCartQuantityChange(null, 1);
-        console.log('here', currentProduct);
 
         return true;
       });

@@ -85,14 +85,15 @@ class VariantList extends Component {
         const divStyle = {
           display: "none"
         };
-
-        const childVariantContainer = <div className="accordion" id={variant._id} style={divStyle}><RenderList
-                                        renderType={type}
-                                        renderList={props.childVariants}
-                                        parentProps={props}
-                                        childVariants={childVariants}
-                                        parentMethods={methods}
-                                      /></div>;
+        const childVariantContainer = <div className="accordion" id={variant._id} style={divStyle}>
+                                        <RenderList
+                                          renderType={type}
+                                          renderList={props.childVariants}
+                                          parentProps={props}
+                                          childVariants={childVariants}
+                                          parentMethods={methods}
+                                        />
+                                      </div>;
 
         return (
           [<EditContainer
@@ -152,36 +153,6 @@ class VariantList extends Component {
     }
 
     return variantList;
-  }
-
- renderChildVariants() {
-    /**
-     * This `if` is to handle error:
-     *  Exception from Tracker recompute function
-     *  Which happens on one of Meteor's cycles
-     *  see: http://stackoverflow.com/a/42896843/1762493
-     */
-    if (ReactionProduct.selectedVariant() === null) {
-      return; // or return null;
-    }
-    const currentVariant = ReactionProduct.selectedVariant();
-
-    const type = currentVariant.variantType || "variant";
-    const methods = this;
-    const props = this.props;
-
-    return (
-      <RenderList
-        renderType={type}
-        renderList={props.childVariants}
-        parentProps={props}
-        parentMethods={methods}
-      />
-    );
-  } // end renderChildVariants()
-
-  getChildVariants(variant) {
-
   }
 
   render() {

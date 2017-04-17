@@ -18,11 +18,7 @@ class Variant extends Component {
       const variantId = ReactionProduct.selectedVariant()._id;
 
       let selectedVariant = document.getElementById(variantId);
-        if (selectedVariant.style.display === "block") {
-            selectedVariant.style.display = "none";
-        } else {
-            selectedVariant.style.display = "block";
-        }
+      selectedVariant.style.display = selectedVariant.style.display === "block" ? "none" : "block";
     }
   }
 
