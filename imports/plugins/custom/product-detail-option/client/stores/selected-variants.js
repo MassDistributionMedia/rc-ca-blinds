@@ -214,7 +214,6 @@ function addNewVariant(parentId, newVariant){
     });
   }
 
-  console.log('here before assembled variant');
   Products.insert(assembledVariant,
     (error, result) => {
       if(error) {
@@ -228,6 +227,6 @@ function addNewVariant(parentId, newVariant){
       }
     }
   );
-  console.log('here after assembled variant');
+
   return newVariant;
 }

@@ -1,12 +1,12 @@
+import update from "react/lib/update";
+import { ReactionProduct } from "/lib/api";
+import { VariantList } from "../components";
+import { Reaction, i18next } from "/client/api";
+import { Products, Media } from "/lib/collections";
 import React, { Component, PropTypes } from "react";
 import { composeWithTracker } from "/lib/api/compose";
-import { ReactionProduct } from "/lib/api";
-import { Reaction, i18next } from "/client/api";
-import { VariantList } from "../components";
-import { getChildVariants } from "../selectors/variants";
-import { Products, Media } from "/lib/collections";
-import update from "react/lib/update";
 import { getVariantIds } from "/lib/selectors/variants";
+import { getChildVariants } from "../selectors/variants";
 import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
 import * as SelectedVariants from "../stores/selected-variants";

@@ -1,21 +1,28 @@
 import classnames from "classnames";
+import { ChildVariant } from "./";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
+import { Products } from "/lib/collections";
 import React, { Component, PropTypes } from "react";
 import { SortableItem } from "/imports/plugins/core/ui/client/containers";
+import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 import { Currency, Translation } from "/imports/plugins/core/ui/client/components";
-
-import RenderWidthHeightList, {
-  WIDTH_HEIGHT_VARIANT_TYPE,
-  width_heightVariantUploadForm,
-} from "/imports/plugins/custom/width-height-variant/client/render-list";
 
 class Variant extends Component {
 
   handleClick = (event) => {
     if (this.props.onClick) {
       this.props.onClick(event, this.props.variant);
+
+      const variantId = ReactionProduct.selectedVariant()._id;
+
+      let selectedVariant = document.getElementById(variantId);
+        if (selectedVariant.style.display === "block") {
+            selectedVariant.style.display = "none";
+        } else {
+            selectedVariant.style.display = "block";
+        }
     }
   }
 
@@ -78,25 +85,10 @@ class Variant extends Component {
     return null;
   }
 
-  renderChildVariants(variant) {
-
-    const currentVariant = variant;
-
-    const type = currentVariant.variantType || "variant";
-    const methods = this;
-    const props = this.props;
-
-    return (
-      <RenderList
-        renderType={type}
-        renderList={props.childVariants}
-        parentProps={props}
-        parentMethods={methods}
-      />
-    );
-  } // end renderChildVariants()
-
   render() {
+    let detailStyle = {
+      display: 'none'
+    };
     const variant = this.props.variant;
     const classes = classnames({
       "variant-detail": true,
@@ -104,61 +96,55 @@ class Variant extends Component {
       "variant-deleted": this.props.variant.isDeleted
     });
 
-    if (!variant.hasOwnProperty('isProductBundle') || !variant.isProductBundle) {
-      let variantTitleElement;
+    let variantTitleElement;
 
-      if (typeof variant.title === "string" && variant.title.length) {
-        variantTitleElement = (
-          <span className="variant-title">{variant.title}</span>
-        );
-      } else {
-        variantTitleElement = (
-          <Translation defaultValue="Label" i18nKey="productVariant.title" />
-        );
-      }
-
-      const variantElement = (
-        <li
-          className="variant-list-item"
-          id="variant-list-item-{variant._id}"
-          key={variant._id}
-          onClick={this.handleClick}
-        >
-          <div className={classes}>
-            <div className="title">
-              {variantTitleElement}
-            </div>
-
-            <div className="actions">
-              <span className="variant-price">
-                <Currency amount={this.price} editable={this.props.editable}/>
-              </span>
-            </div>
-
-            <div className="alerts">
-              {this.renderDeletionStatus()}
-              {this.renderInventoryStatus()}
-              {this.props.visibilityButton}
-              {this.props.editButton}
-            </div>
-          </div>
-          <div></div>
-        </li>
+    if (typeof variant.title === "string" && variant.title.length) {
+      variantTitleElement = (
+        <span className="variant-title">{variant.title}</span>
       );
-
-      if (this.props.editable) {
-        return this.props.connectDragSource(
-          this.props.connectDropTarget(
-            variantElement
-          )
-        );
-      }
-
-      return variantElement;
+    } else {
+      variantTitleElement = (
+        <Translation defaultValue="Label" i18nKey="productVariant.title" />
+      );
     }
-    else {
-      return null;
+
+    const variantElement = (
+      <li
+        className="variant-list-item"
+        id="variant-list-item-{variant._id}"
+        key={variant._id}
+        onClick={this.handleClick}
+      >
+        <div className={classes}>
+          <div className="title">
+            {variantTitleElement}
+          </div>
+
+          <div className="actions">
+            <span className="variant-price">
+              <Currency amount={this.price} editable={this.props.editable}/>
+            </span>
+          </div>
+
+          <div className="alerts">
+            {this.renderDeletionStatus()}
+            {this.renderInventoryStatus()}
+            {this.props.visibilityButton}
+            {this.props.editButton}
+          </div>
+        </div>
+      </li>
+    );
+
+    if (this.props.editable) {
+      return this.props.connectDragSource(
+        this.props.connectDropTarget(
+          variantElement
+        )
+      );
     }
+
+    return variantElement;
   }
 }
 
@@ -173,85 +159,9 @@ Variant.propTypes = {
   visibilityButton: PropTypes.node,
   connectDragSource: PropTypes.func,
   connectDropTarget: PropTypes.func,
+  renderChildVariants: PropTypes.func,
+  childVariants: PropTypes.arrayOf(PropTypes.object),
   displayPrice: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
 };
 
 export default SortableItem("product-variant", Variant);
-
-function RenderList(props) {
-  const {
-    renderType,
-    renderList,
-    parentProps,
-    parentMethods,
-  } = props;
-
-  switch(renderType) {
-    case "variant" : {
-      return (<RenderVariantList
-        renderList={renderList}
-        parentProps={parentProps}
-        methods={parentMethods}
-      />
-      );
-    }
-    case WIDTH_HEIGHT_VARIANT_TYPE : {
-      return (<RenderWidthHeightList
-        renderList={renderList}
-        methods={parentMethods}
-      />);
-    }
-  }
-}
-
-function RenderVariantList({ renderList, parentProps, methods }) {
-  console.log('renderList', renderList);
-  if (!renderList) {
-    console.log('here');
-    return null;
-  }
-
-  return (
-    <span>
-      <Divider
-          key="availableOptionsDivider"
-          i18nKeyLabel="productDetail.availableOptions"
-          label="Available Options"
-      />
-      <div className="row variant-product-options" key="childVariantList">
-        <div>{
-          renderList.map((childVariant, index) => {
-            const media = parentProps.childVariantMedia.filter((mediaItem) => {
-              if (mediaItem.metadata.variantId === childVariant._id) {
-                return true;
-              }
-              return false;
-            });
-
-            return (
-              <EditContainer
-                data={childVariant}
-                disabled={parentProps.editable === false}
-                editView="variantForm"
-                i18nKeyLabel="productDetailEdit.editVariant"
-                key={index}
-                label="Edit Variant"
-                onEditButtonClick={methods.handleChildVariantEditClick}
-                onVisibilityButtonClick={methods.handleVariantVisibilityClick}
-                permissions={["createProduct"]}
-                showsVisibilityButton={true}
-              >
-                <ChildVariant
-                  isSelected={parentProps.variantIsSelected(childVariant._id)}
-                  media={media}
-                  onClick={methods.handleChildleVariantClick}
-                  variant={childVariant}
-                />
-              </EditContainer>
-            );
-          })
-        }</div>
-      </div>
-    </span>);
-}  // end RenderVariantList()
-

@@ -18,6 +18,7 @@ Template.cartDrawerItems.helpers({
       "metadata.variantId": this.variants._id
     });
 
+    console.log('111', defaultImage);
     if (defaultImage) {
       return defaultImage;
     } else if (product) {
@@ -29,7 +30,7 @@ Template.cartDrawerItems.helpers({
       });
     }
 
-    console.log(defaultImage);
+    console.log('default Image', defaultImage);
     return defaultImage;
   }
 });

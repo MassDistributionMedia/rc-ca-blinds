@@ -4,6 +4,7 @@ import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
 import React, { Component, PropTypes } from "react";
+import { getChildVariant } from "../selectors/variants";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 
@@ -31,7 +32,6 @@ class VariantList extends Component {
   handleChildleVariantClick = (event, variant) => {
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
-      // console.log('variant', variant);
     }
   }
 
@@ -72,10 +72,30 @@ class VariantList extends Component {
 
     if (this.props.variants) {
       variants = this.props.variants.map((variant, index) => {
+        if (variant.hasOwnProperty('isProductBundle') && variant.isProductBundle) {
+          return null;
+        }
+
+        const childVariants = getChildVariant(variant.title);
         const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
+        const currentVariant = variant;
+        const type = currentVariant.variantType || "variant";
+        const methods = this;
+        const props = this.props;
+        const divStyle = {
+          display: "none"
+        };
+
+        const childVariantContainer = <div className="accordion" id={variant._id} style={divStyle}><RenderList
+                                        renderType={type}
+                                        renderList={props.childVariants}
+                                        parentProps={props}
+                                        childVariants={childVariants}
+                                        parentMethods={methods}
+                                      /></div>;
 
         return (
-          <EditContainer
+          [<EditContainer
             data={variant}
             disabled={this.props.editable === false}
             editView="variantForm"
@@ -96,8 +116,12 @@ class VariantList extends Component {
               onMove={this.props.onMoveVariant}
               soldOut={this.isSoldOut(variant)}
               variant={variant}
+              renderChildVariants={this.renderChildVariants}
+              {...this.props}
             />
-          </EditContainer>
+          </EditContainer>,
+          childVariantContainer
+         ]
         );
       });
     }
@@ -130,7 +154,7 @@ class VariantList extends Component {
     return variantList;
   }
 
-  renderChildVariants() {
+ renderChildVariants() {
     /**
      * This `if` is to handle error:
      *  Exception from Tracker recompute function
@@ -156,11 +180,14 @@ class VariantList extends Component {
     );
   } // end renderChildVariants()
 
+  getChildVariants(variant) {
+
+  }
+
   render() {
     return (
       <div className="product-variants">
         {this.renderVariants()}
-        {this.renderChildVariants()}
       </div>
     );
   }
@@ -188,13 +215,14 @@ function RenderList(props) {
     renderType,
     renderList,
     parentProps,
-    parentMethods,
+    childVariants,
+    parentMethods
   } = props;
 
   switch(renderType) {
     case "variant" : {
-      return ( <RenderVariantList
-        renderList={renderList}
+      return (<RenderVariantList
+        renderList={childVariants}
         parentProps={parentProps}
         methods={parentMethods}
       />
