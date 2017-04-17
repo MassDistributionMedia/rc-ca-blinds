@@ -1,10 +1,11 @@
+import "./checkout.html";
+import Swiper from "swiper";
+import { Meteor } from "meteor/meteor";
 import { Reaction } from "/client/api";
 import { Cart } from "/lib/collections";
-import { Meteor } from "meteor/meteor";
-import { Template } from "meteor/templating";
-import "./checkout.html";
+import { Media } from "/lib/collections";
 import { Session } from "meteor/session";
-import Swiper from "swiper";
+import { Template } from "meteor/templating";
 
 //
 // cartCheckout is a wrapper template
@@ -19,7 +20,6 @@ Template.cartCheckout.helpers({
     return {};
   }
 });
-
 
 Template.cartCheckout.onCreated(function () {
   if (Reaction.Subscriptions.Cart.ready()) {
@@ -93,3 +93,28 @@ Template.checkoutCartDrawer.events({
   }
 });
 
+Template.checkoutCartDrawerItems.helpers({
+  product: function () {
+    return this;
+  },
+  media: function () {
+    const product = this;
+    let defaultImage = Media.findOne({
+      "metadata.productId": this.variants.ancestors[0],
+      "metadata.toGrid": 1
+    });
+
+    if (defaultImage) {
+      return defaultImage;
+    } else if (product) {
+      _.some(product.variants, function (variant) {
+        defaultImage = Media.findOne({
+          "metadata.variantId": variant._id
+        });
+        return !!defaultImage;
+      });
+    }
+
+    return defaultImage;
+  }
+});

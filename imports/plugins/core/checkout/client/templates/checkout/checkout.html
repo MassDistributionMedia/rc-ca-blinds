@@ -37,6 +37,17 @@
 
 <template name="checkoutCartDrawerItems">
 <div class="cart-items" id="{{productId}}{{variants._id}}">
+  <a href="{{pathFor 'product' handle=productId variantId=variants._id}}" data-event-category="cart" data-event-action="product-click" data-event-label="Cart product click" data-event-value="{{productId}}">
+    {{#with media}}
+      <div class="center-cropped" style="background-image: url('{{url store='small'}}');">
+        <img src="{{url store='small'}}" class="product-grid-item-images img-responsive">
+      </div>
+    {{else}}
+      <div class="center-cropped" style="background-image: url('/resources/placeholder.gif');">
+        <img src= "/resources/placeholder.gif" class="product-grid-item-images img-responsive">
+      </div>
+    {{/with}}
+  </a>
   <div class="cart-labels" style="margin:0px">
     {{#if cart.showItemLowInventoryWarning variants}}
     <div class="badge badge-low-inv-warning" title="{{variants.inventoryQuantity}}" data-i18n="cartDrawerItems.left">!</div>

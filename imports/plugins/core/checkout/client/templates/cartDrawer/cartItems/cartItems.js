@@ -15,8 +15,9 @@ Template.cartDrawerItems.helpers({
   media: function () {
     const product = this;
     let defaultImage = Media.findOne({
-      "metadata.variantId": this.variants._id
-    });
+      "metadata.productId": this.variants.ancestors[0],
+      "metadata.toGrid": 1
+      });
 
     console.log('111', defaultImage);
     if (defaultImage) {

@@ -1,13 +1,13 @@
 import _ from "lodash";
-import { Meteor } from "meteor/meteor";
-import { Session } from "meteor/session";
-import { Template } from "meteor/templating";
-import { Tracker } from "meteor/tracker";
 import { $ } from "meteor/jquery";
 import { Reaction } from "/client/api";
-import Logger from "/client/modules/logger";
-import { ReactionProduct } from "/lib/api";
+import { Meteor } from "meteor/meteor";
+import { Session } from "meteor/session";
 import { Media } from "/lib/collections";
+import { Tracker } from "meteor/tracker";
+import { ReactionProduct } from "/lib/api";
+import Logger from "/client/modules/logger";
+import { Template } from "meteor/templating";
 import { isRevisionControlEnabled } from "/imports/plugins/core/revisions/lib/api";
 
 
