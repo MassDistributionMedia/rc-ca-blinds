@@ -1,5 +1,5 @@
-import classnames from "classnames";
 import { ChildVariant } from "./";
+import classnames from "classnames";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
