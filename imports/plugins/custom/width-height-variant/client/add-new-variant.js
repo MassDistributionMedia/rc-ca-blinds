@@ -19,6 +19,7 @@ function formatElement(element) {
   const widthEighth = element.widthEighth + "8th";
   const heightEighth = element.heightEighth + '8th';
   const unique_key = width + "-" + widthEighth + "x" + height + "-" + heightEighth;
+
   return {
     _id: "SoftwoodOption" + unique_key + "Price" + element.price,
     variantType: WIDTH_HEIGHT_VARIANT_TYPE,

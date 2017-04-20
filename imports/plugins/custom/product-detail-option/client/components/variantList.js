@@ -85,14 +85,14 @@ class VariantList extends Component {
         const divStyle = {
           display: "none"
         };
-        const childVariantContainer = <div className="accordion" id={variant._id} style={divStyle}>
-                                        <RenderList
+        const childVariantContainer = <div className="variant-accordion" id={variant._id} style={divStyle}>
+                                        {<RenderList
                                           renderType={type}
                                           renderList={props.childVariants}
                                           parentProps={props}
                                           childVariants={childVariants}
                                           parentMethods={methods}
-                                        />
+                                        />}
                                       </div>;
 
         return (
@@ -137,19 +137,19 @@ class VariantList extends Component {
     if (variants.length === 0 && this.props.editable === false) {
       return variantList;
     } else if (variants.length > 1 || variants.length === 0) {
-      return [
+      return ([
         <Divider
           i18nKeyLabel="productDetail.options"
           key="dividerWithLabel"
           label="Options"
         />,
         variantList
-      ];
+      ]);
     } else if (variants.length === 1) {
-      return [
+      return ([
         <Divider key="divider" />,
         variantList
-      ];
+      ]);
     }
 
     return variantList;
@@ -205,6 +205,12 @@ function RenderList(props) {
         methods={parentMethods}
       />);
     }
+    default:
+      return (<RenderVariantList
+        renderList={childVariants}
+        parentProps={parentProps}
+        methods={parentMethods}
+      />);
   }
 }
 

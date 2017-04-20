@@ -17,8 +17,15 @@ class Variant extends Component {
 
       const variantId = ReactionProduct.selectedVariant()._id;
 
-      let selectedVariant = document.getElementById(variantId);
-      selectedVariant.style.display = selectedVariant.style.display === "block" ? "none" : "block";
+      let selectedAccordion = document.getElementById(variantId);
+      let variantAccordion = document.getElementsByClassName("variant-accordion");
+
+      selectedAccordion.style.display = selectedAccordion.style.display === "block" ? "none" : "block";
+      for(let i=0; i<variantAccordion.length; i++ ) {
+        if (variantAccordion[i].id !== variantId) {
+           variantAccordion[i].style.display = "none";
+        }
+      }
     }
   }
 

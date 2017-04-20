@@ -1,11 +1,10 @@
-import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
-export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
-import softwoodProducts from "../data/product-prices";
-
-import React, { Component, PropTypes} from "react";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
+import React, { Component, PropTypes} from "react";
+import softwoodProducts from "../data/product-prices";
+import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
+export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 
 // import { emptyOldVariants } from "/imports/plugins/custom/width-height-variant/server/startup";
@@ -25,12 +24,12 @@ const EIGHTHS = [
   return num.toString();
 });
 
-
 export default class RenderWidthHeightList extends Component {
   constructor(props) {
     super(props);
-    var curProduct = ReactionProduct.selectedVariant()
-    if (!curProduct || !curProduct.width && !curProduct.height) {
+    var curProduct = ReactionProduct.selectedVariant();
+
+    if (!curProduct || (!curProduct.width && !curProduct.height && !curProduct.blindType)) {
       this.state = {
         widthHeightValues: {
           width: 24,
@@ -38,6 +37,7 @@ export default class RenderWidthHeightList extends Component {
           height: 36,
           heightEighth: "0",
         },
+        blindType: "2in1"
       };
     } else {
       this.state = {
@@ -47,39 +47,50 @@ export default class RenderWidthHeightList extends Component {
           height: curProduct.height,
           heightEighth: curProduct.heightEighth,
         },
+        blindType: curProduct.blindType
       };
     }
   }
+
   update(productData, widthEighth, heightEighth) {
     this.commit(productData);
+
     return this.setState({
       widthHeightValues: productData,
     });
+  }
+
+  updateBlindType(blind) {
+    this.setState({blindType: blind});
   }
 
   commit(productData) {
     var product = ReactionProduct.selectedProduct();
     var variant = ReactionProduct.selectedVariant();
     var parent;
+
     if(variant.ancestors[variant.ancestors.length - 1] === product._id){
       parent = variant._id;
     } else {
       parent = variant.ancestors[variant.ancestors.length - 1];
     }
+
     const newVariant = Products.findOne(addNewVariantIfNotExist(parent, productData));
     this.props.methods.handleChildleVariantClick(null, newVariant);
   }
 
   render() {
+    let product = ReactionProduct.selectedProduct();
     const { widthHeightValues } = this.state;
 
     return (<span>
-      <Divider
+      {[<Divider
           key="availableOptionsDivider"
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"
-      />
-      <WidthHeightOptionDescription/>
+      />,
+      <BlindTypeDescription key="blind-desc" blind={this.state.blindType} updateBlindType={this.updateBlindType.bind(this)}/>,
+      <WidthHeightOptionDescription key="width-height"/>,
       <div className="row variant-product-options" key="childVariantList">
         <div> {[
         dimensionSelect.call(this, "width", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
@@ -89,6 +100,7 @@ export default class RenderWidthHeightList extends Component {
             widthEighth: eighth,
             height: this.state.widthHeightValues.height,
             heightEighth: this.state.widthHeightValues.heightEighth,
+            blindType: this.state.blindType
           };
           productData.price = softwoodProducts.find(findPrice, productData).price;
           this.update(productData);
@@ -100,12 +112,13 @@ export default class RenderWidthHeightList extends Component {
             widthEighth: this.state.widthHeightValues.widthEighth,
             height: val,
             heightEighth: eighth,
+            blindType: this.state.blindType
           };
           productData.price = softwoodProducts.find(findPrice, productData).price;
           this.update(productData);
         }),
       ]}</div>
-      </div>
+      </div>]}
     </span>);
   } // end RenderWidthHeightList.render()
 }  // end RenderWidthHeightList()
@@ -124,10 +137,12 @@ function priceSlotCheck(dimension, eighth) {
   i += 1;
   console.log(i);
   let dimensionOutput = dimension;
+
   if (dimension % 6 !== 0) {
     const subtract = dimension % 6;
     dimensionOutput = dimension - subtract + 6; // + 6 to round up to the next price
   } // end if (dimension % 6)
+
   if (eighth !== 0) {
     return dimensionOutput = dimensionOutput + 6;
   } else {
@@ -151,6 +166,7 @@ function findPrice(element) {
   }
   let widthPrice = priceSlotCheck(originWidth, this.widthEighth);
   let heightPrice = priceSlotCheck(originHeight, this.heightEighth);
+
   if (element.width === widthPrice && element.height === heightPrice)
     return element;
 }
@@ -174,24 +190,46 @@ export function WidthHeightOptionDescription() {
   );
 }
 
-function WidthTitle() {
+export function BlindTypeDescription(props) {
+  const {
+    blind,
+    updateBlindType
+  } = props;
+
   return (
-    <h3>Width <span>&harr;</span></h3>
+    <div key="variant-product-options" className="row variant-product-options">
+      <h2 style={{width: '100%'}}>Select Blind Type</h2>
+      <span className={"blinds"+"-selects"} key={ "blinds" + "select-span"}>
+        Blind Type
+        <select
+          className={"blinds" + "-select"}
+          key={"blind" + "-select"}
+          onChange={(e) => {
+            updateBlindType(e.target.value);
+          }}
+        >
+          <option className={"form-control"} key={"blind-2in1"} value={"2in1"}>2 in 1 Blind</option>
+          <option className={"form-control"} key={"blind-3in1"} value={"3in1"}>3 in 1 Blind</option>
+        </select>
+      </span>
+    </div>
   );
 }
+
+function WidthTitle() {
+  return (
+    <h3>Width<span>&harr;</span></h3>
+  );
+}
+
 function HeightTitle() {
   return (
-    <h3>Height <span>&#8597;</span></h3>
+    <h3>Height<span>&#8597;</span></h3>
   );
 }
 
 function dimensionSelect(key, values, list, ethList, onChange) {
-  let optionTitle = null;
-  if ( key === "width" ) {
-    optionTitle = <WidthTitle/>
-  } else {
-    optionTitle = <HeightTitle/>
-  }
+  let optionTitle = (key === "width") ? <WidthTitle/> : <HeightTitle/>;
 
   return (
     <span className={key+"-selects"} key={key+"select-span"}>
@@ -245,9 +283,11 @@ function dimensionSelect(key, values, list, ethList, onChange) {
 function formatElement(element) {
   const width = element.width;
   const height = element.height;
+  const blindType = element.blindType;
   const widthEighth = element.widthEighth;
   const heightEighth = element.heightEighth;
   const unique_key = width + " " + widthEighth + "/8 x " + height + " " + heightEighth + "/8";
+
   return {
     _id: formatID(element),
     variantType: WIDTH_HEIGHT_VARIANT_TYPE,
@@ -256,6 +296,7 @@ function formatElement(element) {
     price: element.price,
     height: height,
     width: width,
+    blindType: blindType,
     widthEighth: element.widthEighth,
     heightEighth: element.heightEighth,
     isHeightWidth: true,

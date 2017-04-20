@@ -1,13 +1,12 @@
 import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
+import { ReactionProduct } from "/lib/api";
+import { Products } from "/lib/collections";
 import { Template } from "meteor/templating";
 import { Reaction, i18next } from "/client/api";
-import { ReactionProduct } from "/lib/api";
 import { applyProductRevision } from "/lib/api/products";
-import { Products } from "/lib/collections";
-
-import { addNewVariantIfNotExist } from "/imports/plugins/custom/width-height-variant/client/render-list";
 import seedProduct from "/imports/plugins/custom/width-height-variant/data/product-seed";
+import { addNewVariantIfNotExist } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
 Template.variantForm.onCreated(function () {
   this.autorun(() => {
@@ -20,6 +19,7 @@ Template.variantForm.onCreated(function () {
 
   this.getVariant = (variant) => {
     const product = Products.findOne(variant._id);
+
     return applyProductRevision(product);
   };
 });
@@ -30,6 +30,7 @@ Template.variantForm.onCreated(function () {
 Template.variantForm.helpers({
   variant() {
     const instance = Template.instance();
+
     return instance.getVariant(instance.data);
   },
   variantTypeOptions: function () {
@@ -47,6 +48,7 @@ Template.variantForm.helpers({
     if (this.ancestors.length === 1) {
       return Template.parentVariantForm;
     }
+
     return Template.childVariantForm;
   },
   childVariants: function () {
@@ -58,6 +60,7 @@ Template.variantForm.helpers({
         childVariants.push(variant);
       }
     });
+
     return childVariants;
   },
   hasChildVariants: function () {
@@ -93,6 +96,7 @@ Template.variantForm.helpers({
         }, (isConfirm) => {
           if (isConfirm) {
             const id = variant._id;
+
             Meteor.call("products/deleteVariant", id, function (error, result) {
               if (result && ReactionProduct.selectedVariantId() === id) {
                 return ReactionProduct.setCurrentVariant(null);
@@ -115,6 +119,7 @@ Template.variantForm.helpers({
         }, (isConfirm) => {
           if (isConfirm) {
             const id = variant._id;
+
             Meteor.call("products/updateProductField", id, "isDeleted", false, (error) => {
               if (error) {
                 Alerts.alert({
