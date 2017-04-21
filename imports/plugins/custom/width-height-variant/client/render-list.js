@@ -163,18 +163,57 @@ function priceSlotCheck(dimension, eighth) {
 function findPrice(element) {
   let originWidth = this.width;
   let originHeight = this.height;
+  let splitType = this.blindType;
+  let splitValue = 1;
+
+  switch(splitType) {
+    case "2in1":
+      splitValue = 2;
+      break;
+
+    case "3in1":
+      splitValue = 3;
+      break;
+
+    default:
+      splitValue = 1;
+  }
+
   if ( originWidth < 24 ) {
     originWidth = 24;
   }
   if ( originHeight < 30 ) {
     originHeight = 30;
   }
-  let widthPrice = priceSlotCheck(originWidth, this.widthEighth);
+
+  let newWidth = Math.round(this.width / splitValue);
+
+  if(newWidth < 24) {
+    newWidth = this.width;
+    splitValue = 1;
+  }
+
+  let widthPrice = priceSlotCheck(newWidth, this.widthEighth);
   let heightPrice = priceSlotCheck(originHeight, this.heightEighth);
 
-  if (element.width === widthPrice && element.height === heightPrice)
+  if (element.width === widthPrice && element.height === heightPrice) {
+    console.log('price', widthPrice, heightPrice);
+    element.price *= splitValue;
     return element;
+  }
 }
+
+// function findSplitValue(splitType) {
+//   switch(splitType) {
+//     case "2in1":
+//       return 2;
+
+//     case "3in1":
+//       return 3;
+
+//     default:
+//       return 1;
+// }
 
 export function WidthHeightOptionDescription() {
   const hrStyle = {
@@ -210,7 +249,7 @@ export function BlindTypeDescription(props) {
   return (
     <div key="variant-product-options" className="row variant-product-options">
       <hr style={hrStyle}/>
-      <h2 style={{width: '100%'}}>Select Blind Type</h2>
+      <h2 style={{width: '100%'}}>Select Blind Split</h2>
       <span className={"blinds"+"-selects"} key={ "blinds" + "select-span"}>
         Split Blind
         <select
