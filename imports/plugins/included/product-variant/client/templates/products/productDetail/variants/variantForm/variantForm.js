@@ -35,8 +35,8 @@ Template.variantForm.helpers({
   },
   variantTypeOptions: function () {
     return [
-      {label: "Default", value: "Default"},
-      {label: "Height & Width", value: "Height & Width"}
+      {label: "Default", value: "variant"},
+      {label: "Head-rail", value: "Head-rail"}
     ];
   },
   displayVariantOptions: function () {

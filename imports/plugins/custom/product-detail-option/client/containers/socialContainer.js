@@ -1,10 +1,10 @@
+import { Media } from "/lib/collections";
+import { ReactionProduct } from "/lib/api";
 import React, { Component, PropTypes } from "react";
 import { composeWithTracker } from "/lib/api/compose";
-import { ReactionProduct } from "/lib/api";
-import SocialButtons from "/imports/plugins/included/social/client/components/socialButtons";
-import { createSocialSettings } from "/imports/plugins/included/social/lib/helpers";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Media } from "/lib/collections";
+import { createSocialSettings } from "/imports/plugins/included/social/lib/helpers";
+import SocialButtons from "/imports/plugins/included/social/client/components/socialButtons";
 
 class ProductSocialContainer extends Component {
   render() {

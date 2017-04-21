@@ -103,9 +103,11 @@ export function retrieveCurrentPrice(){
 }
 
 export function retrieveMetaValues(){
+  console.log('called retrieveMetaValues');
   if(!currentProduct){
     return [];
   }
+
   return Object.keys(variantMap).reduce(function(netArray, parentID){
     var reqVariant = Products.findOne(parentID);
     var setVariant = Products.findOne(variantMap[parentID]);
@@ -114,6 +116,9 @@ export function retrieveMetaValues(){
     }
     var values = extractValuesFromVariant(setVariant, reqVariant);
     var metafields = valuesToMetaFields(values);
+    // console.log('values', values);
+    // console.log('metafields', metafields);
+
     return netArray.concat(metafields);
   }, []);
 }
@@ -173,6 +178,7 @@ function extractValuesFromVariant(variant, parent) {
       return {
         Width: variant.width + " " + variant.widthEighth  + "/8",
         Height: variant.height + " " + variant.heightEighth  + "/8",
+        BlindType: variant.blindType,
       }
     default:
       return {

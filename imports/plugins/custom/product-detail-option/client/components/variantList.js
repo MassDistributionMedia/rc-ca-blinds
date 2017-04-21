@@ -190,19 +190,13 @@ function RenderList(props) {
     parentMethods
   } = props;
 
+  console.log('renderType', renderType);
   switch(renderType) {
-    case "variant" : {
-      return (<RenderVariantList
-        renderList={childVariants}
-        parentProps={parentProps}
-        methods={parentMethods}
-      />
-      );
-    }
     case WIDTH_HEIGHT_VARIANT_TYPE : {
       return (<RenderWidthHeightList
         renderList={renderList}
         methods={parentMethods}
+        type={renderType}
       />);
     }
     default:

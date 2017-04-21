@@ -12,6 +12,7 @@ import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
 function variantIsSelected(variantId) {
   const current = ReactionProduct.selectedVariant();
+
   if (current && typeof current === "object" && (variantId === current._id || ~current.ancestors.indexOf(variantId))) {
     return true;
   }
@@ -33,6 +34,7 @@ function variantIsInActionView(variantId) {
 function getTopVariants() {
   let inventoryTotal = 0;
   const variants = ReactionProduct.getTopVariants();
+
   if (variants.length) {
     // calculate inventory total for all variants
     for (const variant of variants) {
@@ -46,6 +48,7 @@ function getTopVariants() {
     // calculate percentage of total inventory of this product
     for (const variant of variants) {
       const qty = ReactionProduct.getVariantQuantity(variant);
+
       variant.inventoryTotal = inventoryTotal;
       if (variant.inventoryManagement && inventoryTotal) {
         variant.inventoryPercentage = parseInt(qty / inventoryTotal * 100, 10);
@@ -54,6 +57,7 @@ function getTopVariants() {
         // "green" progress bar
         variant.inventoryPercentage = 100;
       }
+
       if (variant.title) {
         variant.inventoryWidth = parseInt(variant.inventoryPercentage -
           variant.title.length, 10);
@@ -66,6 +70,7 @@ function getTopVariants() {
 
     return variants;
   }
+
   return [];
 }
 
@@ -84,6 +89,7 @@ class VariantListContainer extends Component {
 
   get productHandle() {
     const selectedProduct = ReactionProduct.selectedProduct();
+
     return selectedProduct.__published && selectedProduct.__published.handle || selectedProduct.handle;
   }
 

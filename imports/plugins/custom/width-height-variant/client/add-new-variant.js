@@ -16,9 +16,10 @@ export default function addNewVariantIfNotExist(variantId, varientConfig) {
 function formatElement(element) {
   const width = element.width;
   const height = element.height;
+  const blindType = element.blindType;
   const widthEighth = element.widthEighth + "8th";
   const heightEighth = element.heightEighth + '8th';
-  const unique_key = width + "-" + widthEighth + "x" + height + "-" + heightEighth;
+  const unique_key = width + "-" + widthEighth + "x" + height + "-" + heightEighth + "-" + blindType;
 
   return {
     _id: "SoftwoodOption" + unique_key + "Price" + element.price,
@@ -28,6 +29,7 @@ function formatElement(element) {
     price: element.price,
     height: height,
     width: width,
+    blindType: blindType,
     weight: 0,
     inventoryQuantity: 9,
     inventoryPolicy: false,
@@ -74,8 +76,8 @@ function addNewVariant(parentId, newVariant, cb){
         scope: "detail"
       },
       {
-        key: "Width",
-        value: newVariant.width,
+        key: "Blind Type",
+        value: newVariant.blindType,
         scope: "detail"
       },
       {
@@ -117,7 +119,6 @@ function addNewVariant(parentId, newVariant, cb){
       price: 0.00,
     });
   }
-
 
   // if we are inserting child variant to top-level variant, we need to remove
   // all top-level's variant inventory records and flush it's quantity,

@@ -1,17 +1,18 @@
 import classnames from "classnames";
 import { ReactionProduct } from "/lib/api";
 import React, { Component, PropTypes } from "react";
+import * as SelectedVariants from "../stores/selected-variants";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { Metadata, Translation } from "/imports/plugins/core/ui/client/components/";
-
-import * as SelectedVariants from "../stores/selected-variants";
 
 class ProductMetadata extends Component {
   get metafields() {
     var metafields = [];
+
     if(this.props.metafields){
       metafields = metafields.concat(this.props.metafields);
     }
+
     var product = this.props.product;
     if(product && product.metafields){
       metafields = metafields.concat(product.metafields.filter(function(meta){
@@ -19,6 +20,7 @@ class ProductMetadata extends Component {
           if(metafields[i].key === meta.key){
             return false;
           }
+
           return true;
         }
       }));
