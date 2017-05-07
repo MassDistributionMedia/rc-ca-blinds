@@ -1,14 +1,19 @@
 import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
-import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
 import { Template } from "meteor/templating";
 import { Reaction, i18next } from "/client/api";
+import { Countries } from "/client/collections";
+import { ReactionProduct } from "/lib/api";
 import { applyProductRevision } from "/lib/api/products";
 import seedProduct from "/imports/plugins/custom/width-height-variant/data/product-seed";
 import { addNewVariantIfNotExist } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
 Template.variantForm.onCreated(function () {
+  this.state = new ReactiveDict();
+  this.state.set("taxCodes", []);
+  this.state.set("countries", Countries.find({}).fetch());
+
   this.autorun(() => {
     const productHandle = Reaction.Router.getParam("handle");
 
@@ -65,6 +70,21 @@ Template.variantForm.helpers({
   },
   hasChildVariants: function () {
     return ReactionProduct.checkChildVariants(this._id) > 0;
+  },
+  updateQuantityIfChildVariants: function () {
+    if (ReactionProduct.checkChildVariants(this._id) > 0) {
+      const _id = this._id;
+      const variants = ReactionProduct.getVariants();
+      let variantQuantity = 0;
+      variants.map(variant => {
+        if (~variant.ancestors.indexOf(_id) && variant.type !== "inventory") {
+          variantQuantity += variant.inventoryQuantity;
+        }
+      });
+      Meteor.call("products/updateProductField", _id, "inventoryQuantity", variantQuantity);
+      return true;
+    }
+    return false;
   },
   variantFormId: function () {
     return "variant-form-" + this._id;
@@ -132,6 +152,86 @@ Template.variantForm.helpers({
         });
       };
     };
+  },
+  isProviderEnabled: function () {
+    const shopId = Reaction.getShopId();
+
+    const provider = Packages.findOne({
+      "shopId": shopId,
+      "registry.provides": "taxCodes",
+      "$where": function () {
+        const providerName = this.name.split("-")[1];
+        return this.settings[providerName].enabled;
+      }
+    });
+
+    if (provider) {
+      return true;
+    }
+  },
+  listTaxCodes: function () {
+    const instance = Template.instance();
+    const shopId = Reaction.getShopId();
+
+    const provider = Packages.findOne({
+      "shopId": shopId,
+      "registry.provides": "taxCodes",
+      "$where": function () {
+        const providerName = _.filter(this.registry, (o) => o.provides === "taxCodes")[0].name.split("/")[2];
+        return this.settings[providerName].enabled;
+      }
+    });
+
+    const taxCodeProvider = _.filter(provider.registry, (o) => o.provides === "taxCodes")[0].name.split("/")[2];
+    if (provider) {
+      if (Meteor.subscribe("TaxCodes").ready() && TaxCodes.find({}).count() === 0) {
+        Meteor.call(provider.settings.taxCodes.getTaxCodeMethod, (error, result) => {
+          if (error) {
+            if (typeof error === "object") {
+              Meteor.call("logging/logError", taxCodeProvider,  error);
+            } else {
+              Meteor.call("logging/logError", taxCodeProvider,  { error });
+            }
+          } else if (result && Array.isArray(result)) {
+            result.forEach(function (code) {
+              Meteor.call("taxes/insertTaxCodes", shopId, code, provider.name, (err) => {
+                if (err) {
+                  throw new Meteor.Error("Error populating TaxCodes collection", err);
+                }
+              });
+            });
+          }
+        });
+        Meteor.call("taxes/fetchTaxCodes", shopId, provider.name, (err, res) => {
+          if (err) {
+            throw new Meteor.Error("Error fetching records", err);
+          } else {
+            instance.state.set("taxCodes", res);
+          }
+        });
+      } else {
+        Meteor.call("taxes/fetchTaxCodes", shopId, provider.name, (err, res) => {
+          if (err) {
+            throw new Meteor.Error("Error fetching records", err);
+          } else {
+            instance.state.set("taxCodes", res);
+          }
+        });
+      }
+    } else {
+      return false;
+    }
+    return instance.state.get("taxCodes");
+  },
+  displayCode: function () {
+    if (this.taxCode && this.taxCode !== "0000") {
+      return this.taxCode;
+    }
+    return i18next.t("productVariant.selectTaxCode");
+  },
+  countries: function () {
+    const instance = Template.instance();
+    return instance.state.get("countries");
   }
 });
 
