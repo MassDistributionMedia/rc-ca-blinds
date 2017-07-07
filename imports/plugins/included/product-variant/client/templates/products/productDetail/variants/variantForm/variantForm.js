@@ -3,16 +3,14 @@ import { Session } from "meteor/session";
 import { Products } from "/lib/collections";
 import { Template } from "meteor/templating";
 import { Reaction, i18next } from "/client/api";
-import { Countries } from "/client/collections";
 import { ReactionProduct } from "/lib/api";
 import { applyProductRevision } from "/lib/api/products";
 import seedProduct from "/imports/plugins/custom/width-height-variant/data/product-seed";
 import { addNewVariantIfNotExist } from "/imports/plugins/custom/width-height-variant/client/render-list";
+import VariantFormContainer from "../../../../../containers/variantFormContainer";
 
 Template.variantForm.onCreated(function () {
   this.state = new ReactiveDict();
-  this.state.set("taxCodes", []);
-  this.state.set("countries", Countries.find({}).fetch());
 
   this.autorun(() => {
     const productHandle = Reaction.Router.getParam("handle");
@@ -33,6 +31,9 @@ Template.variantForm.onCreated(function () {
  * variantForm helpers
  */
 Template.variantForm.helpers({
+  variantFormComponent() {
+    return VariantFormContainer;
+  },
   variant() {
     const instance = Template.instance();
 
@@ -67,24 +68,6 @@ Template.variantForm.helpers({
     });
 
     return childVariants;
-  },
-  hasChildVariants: function () {
-    return ReactionProduct.checkChildVariants(this._id) > 0;
-  },
-  updateQuantityIfChildVariants: function () {
-    if (ReactionProduct.checkChildVariants(this._id) > 0) {
-      const _id = this._id;
-      const variants = ReactionProduct.getVariants();
-      let variantQuantity = 0;
-      variants.map(variant => {
-        if (~variant.ancestors.indexOf(_id) && variant.type !== "inventory") {
-          variantQuantity += variant.inventoryQuantity;
-        }
-      });
-      Meteor.call("products/updateProductField", _id, "inventoryQuantity", variantQuantity);
-      return true;
-    }
-    return false;
   },
   variantFormId: function () {
     return "variant-form-" + this._id;
@@ -310,27 +293,5 @@ Template.variantForm.events({
         });
       }
     });
-  },
-  "click .btn-clone-variant": function (event, template) {
-    event.stopPropagation();
-    event.preventDefault();
-    const productId = ReactionProduct.selectedProductId();
-    if (!productId) {
-      return;
-    }
-    Meteor.call("products/cloneVariant", productId, template.data._id,
-      function (error, result) {
-        if (error) {
-          Alerts.alert({
-            text: i18next.t("productDetailEdit.cloneVariantFail", { title: template.data.title }),
-            confirmButtonText: i18next.t("app.close", { defaultValue: "Close" })
-          });
-        } else if (result) {
-          const variantId = result[0];
-
-          ReactionProduct.setCurrentVariant(variantId);
-          Session.set("variant-form-" + variantId, true);
-        }
-      });
   }
 });

@@ -95,8 +95,6 @@
         "noProductsFound": "No products found.",
         "private": "Private",
         "public": "Public",
-        "allOn": "All On",
-        "allOff": "All Off",
         "shortcut": {
           "addProductLabel": "Add Product",
           "accountsLabel": "Accounts"
@@ -122,24 +120,12 @@
         "settingsfailed": "Search settings update failed"
       },
       "shopSettings": {
-        "general": "General",
-        "address": "Address",
-        "import": "Import",
         "localization": "Localization",
         "options": "Options",
-        "availableOptions": "Available Options",
         "paymentMethods": "Payment Methods",
         "externalServices": "External Services",
-        "shopGeneralSettingsSaved": "Shop general settings saved.",
-        "shopGeneralSettingsFailed": "Shop general settings update failed.",
-        "shopAddressSettingsSaved": "Shop address settings saved.",
-        "shopAddressSettingsFailed": "Shop address settings update failed.",
-        "shopExternalServicesSettingsSaved": "Shop external services settings saved.",
-        "shopExternalServicesSettingsFailed": "Shop external services settings update failed.",
         "shopLocalizationSettingsSaved": "Shop localization settings saved.",
         "shopLocalizationSettingsFailed": "Shop localization settings update failed.",
-        "shopOptionsSettingsSaved": "Shop options saved.",
-        "shopOptionsSettingsFailed": "Shop options update failed.",
         "shopPaymentMethodsSaved": "Shop Payment Methods settings saved.",
         "shopPaymentMethodsFailed": "Shop Payment Methods settings update failed."
       },
@@ -152,10 +138,10 @@
         },
         "messages": {
           "orderCancelled": "Your order was canceled.",
-          "newOrder": "Your order is being processed.",
+          "newOrder": "Your order was accepted.",
           "forAdmin": "You have a new order.",
           "orderDelivered": "Your order has been delivered.",
-          "orderAccepted": "Your order has been accepted.",
+          "orderProcessing": "Your order is being processed.",
           "orderShipped": "Your order has been shipped."
         }
       },
@@ -273,20 +259,20 @@
         "price": "Price",
         "optionTitle": "Option",
         "barcode": "Barcode",
-        "compareAtPrice": "Price (MSRP)",
+        "compareAtPrice": "MSRP",
         "fulfillmentService": "Fulfillment service",
         "weight": "Weight",
         "length": "Length",
         "width": "Width",
         "height": "Height",
         "taxable": "Taxable",
-        "taxCode": "Tax Codes",
+        "taxCode": "Tax Code",
         "taxDescription": "Tax Description",
-        "inventoryManagement": "Inventory tracking",
+        "inventoryManagement": "Inventory Tracking",
         "inventoryManagementLabel": "Register product in inventory system and track its status",
-        "inventoryPolicy": "Deny when out of stock",
+        "inventoryPolicy": "Allow Backorder",
         "inventoryPolicyLabel": "Do not sell the product variant when it is not in stock",
-        "lowInventoryWarningThreshold": "Warn @",
+        "lowInventoryWarningThreshold": "Warn At",
         "lowInventoryWarningThresholdLabel": "Warn customers that the product will be close to sold out when the quantity reaches the next threshold",
         "originCountry": "Origin Country",
         "selectTaxCode": "Select Tax Code"
@@ -312,7 +298,12 @@
       "cartDrawer": {
         "empty": "We're sad. Your cart is empty.",
         "keepShopping": "Keep on shopping",
-        "checkout": "Checkout now"
+        "checkout": "Checkout now",
+        "new": "New",
+        "coreOrderWorkflow/created": "Created",
+        "coreOrderWorkflow/processing": "Processing",
+        "coreOrderWorkflow/completed": "Completed",
+        "coreOrderWorkflow/canceled": "Canceled"
       },
       "cartSubTotals": {
         "discount": "Discount",
@@ -329,16 +320,24 @@
       "order": {
         "created": "Created",
         "reference": "Reference",
+        "cancelInvoice": "Cancel",
         "invoice": "Invoice",
         "ordersNotFound": "No orders found",
         "approveInvoice": "Approve",
+        "cancelOrderLabel": "Cancel Order",
         "makeAdjustments": "Make Adjustments",
         "capturePayment": "Capture Payment",
         "paymentCaptured": "Payment Captured",
         "capturedTotal": "Captured Total",
+        "canceledLabel": "Canceled",
         "refundAmount": "Refund Amount",
+        "cancelOrder": "Do you want to cancel this order?",
         "applyRefundToThisOrder": "Apply refund of {{currencySymbol}}{{refund}} to this order?",
+        "applyRefundDuringCancelOrder": "This will refund the order total of {{currencySymbol}}{{invoiceTotal}}",
+        "cancelOrderThenRestock": "Yes, and restock",
+        "cancelOrderNoRestock": "Yes, but no restocking",
         "applyRefund": "Apply Refund",
+        "refunding": "Refunding",
         "applyDiscount": "Apply Discount",
         "adjustedTotal": "Adjusted Total",
         "invalidDiscount": "Discount cannot be greater than original total price",
@@ -386,10 +385,9 @@
         "resendNotification": "Resend Shipment Notification"
       },
       "orderWorkflow": {
-        "fulfillment": "Fulfillment",
         "orderDetails": "Order Details",
-        "summary": "Summary",
         "invoice": "Invoice",
+        "lineItems": "Line Items",
         "shipmentTracking": "Shipment"
       },
       "cartCheckout": {
@@ -435,7 +433,11 @@
       },
       "addressBookEdit": {
         "editAddress": "Editing this address entry",
-        "somethingWentWrong": "Something went wrong: {{err}}"
+        "addressValidation": "Address Validation",
+        "reviewAddress": "For best compliance, please validate your address",
+        "somethingWentWrong": "Something went wrong: {{err}}",
+        "enteredAddress": "Entered Address",
+        "validatedAddress": "Validate Address"
       },
       "corePackageConfig": {
         "settings": {
@@ -465,12 +467,6 @@
         "keywords": "Keywords",
         "keywordsPlaceholder": "Meta keywords for SEO",
         "language": "Base Language",
-        "languageTooltip": "This language will be used if device language detection will be failed",
-        "timezone": "Timezone",
-        "timezoneOptions": "Choose timezone",
-        "currency": "Base Currency",
-        "currencyTooltip": "Shop default currency",
-        "baseUOM": "Base Unit of Measure",
         "addressBook": {
           "company": "Company",
           "companyPlaceholder": "This business name",
@@ -706,6 +702,12 @@
           "matchFailed": "Match failed",
           "unknownError": "Unknown error"
         }
+      },
+      "loginServices": {
+        "appId": "App ID",
+        "secret": "Secret",
+        "clientId": "Client ID",
+        "consumerKey": "API Key"
       },
       "error": {
         "nameRequired": "Name is required.",

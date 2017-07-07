@@ -145,6 +145,18 @@ class VariantList extends Component {
     const type = currentVariant.variantType || "variant";
     const methods = this;
     const props = this.props;
+    if (childVariants.length) {
+      return [
+        <Divider
+          key="availableOptionsDivider"
+          i18nKeyLabel="availableOptions"
+          label="Available Options"
+        />,
+        <div className="row variant-product-options" key="childVariantList">
+          {childVariants}
+        </div>
+      ];
+    }
 
     return (
       <RenderList

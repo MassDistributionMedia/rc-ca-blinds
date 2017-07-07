@@ -31,6 +31,14 @@ export const BraintreePackageConfig = new SimpleSchema([
       type: String,
       label: "Private Key",
       optional: false
+    },
+    "settings.reaction-braintree.support": {
+      type: Array,
+      label: "Payment provider supported methods"
+    },
+    "settings.reaction-braintree.support.$": {
+      type: String,
+      allowedValues: ["Authorize", "De-authorize", "Capture", "Refund"]
     }
   }
 ]);
@@ -38,8 +46,7 @@ export const BraintreePackageConfig = new SimpleSchema([
 export const BraintreePayment = new SimpleSchema({
   payerName: {
     type: String,
-    label: "Cardholder name",
-    regEx: /^\w+\s\w+$/
+    label: "Cardholder name"
   },
   cardNumber: {
     type: String,
@@ -64,6 +71,3 @@ export const BraintreePayment = new SimpleSchema({
   }
 });
 
-BraintreePayment.messages({
-  "regEx payerName": "[label] must include both first and last name"
-});

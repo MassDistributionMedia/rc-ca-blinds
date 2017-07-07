@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import classnames from "classnames";
 import TextareaAutosize from "react-textarea-autosize";
 import { Translation } from "../translation";
@@ -70,6 +71,9 @@ class TextField extends Component {
         placeholder={placeholder}
         ref="input"
         value={this.value}
+        style={this.props.style}
+        disabled={this.props.disabled}
+        id={this.props.id}
       />
     );
   }
@@ -98,6 +102,9 @@ class TextField extends Component {
         ref="input"
         type={this.props.type || "text"}
         value={this.value}
+        style={this.props.style}
+        disabled={this.props.disabled}
+        id={this.props.id}
       />
     );
   }
@@ -173,10 +180,12 @@ TextField.defaultProps = {
 TextField.propTypes = {
   align: PropTypes.oneOf(["left", "center", "right", "justify"]),
   className: PropTypes.string,
+  disabled: PropTypes.bool,
   helpText: PropTypes.string,
   i18nKeyHelpText: PropTypes.string,
   i18nKeyLabel: PropTypes.string,
   i18nKeyPlaceholder: PropTypes.string,
+  id: PropTypes.string,
   label: PropTypes.string,
   multiline: PropTypes.bool,
   name: PropTypes.string,
@@ -185,6 +194,7 @@ TextField.propTypes = {
   onKeyDown: PropTypes.func,
   onReturnKeyDown: PropTypes.func,
   placeholder: PropTypes.string,
+  style: PropTypes.object,
   type: PropTypes.string,
   value: PropTypes.any
 };

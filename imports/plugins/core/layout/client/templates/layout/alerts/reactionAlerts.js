@@ -1,7 +1,8 @@
 import _ from "lodash";
-import { Meteor } from "meteor/meteor";
 import swal from "sweetalert2";
+import { Meteor } from "meteor/meteor";
 import "sweetalert2/dist/sweetalert2.css";
+import Alerts from "./inlineAlerts";
 
 // Extends Bootstaps alerts and add more alert types
 Meteor.startup(function () {
@@ -68,7 +69,11 @@ Object.assign(Alerts, {
         ...titleOrOptions
       }).then((isConfirm) => {
         if (isConfirm === true && typeof messageOrCallback === "function") {
-          messageOrCallback(isConfirm);
+          messageOrCallback(isConfirm, false);
+        }
+      }, dismiss => {
+        if (dismiss === "cancel" || dismiss === "esc" || dismiss === "overlay") {
+          messageOrCallback(false, dismiss);
         }
       }).catch(function (err) {
         if (err === "cancel" || err === "overlay" || err === "timer") {

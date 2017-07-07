@@ -16,6 +16,14 @@ export const StripePackageConfig = new SimpleSchema([
     "settings.api_key": {
       type: String,
       label: "API Client ID"
+    },
+    "settings.reaction-stripe.support": {
+      type: Array,
+      label: "Payment provider supported methods"
+    },
+    "settings.reaction-stripe.support.$": {
+      type: String,
+      allowedValues: ["Authorize", "De-authorize", "Capture", "Refund"]
     }
   }
 ]);
@@ -46,8 +54,4 @@ export const StripePayment = new SimpleSchema({
     max: 4,
     label: "CVV"
   }
-});
-
-StripePayment.messages({
-  "regEx payerName": "[label] must include both first and last name"
 });

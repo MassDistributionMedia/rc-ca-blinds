@@ -6,6 +6,7 @@ import { Meteor } from "meteor/meteor";
 import { HTTP } from "meteor/http";
 import { check } from "meteor/check";
 import { Packages, Shops, Accounts } from "/lib/collections";
+import { TaxCodes } from "/imports/plugins/core/taxes/lib/collections";
 import { Reaction, Logger } from "/server/api";
 import Avalogger from "./avalogger";
 
@@ -86,6 +87,34 @@ function getTaxSettings(userId) {
 }
 
 /**
+ * @summary: Break Avalara error object into consistent format
+ * @param {Object} error The error result from Avalara
+ * @returns {Object} Error object with code and errorDetails
+ */
+function parseError(error) {
+  let errorData;
+  // The Avalara API constantly times out, so handle this special case first
+  if (error.code === "ETIMEDOUT") {
+    errorData = { errorCode: 503, errorDetails: { message: "ETIMEDOUT", description: "The request timeod out" } };
+    return errorData;
+  }
+  const errorDetails = [];
+  if (error.response.data.error.details) {
+    const details = error.response.data.error.details;
+    for (const detail of details) {
+      if (detail.severity === "Error") {
+        errorDetails.push({ message: detail.message, description: detail.description });
+      }
+    }
+    errorData = { errorCode: details[0].number, errorDetails };
+  } else {
+    Avalogger.error("Unknown error or error format");
+    throw new Meteor.Error("bad-error", "Unknown error or error format");
+  }
+  return errorData;
+}
+
+/**
  * @summary function to get HTTP data and pass in extra Avalara-specific headers
  * @param {String} requestUrl - The URL to make the request to
  * @param {Object} options - An object of other options
@@ -119,14 +148,16 @@ function avaGet(requestUrl, options = {}, testCredentials = true) {
     logObject.request = allOptions;
   }
 
+  let result;
   try {
     result = HTTP.get(requestUrl, allOptions);
   } catch (error) {
-    result = error;
     Logger.error(`Encountered error while calling Avalara API endpoint ${requestUrl}`);
     Logger.error(error);
     logObject.error = error;
     Avalogger.error(logObject);
+    const parsedError = parseError(error);
+    result = { error: parsedError };
   }
 
   if (pkgData.settings.avalara.enableLogging) {
@@ -166,7 +197,6 @@ function avaPost(requestUrl, options) {
   }
 
   let result;
-
   try {
     result = HTTP.post(requestUrl, allOptions);
   } catch (error) {
@@ -175,7 +205,8 @@ function avaPost(requestUrl, options) {
     logObject.error = error;
     // whether logging is enabled or not we log out errors
     Avalogger.error(logObject);
-    result = {};
+    const parsedError = parseError(error);
+    result = { error: parsedError };
   }
 
   if (pkgData.settings.avalara.enableLogging) {
@@ -260,13 +291,7 @@ taxCalc.validateAddress = function (address) {
   const baseUrl = getUrl();
   const requestUrl = `${baseUrl}addresses/resolve`;
   const result = avaPost(requestUrl, { data: addressToValidate });
-  let content;
-
-  try {
-    content = JSON.parse(result.content);
-  } catch (error) {
-    content = result.content;
-  }
+  const content = result.data;
   if (content && content.messages) {
     messages = content.messages;
   }
@@ -285,7 +310,7 @@ taxCalc.validateAddress = function (address) {
       postal: resultAddress.postalCode,
       country: resultAddress.country
     };
-    if (result.data.address.line2) {
+    if (resultAddress.line2) {
       validatedAddress.addresss2 = resultAddress.line2;
     }
   }
@@ -308,6 +333,28 @@ taxCalc.testCredentials = function (credentials, testCredentials = false) {
 
   if (result && result.code === "ETIMEDOUT") {
     throw new Meteor.Error("Request Timed out. Increase your timeout settings");
+  }
+
+  if (result.statusCode === 200) {
+    if (TaxCodes.find({}).count() === 0) {
+      Meteor.call("avalara/getTaxCodes", (error, res) => {
+        if (error) {
+          if (typeof error === "object") {
+            Meteor.call("logging/logError", "avalara",  error);
+          } else {
+            Meteor.call("logging/logError", "avalara",  { error });
+          }
+        } else if (res && Array.isArray(res)) {
+          res.forEach(function (code) {
+            Meteor.call("taxes/insertTaxCodes", Reaction.getShopId(), code, "taxes-avalara", (err) => {
+              if (err) {
+                throw new Meteor.Error("Error populating TaxCodes collection", err);
+              }
+            });
+          });
+        }
+      });
+    }
   }
 
   return { statusCode: result.statusCode };
@@ -420,7 +467,10 @@ taxCalc.estimateCart = function (cart, callback) {
     const baseUrl = getUrl();
     const requestUrl = `${baseUrl}transactions/create`;
     const result = avaPost(requestUrl, { data: salesOrder });
-    return callback(result.data);
+    if (!result.error) {
+      return callback(result.data);
+    }
+    return callback(result);
   }
 };
 
@@ -546,8 +596,8 @@ taxCalc.reportRefund = function (order, refundAmount, callback) {
   const baseUrl = getUrl();
   const requestUrl = `${baseUrl}transactions/create`;
   const returnAmount = refundAmount * -1;
-  const orderDate = moment(order.createdAt).format();
-  const refundDate = moment().format();
+  const orderDate = moment(order.createdAt);
+  const refundDate = moment();
   const refundReference = `${order.cartId}:${refundDate}`;
   const  lineItems = {
     number: "01",
@@ -561,7 +611,6 @@ taxCalc.reportRefund = function (order, refundAmount, callback) {
     code: refundReference,
     commit: true,
     customerCode: order._id,
-    taxDate: orderDate,
     date: refundDate,
     currencyCode: currencyCode,
     addresses: {
@@ -584,6 +633,13 @@ taxCalc.reportRefund = function (order, refundAmount, callback) {
     lines: [lineItems]
   };
 
+  if (orderDate.diff(refundDate, "days") !== 0) {
+    returnInvoice.taxOverride = {
+      type: "TaxDate",
+      taxDate: orderDate.format(),
+      reason: "Refunded after order placed"
+    };
+  }
 
   const result = avaPost(requestUrl, { data: returnInvoice });
   return callback(result.data);

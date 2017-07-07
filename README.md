@@ -14,16 +14,16 @@ Cloud9 IDE Workspace:
 ## Features
 Reaction’s out-of-the-box core features include:
 
-* Drag-and-drop merchandising
-* Order processing
-* Payments
-* Shipping
-* Taxes
-* Discounts
-* Analytics
-* Integration with dozens of third-party apps
+-   Drag-and-drop merchandising
+-   Order processing
+-   Payments
+-   Shipping
+-   Taxes
+-   Discounts
+-   Analytics
+-   Integration with dozens of third-party apps
 
-And, since anything in our codebase can be extended, overwritten, or installed as a package, you may also develop, scale, and customize anything on our platform.
+Since anything in our codebase can be extended, overwritten, or installed as a package, you may also develop, scale, and customize anything on our platform.
 
 ## Installation
 
@@ -36,61 +36,57 @@ cd reaction
 reaction
 ```
 
-_Reaction requires Meteor, Git, MongoDB, OS Specific Build Tools, and (optionally) ImageMagick. See our [Requirements Docs](https://docs.reactioncommerce.com/reaction-docs/master/requirements) for requirements installation information._
+Reaction requires Meteor, Git, MongoDB, OS Specific Build Tools, and (optionally) ImageMagick.
+
+See our [Requirements Docs](https://docs.reactioncommerce.com/reaction-docs/master/requirements) for requirements that you may need to install for Reaction.
 
 For more information on setup and configuration, check out the [installation](https://docs.reactioncommerce.com/reaction-docs/development/installation) and [configuration](https://docs.reactioncommerce.com/reaction-docs/development/configuration) docs.
 
-## Participation
-
-If you are interested in participating in the development of Reaction, that's really great!
-
-Our [community guidelines](https://docs.reactioncommerce.com/reaction-docs/master/guidelines) can be found in our [documentation](https://docs.reactioncommerce.com/). This is a good place to start getting more familar with Reaction.
-
-The [Reaction Gitter channel](https://gitter.im/reactioncommerce/reaction) and [forum](http://discourse.reactioncommerce.com/) are good places to engage with core contributors and the community.
-
 ### Planning
 
-For a high level review our roadmap, take a look at the [Reaction features page](http://reactioncommerce.com/features).
+For an overview of our roadmap, visit our [Features & Roadmap page](https://reactioncommerce.com/roadmap).
 
-For a kanban-esque, hardcore, real time progress overview of all Reaction Commerce projects use our [project board](https://waffle.io/reactioncommerce/reaction).
+You will find the roadmap defined as projects on the [Reaction repository's project page](https://github.com/reactioncommerce/reaction/projects).
 
-### Testing
-
-Testing is another great way to contribute. If you do discover a bug, [create an issue](https://github.com/reactioncommerce/reaction/issues/new) to report it.
-
-Integration tests can be run at the command line with `reaction test`. Use `npm run-script test-local` to run local tests.
+Specific features in progress are found on the [Reaction repository's milestones page](https://github.com/reactioncommerce/reaction/milestones).
 
 ### Documentation
 
+Multiple branches, release documentation is found at <https://docs.reactioncommerce.com>
+
 The Reaction documentation source is located in the [reaction-docs](https://github.com/reactioncommerce/reaction-docs) repository, while the documentation site is the [reactioncommerce/redoc](https://github.com/reactioncommerce/redoc) application.
-
-
-### Deployment
-
-We require that all releases are deployable as [Docker](https://www.docker.com/) containers.  Athough we haven't tested out other methods of deployment, our community has documented deployment strategies for [Heroku](https://github.com/reactioncommerce/reaction/issues/1363), AWS, [Digital Ocean](https://gist.github.com/jshimko/745ca66748846551692e24c267a56060), and Galaxy.
-
-##### Docker
-
-Docker images are pushed when Reaction sucessfully builds and passes all tests on the `master` or `development` branches. These images are released on [Reaction Commerce Docker Hub](https://hub.docker.com/u/reactioncommerce/). There are two images available: [reactioncommerce:prequel](https://hub.docker.com/r/reactioncommerce/prequel/) - the latest `development` image and [reactioncommerce:reaction](https://hub.docker.com/r/reactioncommerce/reaction/), the `master` image.
-
 
 ### Contributing
 
-Want to contribute? That's great! [Here's how you can get started](https://guides.github.com/activities/contributing-to-open-source/#contributing).
+Star us on GitHub, it helps!
 
-Check out our Issues page, and if you find something you want to work on, let us know in the comments. If you're interested in a particular [project](https://github.com/reactioncommerce/reaction/projects) and you aren’t sure where to begin, feel free to ask. Start small!
+If you are interested in participating in the development of Reaction, that's really great!
+
+The [Reaction Gitter channel](https://gitter.im/reactioncommerce/reaction) and [forum](https://forums.reactioncommerce.com/) are good places to engage with core contributors, the community, and to get familiar with Reaction. Our [community guidelines](https://docs.reactioncommerce.com/reaction-docs/master/guidelines) can be found in our [documentation](https://docs.reactioncommerce.com/).
+
+Check out the [issues](https://github.com/reactioncommerce/reaction/issues) page, and if you find something you want to work on, let us know in the comments. If you're interested in a particular [project](https://github.com/reactioncommerce/reaction/projects) and you aren’t sure where to begin, feel free to ask. Start small!
 
 If your contribution doesn't fit with an existing issue, go ahead and [create an issue](https://github.com/reactioncommerce/reaction/issues/new) before submitting a [Pull Request](https://help.github.com/articles/about-pull-requests/). This will allow the Reaction team to give feedback if necessary.
 
 Pull Requests should:
 
--   Include an associated issue
--   Comply with the Contributor License Agreement
--   Adhere to the [Reaction style guide](https://docs.reactioncommerce.com/reaction-docs/master/styleguide)
--   Pass both [acceptance tests and unit testing](https://docs.reactioncommerce.com/reaction-docs/master/testing-reaction)
+-   Be very focused in scope. Smaller scopes are easier for us to digest and approve.
+-   Note any existing associated issues.
+-   Lint and adhere to the [Reaction style guide](https://docs.reactioncommerce.com/reaction-docs/master/styleguide).
+-   Pass both [acceptance tests and unit testing](https://docs.reactioncommerce.com/reaction-docs/master/testing-reaction).
 
-Be sure to read our [Community Guidelines](https://docs.reactioncommerce.com/reaction-docs/master/guidelines) to get more familiar with Reaction. And if you have any questions or comments, feel free to reach out via [Gitter](https://gitter.im/reactioncommerce/reaction) or our [forums](http://discourse.reactioncommerce.com/).
+### Testing
 
-### What's Next
+Testing is another great way to contribute. If you do discover a bug, [create an issue](https://github.com/reactioncommerce/reaction/issues/new) to report it.
 
-For an overview of our roadmap, visit our [Features & Roadmap page](https://reactioncommerce.com/roadmap). Or, if you'd like to see what we're doing in real time, check out our [Project Board](https://waffle.io/reactioncommerce/reaction). You can also see what we're doing [by project](https://github.com/reactioncommerce/reaction/projects) or [by release date](https://github.com/reactioncommerce/reaction/milestones).
+Integration tests can be run at the command line with `reaction test`.
+
+### Deployment
+
+We ensure that all releases are deployable as [Docker](https://www.docker.com/) containers.  While we don't regularly test other methods of deployment, our community has documented deployment strategies for AWS, [Digital Ocean](https://gist.github.com/jshimko/745ca66748846551692e24c267a56060), and Galaxy.
+
+For an introduction to Docker deployment, [the Reaction deployment guide](https://docs.reactioncommerce.com/reaction-docs/master/deploying) has detailed examples. Reaction Commerce also offers a managed deployment platform integrated with the Reaction command line.
+
+### License
+
+Copyright © [GNU General Public License v3.0](./LICENSE.md)

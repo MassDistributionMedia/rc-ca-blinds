@@ -34,9 +34,11 @@ function FAKEProductDetailContainer(props){
 class REALProductDetailContainer extends Component {
   constructor(props) {
     super(props);
-
+    this.animationTimeOut = null;
+    this.textTimeOut = null;
     this.state = {
-      cartQuantity: 1
+      cartQuantity: 1,
+      click: 0
     };
   }
 
@@ -137,11 +139,12 @@ class REALProductDetailContainer extends Component {
         if (productId) {
           Meteor.call("cart/addToCart", productId, currentVariant._id, quantity, (error) => {
             if (error) {
-              Logger.error("Failed to add to cart.", error);
+              Logger.error(error, "Failed to add to cart.");
               return error;
             }
             // Reset cart quantity on success
             this.handleCartQuantityChange(null, 1);
+            this.state.click++;
 
             return true;
           });
@@ -157,34 +160,36 @@ class REALProductDetailContainer extends Component {
         // slide out label
         const addToCartText = i18next.t("productDetail.addedToCart");
         const addToCartTitle = currentVariant.title || "";
-        $(".cart-alert-text").text(`${quantity} ${addToCartTitle} ${addToCartText}`);
-
         // Grab and cache the width of the alert to be used in animation
         const alertWidth = $(".cart-alert").width();
         const direction = i18next.dir() === "rtl" ? "left" : "right";
         const oppositeDirection = i18next.dir() === "rtl" ? "right" : "left";
+        if ($(".cart-alert").css("display") === "none") {
+          $("#spin").addClass("hidden");
+          $(".cart-alert-text").text(`${quantity} ${addToCartTitle} ${addToCartText}`);
+          this.handleSlideOut(alertWidth, direction, oppositeDirection);
+          this.animationTimeOut = setTimeout(() => {
+            this.handleSlideIn(alertWidth, direction, oppositeDirection);
+          }, 4000);
+        } else {
+          clearTimeout(this.textTimeOut);
 
-        // Animate
-        return $(".cart-alert")
-          .show()
-          .css({
-            [oppositeDirection]: "auto",
-            [direction]: -alertWidth
-          })
-          .animate({
-            [oppositeDirection]: "auto",
-            [direction]: 0
-          }, 600)
-          .delay(4000)
-          .animate({
-            [oppositeDirection]: "auto",
-            [direction]: -alertWidth
-          }, {
-            duration: 600,
-            complete() {
-              $(".cart-alert").hide();
-            }
-          });
+          // hides text and display spinner
+          $(".cart-alert-text").hide();
+          $("#spin").removeClass("hidden");
+
+          this.textTimeOut = setTimeout(() => {
+            $("#spin").addClass("hidden");
+            $(".cart-alert-text").text(`${this.state.click * quantity} ${addToCartTitle} ${addToCartText}`);
+            $(".cart-alert-text").fadeIn("slow");
+            this.setState({ click: 0 });
+          }, 2000);
+
+          clearTimeout(this.animationTimeOut);
+          this.animationTimeOut = setTimeout(() => {
+            this.handleSlideIn(alertWidth, direction, oppositeDirection);
+          }, 4000);
+        }
       }
     } else {
       Alerts.inline("Select an option before adding to cart", "warning", {
@@ -195,6 +200,33 @@ class REALProductDetailContainer extends Component {
     }
 
     return null;
+  }
+
+  handleSlideOut(alertWidth, direction, oppositeDirection) {
+    // Animate slide out
+    return $(".cart-alert")
+      .show()
+      .css({
+        [oppositeDirection]: "auto",
+        [direction]: -alertWidth
+      })
+      .animate({
+        [oppositeDirection]: "auto",
+        [direction]: 0
+      }, 600);
+  }
+
+  handleSlideIn(alertWidth, direction, oppositeDirection) {
+    // Animate slide in
+    return $(".cart-alert").animate({
+      [oppositeDirection]: "auto",
+      [direction]: -alertWidth
+    }, {
+      duration: 600,
+      complete() {
+        $(".cart-alert").hide();
+      }
+    });
   }
 
   handleProductFieldChange = (productId, fieldName, value) => {
