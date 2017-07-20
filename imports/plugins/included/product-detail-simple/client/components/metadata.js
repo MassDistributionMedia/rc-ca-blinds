@@ -3,10 +3,39 @@ import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Metadata, Translation } from "/imports/plugins/core/ui/client/components/";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
+import { ReactionProduct } from "/lib/api";
 
 class ProductMetadata extends Component {
   get metafields() {
-    return this.props.metafields || this.props.product.metafields;
+    var metafields = [];
+    if(this.props.metafields){
+      metafields = metafields.concat(this.props.metafields);
+    }
+    var product = this.props.product;
+    if(product && product.metafields){
+      metafields = metafields.concat(product.metafields.filter(function(meta){
+        for(var i = 0; i < metafields.length; i++){
+          if(metafields[i].key === meta.key){
+            return false;
+          }
+          return true;
+        }
+      }));
+    }
+
+    var selected = ReactionProduct.selectedVariant();
+    if(selected && selected.metafields){
+      metafields = metafields.concat(selected.metafields.filter(function(meta){
+        for(var i = 0; i < metafields.length; i++){
+          if(metafields[i].key === meta.key){
+            return false;
+          }
+          return true;
+        }
+      }));
+    }
+
+    return metafields;
   }
 
   get showEditControls() {

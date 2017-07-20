@@ -211,25 +211,25 @@ function denormalize(id, field) {
       Object.assign(update, {
         isSoldOut: isSoldOut(variants),
         isLowQuantity: isLowQuantity(variants),
-        isBackorder: isBackorder(variants)
+        isBackorder: isBackorder(variants),
       });
       break;
     case "lowInventoryWarningThreshold":
       Object.assign(update, {
-        isLowQuantity: isLowQuantity(variants)
+        isLowQuantity: isLowQuantity(variants),
       });
       break;
     default: // "price" is object with range, min, max
       const priceObject = Catalog.getProductPriceRange(id);
       Object.assign(update, {
-        price: priceObject
+        price: priceObject,
       });
   }
   Products.update(id, {
-    $set: update
+    $set: update,
   }, {
     selector: {
-      type: "simple"
+      type: "simple",
     }
   });
 }
@@ -301,14 +301,14 @@ function flushQuantity(id) {
   }
 
   return Products.update({
-    _id: id
+    _id: id,
   }, {
     $set: {
-      inventoryQuantity: 0
+      inventoryQuantity: 0,
     }
   }, {
     selector: {
-      type: "variant"
+      type: "variant",
     }
   });
 }
@@ -344,13 +344,13 @@ Meteor.methods({
 
     const variants = Products.find({
       $or: [{
-        _id: variantId
+        _id: variantId,
       }, {
         ancestors: {
-          $in: [variantId]
+          $in: [variantId],
         }
       }],
-      type: "variant"
+      type: "variant",
     }).fetch();
     // exit if we're trying to clone a ghost
     if (variants.length === 0) {
@@ -381,7 +381,9 @@ Meteor.methods({
         !!~parentIndex && ancestorsClone.splice(parentIndex, 1, variantNewId);
         Object.assign(clone, variant, {
           _id: Random.id(),
-          ancestors: ancestorsClone
+          ancestors: ancestorsClone,
+          optionTitle: "",
+          title: "",
         });
       }
       delete clone.updatedAt;
@@ -389,7 +391,7 @@ Meteor.methods({
       delete clone.inventoryQuantity;
       copyMedia(productId, oldId, clone._id);
       return Products.insert(clone, {
-        validate: false
+        validate: false,
       }, (error, result) => {
         if (result) {
           if (type === "child") {
@@ -445,13 +447,13 @@ Meteor.methods({
     const assembledVariant = Object.assign(newVariant || {}, {
       _id: newVariantId,
       ancestors: ancestors,
-      type: "variant"
+      type: "variant",
     });
 
     if (!newVariant) {
       Object.assign(assembledVariant, {
         title: "",
-        price: 0.00
+        price: 0.00,
       });
     }
 
@@ -499,7 +501,7 @@ Meteor.methods({
       const newVariant = Object.assign({}, currentVariant, variant);
 
       return Products.update({
-        _id: variant._id
+        _id: variant._id,
       }, {
         $set: newVariant // newVariant already contain `type` property, so we
         // do not need to pass it explicitly
@@ -532,9 +534,9 @@ Meteor.methods({
   "products/deleteVariant": function (variantId) {
     check(variantId, String);
     // must have createProduct permissions
-    if (!Reaction.hasPermission("createProduct")) {
-      throw new Meteor.Error(403, "Access Denied");
-    }
+    // if (!Reaction.hasPermission("createProduct")) {
+    //   throw new Meteor.Error(403, "Access Denied");
+    // }
 
     const selector = {
       // Don't "archive" variants that are already marked deleted.
@@ -542,10 +544,10 @@ Meteor.methods({
         $in: [false, undefined]
       },
       $or: [{
-        _id: variantId
+        _id: variantId,
       }, {
         ancestors: {
-          $in: [variantId]
+          $in: [variantId],
         }
       }]
     };

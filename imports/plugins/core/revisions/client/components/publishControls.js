@@ -203,6 +203,7 @@ class PublishControls extends Component {
 
   renderPublishButton() {
     const buttonProps = {};
+    console.log('hasChanges', this.hasChanges);
 
     if (Array.isArray(this.props.documentIds) && this.props.documentIds.length > 1) {
       buttonProps.label = "Publish All";
@@ -212,7 +213,7 @@ class PublishControls extends Component {
     return (
       <Button
         bezelStyle="outline"
-        disabled={this.hasChanges === false}
+        disabled={!this.hasChanges}
         label="Publish"
         onClick={this.handlePublishClick}
         status="success"
@@ -296,7 +297,7 @@ class PublishControls extends Component {
   renderUndoButton() {
     return (
       <FlatButton
-        disabled={this.hasChanges === false}
+        disabled={!this.hasChanges}
         tooltip="Discard Changes"
         i18nKeyTooltip="revisions.discardChanges"
         icon={"fa fa-undo"}

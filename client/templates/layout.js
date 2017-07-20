@@ -6,6 +6,9 @@
  *
  *     Template.layout.replaces "coreLayout"
  */
-
+// import "./products/blindsVarientForm.html";
 
 // Template.layout.replaces("coreLayout");
+
+// extending variantForm with template extensions
+// Template.blindsVariantForm.replaces("variantForm");

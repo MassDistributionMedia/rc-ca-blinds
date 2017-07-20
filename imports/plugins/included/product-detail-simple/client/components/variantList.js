@@ -4,6 +4,15 @@ import Variant from "./variant";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 import { ChildVariant } from "./";
+import { Reaction } from "/client/api";
+import { ReactionProduct } from "/lib/api";
+import { Products } from "/lib/collections";
+
+import RenderWidthHeightList, {
+  WIDTH_HEIGHT_VARIANT_TYPE,
+  width_heightVariantUploadForm,
+} from "/imports/plugins/custom/width-height-variant/client/render-list";
+
 
 class VariantList extends Component {
   handleVariantEditClick = (event, editButtonProps) => {
@@ -122,41 +131,20 @@ class VariantList extends Component {
   }
 
   renderChildVariants() {
-    let childVariants = [];
-
-    if (this.props.childVariants) {
-      childVariants = this.props.childVariants.map((childVariant, index) => {
-        const media = this.props.childVariantMedia.filter((mediaItem) => {
-          if (mediaItem.metadata.variantId === childVariant._id) {
-            return true;
-          }
-          return false;
-        });
-
-        return (
-          <EditContainer
-            data={childVariant}
-            disabled={this.props.editable === false}
-            editView="variantForm"
-            i18nKeyLabel="productDetailEdit.editVariant"
-            key={index}
-            label="Edit Variant"
-            onEditButtonClick={this.handleChildVariantEditClick}
-            onVisibilityButtonClick={this.handleVariantVisibilityClick}
-            permissions={["createProduct"]}
-            showsVisibilityButton={true}
-          >
-            <ChildVariant
-              isSelected={this.props.variantIsSelected(childVariant._id)}
-              media={media}
-              onClick={this.handleChildleVariantClick}
-              variant={childVariant}
-            />
-          </EditContainer>
-        );
-      });
+    /**
+     * This `if` is to handle error:
+     *  Exception from Tracker recompute function
+     *  Which happens on one of Meteor's cycles
+     *  see: http://stackoverflow.com/a/42896843/1762493
+     */
+    if (ReactionProduct.selectedVariant() === null) {
+      return; // or return null;
     }
+    const currentVariant = ReactionProduct.selectedVariant();
 
+    const type = currentVariant.variantType || "variant";
+    const methods = this;
+    const props = this.props;
     if (childVariants.length) {
       return [
         <Divider
@@ -170,8 +158,15 @@ class VariantList extends Component {
       ];
     }
 
-    return null;
-  }
+    return (
+      <RenderList
+        renderType={type}
+        renderList={props.childVariants}
+        parentProps={props}
+        parentMethods={methods}
+      />
+    );
+  } // end renderChildVariants()
 
   render() {
     return (
@@ -195,7 +190,83 @@ VariantList.propTypes = {
   onVariantClick: PropTypes.func,
   onVariantVisibiltyToggle: PropTypes.func,
   variantIsSelected: PropTypes.func,
-  variants: PropTypes.arrayOf(PropTypes.object)
+  variants: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default VariantList;
+
+function RenderList(props) {
+  const {
+    renderType,
+    renderList,
+    parentProps,
+    parentMethods,
+  } = props;
+
+  switch(renderType) {
+    case "variant" : {
+      return ( <RenderVariantList
+        renderList={renderList}
+        parentProps={parentProps}
+        methods={parentMethods}
+      />
+      );
+    }
+    case WIDTH_HEIGHT_VARIANT_TYPE : {
+      return (<RenderWidthHeightList
+        renderList={renderList}
+        methods={parentMethods}
+      />);
+    }
+  }
+}
+
+function RenderVariantList({ renderList, parentProps, methods }) {
+    if (!renderList) {
+    return null;
+  }
+
+  return (
+    <span>
+      <Divider
+          key="availableOptionsDivider"
+          i18nKeyLabel="productDetail.availableOptions"
+          label="Available Options"
+      />
+      <div className="row variant-product-options" key="childVariantList">
+        <div>{
+          renderList.map((childVariant, index) => {
+            const media = parentProps.childVariantMedia.filter((mediaItem) => {
+              if (mediaItem.metadata.variantId === childVariant._id) {
+                return true;
+              }
+              return false;
+            });
+
+            return (
+              <EditContainer
+                data={childVariant}
+                disabled={parentProps.editable === false}
+                editView="variantForm"
+                i18nKeyLabel="productDetailEdit.editVariant"
+                key={index}
+                label="Edit Variant"
+                onEditButtonClick={methods.handleChildVariantEditClick}
+                onVisibilityButtonClick={methods.handleVariantVisibilityClick}
+                permissions={["createProduct"]}
+                showsVisibilityButton={true}
+              >
+                <ChildVariant
+                  isSelected={parentProps.variantIsSelected(childVariant._id)}
+                  media={media}
+                  onClick={methods.handleChildleVariantClick}
+                  variant={childVariant}
+                />
+              </EditContainer>
+            );
+          })
+        }</div>
+      </div>
+    </span>);
+}  // end RenderVariantList()
+

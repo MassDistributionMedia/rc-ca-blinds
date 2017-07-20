@@ -1,4 +1,4 @@
-# Reaction
+# Reaction Commerce for CA Blinds
 
 [![bitHound Overall Score](https://www.bithound.io/github/reactioncommerce/reaction/badges/score.svg)](https://www.bithound.io/github/reactioncommerce/reaction) [![bitHound Dev Dependencies](https://www.bithound.io/github/reactioncommerce/reaction/badges/devDependencies.svg)](https://www.bithound.io/github/reactioncommerce/reaction/9a858eb459d7260d5ae59124c2b364bc791a3e70/dependencies/npm) [![bitHound Code](https://www.bithound.io/github/reactioncommerce/reaction/badges/code.svg)](https://www.bithound.io/github/reactioncommerce/reaction) [![Circle CI](https://circleci.com/gh/reactioncommerce/reaction.svg?style=svg)](https://circleci.com/gh/reactioncommerce/reaction) [![Gitter](https://badges.gitter.im/JoinChat.svg)](https://gitter.im/reactioncommerce/reaction?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -6,8 +6,12 @@ Reaction is an event-driven, real-time reactive commerce platform built with Jav
 
 ![Reaction v.1.0.0](https://raw.githubusercontent.com/reactioncommerce/reaction-docs/master/assets/rc-desktop.png)
 
-## Features
+Cloud9 IDE Workspace:
+- https://ide.c9.io/mikeumus/ca-blinds
+- https://ca-blinds-mikeumus.c9users.io
+![product-screens-2](https://cloud.githubusercontent.com/assets/439959/21865023/276a4bbe-d7f9-11e6-9525-3131ec43655b.png)
 
+## Features
 Reaction’s out-of-the-box core features include:
 
 -   Drag-and-drop merchandising
@@ -56,7 +60,7 @@ The Reaction documentation source is located in the [reaction-docs](https://gith
 
 Star us on GitHub, it helps!
 
-If you are interested in participating in the development of Reaction, that's really great!  
+If you are interested in participating in the development of Reaction, that's really great!
 
 The [Reaction Gitter channel](https://gitter.im/reactioncommerce/reaction) and [forum](https://forums.reactioncommerce.com/) are good places to engage with core contributors, the community, and to get familiar with Reaction. Our [community guidelines](https://docs.reactioncommerce.com/reaction-docs/master/guidelines) can be found in our [documentation](https://docs.reactioncommerce.com/).
 

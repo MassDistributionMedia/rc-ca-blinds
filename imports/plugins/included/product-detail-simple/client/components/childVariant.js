@@ -5,7 +5,7 @@ import { Translation } from "/imports/plugins/core/ui/client/components";
 import { MediaItem } from "/imports/plugins/core/ui/client/components";
 
 class ChildVariant extends Component {
-  handleClick = (event) => {
+  handleClick = (event, index) => {
     if (this.props.onClick) {
       this.props.onClick(event, this.props.variant);
     }
@@ -79,7 +79,7 @@ class ChildVariant extends Component {
       "btn": true,
       "btn-default": true,
       "variant-detail-selected": this.props.isSelected,
-      "variant-deleted": this.props.variant.isDeleted
+      "variant-deleted": this.props.variant.isDeleted,
     });
 
     return (
@@ -109,10 +109,10 @@ ChildVariant.propTypes = {
   isSelected: PropTypes.bool,
   media: PropTypes.arrayOf(PropTypes.object),
   onClick: PropTypes.func,
+  onChange: PropTypes.func,
   soldOut: PropTypes.bool,
   variant: PropTypes.object,
-  visibilityButton: PropTypes.node
+  visibilityButton: PropTypes.node,
 };
-
 
 export default ChildVariant;

@@ -1,6 +1,7 @@
 .DS_Store
 .fileStorage/
 .vscode
+.c9/
 .idea
 *.csv
 *.dat
@@ -8,6 +9,7 @@
 *.log
 *.out
 *.pid
+*.swp
 *.seed
 *.sublime-project
 *.sublime-workspace
@@ -28,19 +30,19 @@ client/plugins.styl
 client/plugins.scss
 server/plugins.js
 
-custom/client/*
-!custom/client/.gitkeep
+; custom/client/*
+; !custom/client/.gitkeep
 
-custom/server/*
-!custom/server/.gitkeep
+; custom/server/*
+; !custom/server/.gitkeep
 
-public/custom/*
-!public/custom/.gitkeep
+; public/custom/*
+; !public/custom/.gitkeep
 
-private/custom/*
-!private/custom/.gitkeep
+; private/custom/*
+; !private/custom/.gitkeep
 
-imports/plugins/custom/*
-!imports/plugins/custom/.gitkeep
+; imports/plugins/custom/*
+; !imports/plugins/custom/.gitkeep
 
 .reaction/config.json
