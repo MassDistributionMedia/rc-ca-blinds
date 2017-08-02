@@ -3,6 +3,7 @@
 .vscode
 .c9/
 .idea
+.c9
 *.csv
 *.dat
 *.gz
