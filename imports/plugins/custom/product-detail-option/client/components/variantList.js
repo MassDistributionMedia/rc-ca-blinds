@@ -83,7 +83,7 @@ class VariantList extends Component {
         const methods = this;
         const props = this.props;
         const divStyle = {
-          display: "none"
+          display: "none",
         };
         const childVariantContainer = <div className="variant-accordion" id={variant._id} style={divStyle}>
                                         {<RenderList
@@ -121,7 +121,7 @@ class VariantList extends Component {
               {...this.props}
             />
           </EditContainer>,
-          childVariantContainer
+          childVariantContainer,
          ]
         );
       });
@@ -143,12 +143,12 @@ class VariantList extends Component {
           key="dividerWithLabel"
           label="Options"
         />,
-        variantList
+        variantList,
       ]);
     } else if (variants.length === 1) {
       return ([
         <Divider key="divider" />,
-        variantList
+        variantList,
       ]);
     }
 

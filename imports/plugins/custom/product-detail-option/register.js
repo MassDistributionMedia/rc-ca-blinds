@@ -1,7 +1,7 @@
 import { Reaction } from "/server/api";
 
 Reaction.registerPackage({
-  label: "Product Detail Option",
+  label: "Blind Detail Option",
   name: "product-detail-option",
   icon: "fa fa-cubes",
   autoEnable: true,

@@ -6,6 +6,7 @@ import { Cart } from "/lib/collections";
 import { Media } from "/lib/collections";
 import { Session } from "meteor/session";
 import { Template } from "meteor/templating";
+import CartSubTotals from "../../container/cartSubTotalContainer";
 
 //
 // cartCheckout is a wrapper template
@@ -18,6 +19,12 @@ Template.cartCheckout.helpers({
       return Cart.findOne();
     }
     return {};
+  }
+});
+
+Template.cartCheckout.helpers({
+  CartSubTotals() {
+    return CartSubTotals;
   }
 });
 

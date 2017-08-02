@@ -7,7 +7,7 @@ import { ReactionProduct } from "/lib/api";
 import { applyProductRevision } from "/lib/api/products";
 import seedProduct from "/imports/plugins/custom/width-height-variant/data/product-seed";
 import { addNewVariantIfNotExist } from "/imports/plugins/custom/width-height-variant/client/render-list";
-import VariantFormContainer from "../../../../../containers/variantFormContainer";
+import VariantFormContainer from "/imports/plugins/included/product-variant/containers/variantFormContainer";
 
 Template.variantForm.onCreated(function () {
   this.state = new ReactiveDict();
