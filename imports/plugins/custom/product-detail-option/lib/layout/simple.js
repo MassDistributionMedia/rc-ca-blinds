@@ -23,7 +23,7 @@ export default function blocks() {
             element: "h1",
             textFieldProps: {
               i18nKeyPlaceholder: "productDetailEdit.title",
-              placeholder: "Title"
+              placeholder: "Title",
             }
           }
         },
@@ -40,7 +40,7 @@ export default function blocks() {
             element: "h2",
             textFieldProps: {
               i18nKeyPlaceholder: "productDetailEdit.pageTitle",
-              placeholder: "Subtitle"
+              placeholder: "Subtitle",
             }
           }
         }
@@ -61,23 +61,23 @@ export default function blocks() {
       style: {
         "@media  only screen and (max-width: 921px)": {
           minWidth: "100%",
-          maxWidth: "100%"
+          maxWidth: "100%",
         }
       },
       children: [
         // Media Gallery
         {
-          component: "MediaGalleryContainer"
+          component: "MediaGalleryContainer",
         },
 
         // Tags
         {
-          component: "ProductTags"
+          component: "ProductTags",
         },
 
         // Metadata
         {
-          component: "ProductMetadata"
+          component: "ProductMetadata",
         }
       ]
     },
@@ -92,7 +92,7 @@ export default function blocks() {
       style: {
         "@media  only screen and (max-width: 921px)": {
           minWidth: "100%",
-          maxWidth: "100%"
+          maxWidth: "100%",
         }
       },
       children: [
@@ -105,7 +105,7 @@ export default function blocks() {
           permissions: ["createProduct"],
           audience: ["guest", "anonymous"],
           style: {
-            padding: 0
+            padding: 0,
           },
           children: [
             // Price Range
@@ -113,11 +113,11 @@ export default function blocks() {
               type: "block",
               size: "variable",
               style: {
-                padding: 0
+                padding: 0,
               },
               children: [
                 {
-                  component: "PriceRange"
+                  component: "PriceRange",
                 }
               ]
             },
@@ -127,11 +127,11 @@ export default function blocks() {
               size: "static",
               justify: "end",
               style: {
-                padding: 0
+                padding: 0,
               },
               children: [
                 {
-                  component: "SocialContainer"
+                  component: "SocialContainer",
                 }
               ]
             }
@@ -146,7 +146,7 @@ export default function blocks() {
             fieldTitle: "Vendor",
             textFieldProps: {
               i18nKeyPlaceholder: "productDetailEdit.vendor",
-              placeholder: "Vendor"
+              placeholder: "Vendor",
             }
           }
         },
@@ -158,26 +158,26 @@ export default function blocks() {
             multiline: true,
             textFieldProps: {
               i18nKeyPlaceholder: "productDetailEdit.description",
-              placeholder: "Description"
+              placeholder: "Description",
             }
           }
         },
 
         // Variant List
         {
-          component: "VariantListContainer"
+          component: "VariantListContainer",
         },
 
         // Divider
         {
-          component: "Divider"
+          component: "Divider",
         },
 
         // Alerts for checkout
         {
           component: "AlertContainer",
           props: {
-            placement: "productDetail"
+            placement: "productDetail",
           }
         },
 
@@ -186,7 +186,7 @@ export default function blocks() {
           component: "AddToCartButton",
           props: {
             style: {
-              paddingTop: 20
+              paddingTop: 20,
             }
           }
         }

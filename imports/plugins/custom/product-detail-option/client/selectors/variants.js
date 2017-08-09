@@ -1,5 +1,5 @@
 import { ReactionProduct } from "/lib/api";
-import * as SelectedVariants from "../stores/selected-variants";
+// import * as SelectedVariants from "../stores/selected-variants";
 
 export function getChildVariants() {
   const variants = ReactionProduct.getVariants();

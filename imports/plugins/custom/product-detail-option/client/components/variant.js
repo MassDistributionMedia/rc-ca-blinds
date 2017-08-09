@@ -90,7 +90,7 @@ class Variant extends Component {
 
   render() {
     let detailStyle = {
-      display: 'none'
+      display: 'none',
     };
     const variant = this.props.variant;
     const classes = classnames({
@@ -158,7 +158,6 @@ Variant.propTypes = {
   variant: PropTypes.object,
   editButton: PropTypes.node,
   isSelected: PropTypes.bool,
-  isHeightWidth: PropTypes.bool,
   visibilityButton: PropTypes.node,
   connectDragSource: PropTypes.func,
   connectDropTarget: PropTypes.func,

@@ -4,6 +4,7 @@ import { isEqual } from "lodash";
 import Velocity from "velocity-animate";
 import "velocity-animate/velocity.ui";
 import { formatPriceString } from "/client/api";
+import { ReactionProduct } from "/lib/api";
 import {
   Button,
   Card,
@@ -19,6 +20,7 @@ import {
 
 const fieldNames = [
   "title",
+  "variantType",
   "originCountry",
   "compareAtPrice",
   "price",
@@ -35,6 +37,7 @@ const fieldNames = [
 
 const fieldGroups = {
   title: { group: "variantDetails" },
+  variantType: { group: "variantDetails" },
   originCountry: { group: "variantDetails" },
   compareAtPrice: { group: "variantDetails" },
   price: { group: "variantDetails" },
@@ -150,6 +153,24 @@ class VariantForm extends Component {
         this.props.onVariantFieldSave(this.variant._id, field, value, this.state.variant);
       }
     });
+  }
+
+  handleSelectHeightWidth = (value) => {
+    if ( value === "blindsHeightWidth" ) {
+      this.setState(({ variant }) => ({
+        variant: {
+          ...variant,
+          variantType: "blindsHeightWidth",
+        }
+      }));
+    } else if ( value !== "blindsHeightWidth" ) {
+      this.setState(({ variant }) => ({
+        variant: {
+          ...variant,
+          variantType: "default",
+        }
+      }));
+    }
   }
 
   handleCheckboxChange = (event, value, field) => {
@@ -313,6 +334,22 @@ class VariantForm extends Component {
               onChange={this.handleFieldChange}
               onReturnKeyDown={this.handleFieldBlur}
               validation={this.props.validation}
+            />
+            <Select
+              clearable={false}
+              i18nKeyLabel="productVariant.variantType"
+              i18nKeyPlaceholder="productVariant.variantType"
+              label="Variant Type"
+              name="variantType"
+              ref="variantTypeSelect"
+              options={this.props.variantTypes}
+              onChange={
+                (event) => {
+                  this.handleSelectHeightWidth( event, "variantType");
+                  this.handleSelectChange( event, "variantType" );
+                }
+              }
+              value={this.variant.variantType}
             />
             <Select
               clearable={false}
@@ -506,6 +543,7 @@ class VariantForm extends Component {
 
 VariantForm.propTypes = {
   cloneVariant: PropTypes.func,
+  variantTypes: PropTypes.arrayOf(PropTypes.object),
   countries: PropTypes.arrayOf(PropTypes.object),
   editFocus: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
   fetchTaxCodes: PropTypes.func,

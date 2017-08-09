@@ -67,6 +67,7 @@ Template.variantList.onRendered(function () {
  */
 Template.variantList.helpers({
   displayVariantOptions: function (type) {
+    debugger;
     if (ReactionProduct.selectedVariant().isHeightWidth) {
       if(type === 1)
         return "display: none;"

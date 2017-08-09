@@ -125,7 +125,7 @@ export function retrieveMetaValues(){
 
 export function composeNewVariant(){
   /* Check if all the variants options are selected or not */
-  let variantMapLength = _.size(variantMap);
+  // let variantMapLength = _.size(variantMap);
   // if(variantMapLength < variantOptions.length) {
   //   throw new Error('A variant option is missing. Please select all the variants');
   // }
@@ -174,7 +174,7 @@ function extractValuesFromVariant(variant, parent) {
       return {
         [parent.title]: variant.optionTitle
       };
-    case "Height & Width":
+    case "blindsHeightWidth":
       return {
         Width: variant.width + " " + variant.widthEighth  + "/8",
         Height: variant.height + " " + variant.heightEighth  + "/8",

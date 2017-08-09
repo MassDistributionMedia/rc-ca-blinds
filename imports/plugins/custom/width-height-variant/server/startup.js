@@ -148,7 +148,7 @@ Meteor.startup(function () {
   // let hackyPrices = products;
   // emptyOldVariants(hackyProductId);
   /*
-    db.Products.remove({ ancestors: { $in: ["BCTMZ6HTxFSppJESk"] }, type: "variant", $or :[ {variantType: "Height & Width"}, { width: { "$exists": true }, height: { "$exists": true }, } ]})
+    db.Products.remove({ ancestors: { $in: ["BCTMZ6HTxFSppJESk"] }, type: "variant", $or :[ {variantType: "blindsHeightWidth"}, { width: { "$exists": true }, height: { "$exists": true }, } ]})
   */
   // addNewVariantsIfNotExist(hackyProductId, hackyPrices);
 

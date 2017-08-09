@@ -47,9 +47,9 @@ class ProductOptionContainer extends Component {
 
     var newVariant;
 
-    try{
+    try {
       newVariant = SelectedVariants.composeNewVariant();
-    } catch(e){
+    } catch(e) {
       console.log(e);
       Alerts.inline(e.message, "error", {
         placement: "productDetail",

@@ -42,7 +42,7 @@ Template.variantForm.helpers({
   variantTypeOptions: function () {
     return [
       {label: "Default", value: "variant"},
-      {label: "Head-rail", value: "Head-rail"}
+      {label: "Head-rail", value: "Head-rail"},
     ];
   },
   displayVariantOptions: function () {
@@ -212,6 +212,10 @@ Template.variantForm.helpers({
     }
     return i18next.t("productVariant.selectTaxCode");
   },
+  variantTypes: function () {
+    const instance = Template.instance();
+    return instance.state.get("variantTypes");
+  },
   countries: function () {
     const instance = Template.instance();
     return instance.state.get("countries");
@@ -227,7 +231,7 @@ Template.variantForm.events({
     const variant = ReactionProduct.selectedVariant();
     const product = ReactionProduct.selectedProduct();
 
-    selectedType === "Height & Width" ? template.data.isHeightWidth = true : template.data.isHeightWidth = false;
+    selectedType === "blindsHeightWidth" ? template.data.isHeightWidth = true : template.data.isHeightWidth = false;
 
     Meteor.call("products/updateProductField", template.data._id, "isHeightWidth", template.data.isHeightWidth,
       error => {
@@ -236,9 +240,9 @@ Template.variantForm.events({
         }
     });
 
-    if (selectedType === "Height & Width") {
+    if (selectedType === "blindsHeightWidth") {
       addNewVariantIfNotExist(variant._id, seedProduct);
-      Meteor.call("products/updateProductField", variant._id, "variantType", "Height & Width");
+      Meteor.call("products/updateProductField", variant._id, "variantType", "blindsHeightWidth");
       Meteor.call("revisions/publish", product._id);
     }
 
@@ -289,7 +293,7 @@ Template.variantForm.events({
 
         Reaction.Router.go("product", {
           handle: handle,
-          variantId: newVariantId
+          variantId: newVariantId,
         });
       }
     });

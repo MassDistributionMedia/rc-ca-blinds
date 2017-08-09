@@ -370,7 +370,6 @@ function formatElement(element) {
     blindType: blindType,
     widthEighth: element.widthEighth,
     heightEighth: element.heightEighth,
-    isHeightWidth: true,
     weight: 0,
     inventoryQuantity: 9,
     inventoryPolicy: false,
