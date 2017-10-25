@@ -135,6 +135,7 @@ export function composeNewVariant(){
     price: 0,
     values: [],
     metafields: [],
+    inventoryQuantity: 111,
     isProductBundle: true,
   };
 
@@ -210,7 +211,8 @@ function addNewVariant(parentId, newVariant){
     _id: newVariantId,
     ancestors: ancestors,
     type: "variant",
-    isVisible: true
+    isVisible: true,
+    inventoryQuantity: 111,
   });
 
   if (!newVariant) {
@@ -220,19 +222,34 @@ function addNewVariant(parentId, newVariant){
     });
   }
 
-  Products.insert(assembledVariant,
-    (error, result) => {
-      if(error) {
-        console.error(error);
-      }
-      if (result) {
-        console.log(
-          `products/createVariant: created variant: ${
-            newVariantId} for ${parentId}`
-        );
-      }
-    }
-  );
+  console.trace();
 
-  return newVariant;
+  return new Promise(function(resolve, reject){
+    Meteor.call(
+      "product-detail-option.insertVariant", assembledVariant,
+      function(err, result){
+        if(err) return reject(err);
+        resolve(result);
+      }
+    );
+  }).then(function(variantId){
+    assembledVariant._id = variantId;
+    return newVariant;
+  })
+
+
+  // Products.insert(assembledVariant,
+  //   (error, result) => {
+  //     if(error) {
+  //       debugger;
+  //       console.error(error);
+  //     }
+  //     if (result) {
+  //       console.log(
+  //         `products/createVariant: created variant: ${
+  //           newVariantId} for ${parentId}`
+  //       );
+  //     }
+  //   }
+  // );
 }

@@ -4,7 +4,7 @@ Reaction.registerPackage({
   label: "Blind Detail Option",
   name: "product-detail-option",
   icon: "fa fa-cubes",
-  autoEnable: true,
+  autoEnable: false,
   registry: [{
     route: "/not-product/:handle/:variantId?",
     name: "not-product",
@@ -16,7 +16,7 @@ Reaction.registerPackage({
     workflow: "coreProductWorkflow",
     collection: "Products",
     theme: "default",
-    enabled: true,
+    enabled: false,
     structure: {
       template: "productDetailOption",
       layoutHeader: "layoutHeader",
@@ -28,4 +28,28 @@ Reaction.registerPackage({
       adminControlsFooter: "adminControlsFooter"
     }
   }]
+});
+
+import { Products } from "/lib/collections";
+import { Meteor } from "meteor/meteor";
+
+
+Meteor.startup(function () {
+
+  Meteor.methods({
+    'product-detail-option.insertVariant'(assembledVariant) {
+      check(assembledVariant,Match.Any);
+      return new Promise(function(resolve, reject){
+      var id = Products.insert(assembledVariant,
+        (error, result) => {
+          if(error) {
+            reject(error);
+          } else {
+            resolve(id);
+          }
+        }
+      );
+      })
+    },
+  })
 });

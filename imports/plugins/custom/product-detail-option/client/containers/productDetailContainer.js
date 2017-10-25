@@ -45,19 +45,9 @@ class ProductOptionContainer extends Component {
     //   return [];
     // }
 
-    var newVariant;
-
-    try {
-      newVariant = SelectedVariants.composeNewVariant();
-    } catch(e) {
-      console.log(e);
-      Alerts.inline(e.message, "error", {
-        placement: "productDetail",
-        i18nKey: "productDetail.publishFirst",
-        autoHide: 10000
-      });
-      return [];
-    }
+    Promise.resolve().then(()=>{
+      return SelectedVariants.composeNewVariant();
+    }).then((newVariant)=>{
 
     quantity = parseInt(this.state.cartQuantity, 10);
 
@@ -65,9 +55,12 @@ class ProductOptionContainer extends Component {
       quantity = 1;
     }
     productId = currentProduct._id;
+    var variantId = newVariant._id;
+
+    console.log(productId, variantId);
 
     if (productId) {
-      Meteor.call("cart/addToCart", productId, newVariant._id, quantity, (error) => {
+      Meteor.call("cart/addToCart", productId, variantId, quantity, (error) => {
         if (error) {
           Logger.error("Failed to add to cart.", error);
           return error;
@@ -117,6 +110,16 @@ class ProductOptionContainer extends Component {
           $(".cart-alert").hide();
         }
       });
+
+    }).catch((e)=>{
+      console.log(e);
+      Alerts.inline(e.message, "error", {
+        placement: "productDetail",
+        i18nKey: "productDetail.publishFirst",
+        autoHide: 10000
+      });
+      return [];
+    })
   }
 
   handleProductFieldChange = (productId, fieldName, value) => {

@@ -15,3 +15,9 @@ Custom Product Details Page:
 - varients selected are added to a list
 - you can only add to cart once all parts have completed
 - Add to cart creates a new variant which will be the sum of the parts
+
+
+# Cart/Shipping Hack
+- Shipping charges will be $3.00 per shade with a $12.00 Minimum for any size blinds/shade that I offer on the website for anywhere in US except Alaska and Hawaii.
+So, for 1 shades its $12.00.  For 4 Shades its $12.00.  For 5 Shades its $15.00.
+- /lib/collections/transform/cart.js#51 is where I'd do the hack

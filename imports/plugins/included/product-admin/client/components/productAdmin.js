@@ -223,7 +223,6 @@ class ProductAdmin extends Component {
   }
 
   render() {
-    debugger;
     return (
       <CardGroup>
         <Card

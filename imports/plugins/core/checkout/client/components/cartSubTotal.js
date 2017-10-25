@@ -45,6 +45,12 @@ class CartSubTotal extends Component {
   render() {
     return (
       <div className="cart-items">
+        <sub>
+          $12.00 minimum for up to a quantity of 4 of any size blinds/shades anywhere in the US, except Alaska and Hawaii.
+          <br/>
+          i.e.: The shipping of 1 shade is $12.00. For 4 (qty) shades it's $12.00. For 5 qty shades, it is $15.00.
+          <br/>
+        </sub>
         <div className="cart-totals">
           <table className="table table-condensed">
             <thead>

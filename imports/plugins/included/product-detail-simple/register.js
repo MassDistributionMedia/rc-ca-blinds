@@ -4,7 +4,7 @@ Reaction.registerPackage({
   label: "Product Detail Simple",
   name: "product-detail-simple",
   icon: "fa fa-cubes",
-  autoEnable: false,
+  autoEnable: true,
   registry: [{
     route: "/product/:handle/:variantId?",
     name: "product",
@@ -16,7 +16,7 @@ Reaction.registerPackage({
     workflow: "coreProductWorkflow",
     collection: "Products",
     theme: "default",
-    enabled: false,
+    enabled: true,
     structure: {
       template: "productDetailSimple",
       layoutHeader: "layoutHeader",
