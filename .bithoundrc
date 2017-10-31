@@ -42,6 +42,7 @@
     "**/extjs/resources/**",
     "**/extjs/src/**",
     "**/extjs/welcome/**",
+    "**/jsdoc/templates/**",
     "bower_components/**"
   ],
   "test": [
@@ -57,24 +58,14 @@
   },
   "dependencies": {
     "mute": [
-      "wdio-mocha-framework",
-      "griddle-react",
-      "twilio",
-      "react-addons-create-fragment",
-      "react-addons-pure-render-mixin",
-      "react-addons-test-utils",
-      "react-dom",
-      "react",
-      "transliteration"
+      "enzyme",
+      "jsdoc"
     ],
     "unused-ignores": [
-      "jquery",
       "sweetalert2",
       "font-awesome",
-      "bcrypt",
       "react-addons-pure-render-mixin",
       "url",
-      "griddle-react",
       "tether-tooltip",
       "react-textarea-autosize",
       "react-color",

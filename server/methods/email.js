@@ -4,9 +4,19 @@ import { check, Match } from "meteor/check";
 import { Jobs, Packages } from "/lib/collections";
 import { Logger, Reaction } from "/server/api";
 
+/**
+ * @file Methods for sending emails, retrying failed emails and verifying email configuration.
+ * Run these methods using `Meteor.call()`
+ *
+ * @example Meteor.call("emails/retryFailed", email._id, (err)
+ * @namespace Methods/Email
+*/
 Meteor.methods({
   /**
-   * Verify the current email configuration
+   * @name email/verifySettings
+   * @method
+   * @summary Verify the current email configuration
+   * @memberof Methods/Email
    * @param {Object} settings - optional settings object (otherwise uses settings in database)
    * @return {Boolean} - returns true if SMTP connection succeeds
    */
@@ -26,29 +36,42 @@ Meteor.methods({
     if (typeof settings === "object") {
       const { service, host, port, user, password } = settings;
 
-      if (service === "custom" && host && port && user && password) {
+      if (service === "custom" && host && port) {
         // create a custom Nodemailer config
-        config = { host, port, auth: { user, pass: password } };
-      } else if (service && user && password) {
+        config = { host, port };
+
+        if (host === "localhost") {
+          config.ignoreTLS = true;
+        }
+      } else if (service) {
         // create a Nodemailer config from the nodemailer-wellknown services
         config = getServiceConfig(service) || {};
+      }
+
+      if (user && password) {
         config.auth = { user, pass: password };
       }
     }
 
     const { Email } = Reaction;
 
+    const conf = config || Email.getMailConfig();
+
+    Logger.debug(conf, "Verifying email config settings");
+
     try {
-      return Meteor.wrapAsync(Email.verifyConfig)(config || Email.getMailConfig());
+      return Meteor.wrapAsync(Email.verifyConfig)(conf);
     } catch (e) {
       Logger.error(e);
       throw new Meteor.Error(e.responseCode, e.response);
     }
   },
 
-
   /**
-   * Save new email configuration
+   * @name email/saveSettings
+   * @method
+   * @summary Save new email configuration
+   * @memberof Methods/Email
    * @param {Object} settings - mail provider settings
    * @return {Boolean} - returns true if update succeeds
    */
@@ -62,8 +85,8 @@ Meteor.methods({
       service: String,
       host: Match.Optional(String),
       port: Match.Optional(Number),
-      user: String,
-      password: String
+      user: Match.Optional(String),
+      password: Match.Optional(String)
     });
 
     Packages.update({ name: "core", shopId: Reaction.getShopId() }, {
@@ -79,9 +102,11 @@ Meteor.methods({
     return true;
   },
 
-
   /**
-   * Retry a failed or cancelled email job
+   * @name email/retryFailed
+   * @method
+   * @summary Retry a failed or cancelled email job
+   * @memberof Methods/Email
    * @param {String} jobId - a sendEmail job ID
    * @return {Boolean} - returns true if job is successfully restarted
    */

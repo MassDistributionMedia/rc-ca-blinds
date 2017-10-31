@@ -1,11 +1,20 @@
 import React,  { Component } from "react";
 import PropTypes from "prop-types";
-import _ from "lodash";
 import matchSorter from "match-sorter";
 import ReactTable from "react-table";
 import { Meteor } from "meteor/meteor";
 import { Counts } from "meteor/tmeasday:publish-counts";
 import { SortableTableFilter, SortableTablePagination } from "./sortableTableComponents";
+import { registerComponent } from "@reactioncommerce/reaction-components";
+
+/**
+ * @file SortableTable is a React Component wrapper around {@link https://react-table.js.org} ReactTable.
+ * Any functionality from ReactTable should be available in SortableTable out of the box, but may require styling.
+ * For more, see {@link https://react-table.js.org/#/story/readme ReactTable docs}
+ *
+ * @module SortableTable
+ * @extends Component
+ */
 
 class SortableTable extends Component {
   constructor(props) {
@@ -15,21 +24,29 @@ class SortableTable extends Component {
       currentPage: 0,
       filterInput: "",
       maxPages: 0,
-      query: this.props.query || {}
+      query: props.query || {}
     };
 
     this.handleFilterInput = this.handleFilterInput.bind(this);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.query !== this.props.query) {
+      this.setState({
+        query: nextProps.query
+      });
+    }
+  }
+
 
   /**
-   * getMeteorData() - Absorb publication / collection information from props, output data from subscription
+   * @name getMeteorData()
+   * @method
+   * @summary Absorb publication / collection information from props, output data from subscription.
+   * Use props to get collection, use that information to call Meteor to get subscription and output data for table.
    * @prop {String} matchingResultsCount - Send to Counts collection to get results count of sub
    * @prop {String} publication - publication to subscribe to
    * @prop {Object} collection - collection to get data from
-   * Use props to get collection
-   * Use that info to call meteor and get subscription
-   * Output data for table
    * @returns {Object} loading status (bool), results (object), and matchingResults (number)
    */
   getMeteorData() {
@@ -41,7 +58,7 @@ class SortableTable extends Component {
 
     const options = {};
 
-    const pubHandle = Meteor.subscribe(publication, this.state.query, _.assignIn({}, options));
+    const pubHandle = Meteor.subscribe(publication, this.state.query, Object.assign({}, options));
 
     // optional transform of collection for grid results
     let results = collection.find(this.state.query, options).fetch();
@@ -58,8 +75,9 @@ class SortableTable extends Component {
 
 
   /**
-   * customFilter() - Replace default filter with customized filter
-   * custom filter is case insensitive
+   * @name customFilter()
+   * @method
+   * @summary Replace default filter with customized filter, custom filter is case insensitive
    * custom filter searches entire string, not just from string start
    * @param {Object} filter user-typed data
    * @param {Object} row row info for associated filter
@@ -76,7 +94,8 @@ class SortableTable extends Component {
 
 
   /**
-   * handleFilterInput() - Update state when filter is changed
+   * @name handleFilterInput()
+   * @summary Update state when filter is changed
    * @param {script} event onChange event when typing in filter field
    * @param {string} value text field input
    * @param {string} field input field name to watch
@@ -90,7 +109,8 @@ class SortableTable extends Component {
 
 
   /**
-   * handleClick() - Handle click on table row
+   * @name handleClick()
+   * @summary Handle click on table row
    * @param {object} rowInfo row data passed in from ReactTable
    * @return {function} return onRowClick function prop, or undefined if not supplied
    */
@@ -114,7 +134,9 @@ class SortableTable extends Component {
 
 
   /**
-   * renderColumns() - Absorb columnMetadata information from props, output columns to display
+   * @name renderColumns()
+   * @method
+   * @summary Absorb columnMetadata information from props, output columns to display
    * @prop {String} columnMetadata - Object of data field, column header
    * @returns {Object} data filed (string), translated header (string), and minWidth (number / undefined)
    */
@@ -123,7 +145,7 @@ class SortableTable extends Component {
 
     // Add minWidth = undefined to override 100px default set by ReactTable
     const displayColumns = columnMetadata.map((element) => {
-      return _.assignIn({}, element, {
+      return Object.assign({}, element, {
         minWidth: undefined
       });
     });
@@ -133,11 +155,13 @@ class SortableTable extends Component {
 
 
   /**
-   * renderData() - Take data from getMeteorData() and filter if needed, or spit out raw if no filter
+   * @name renderData()
+   * @method
+   * @summary Take data from getMeteorData() and filter if needed, or spit out raw if no filter
    * @returns {Object} data filed (string), translated header (string), and minWidth (number / undefined)
    */
   renderData() {
-    const { filteredFields } = this.props;
+    const { filteredFields, filterType } = this.props;
     const { filterInput } = this.state;
 
     let originalData = [];
@@ -146,14 +170,18 @@ class SortableTable extends Component {
       originalData = this.getMeteorData().results;
     }
 
-    const filteredData = matchSorter(originalData, filterInput, { keys: filteredFields });
+    if (filterType === "both" || filterType === "table") {
+      const filteredData = matchSorter(originalData, filterInput, { keys: filteredFields });
+      return filteredData;
+    }
 
-    return filteredData;
+    return originalData;
   }
 
 
   /**
-   * renderColumnFilter() - Uses props to determine if Column Filters should be shown
+   * @name renderColumnFilter()
+   * @summary Uses props to determine if Column Filters should be shown
    * @returns {Bool} returns true or false for column filters
    */
   renderColumnFilter() {
@@ -168,95 +196,168 @@ class SortableTable extends Component {
 
 
   /**
-   * renderTableFilter() - Uses props to determine if a Table Filter should be shown
+   * @name getTableData()
+   * @method
+   * @summary Checks if JSON data is passed vs publication data
+   * @returns {Number} returns number of available data
+   */
+  getTableData() {
+    if (this.props.data) {
+      return this.props.data.length;
+    }
+
+    return this.getMeteorData().matchingResults;
+  }
+
+  /**
+   * @name renderTableFilter()
+   * @method
+   * @summary Uses props to determine if a Table Filter should be shown
    * @returns {node} returns JSX node or null
    */
   renderTableFilter() {
     const { filterType } = this.props;
 
-    if (filterType === "both" || filterType === "table") {
-      return (
-        <SortableTableFilter
-          onChange={this.handleFilterInput}
-          value={this.state.filterInput}
-          name="filterInput"
-        />
-      );
+    if (this.getTableData() !== 0) {
+      if (filterType === "both" || filterType === "table") {
+        return (
+          <SortableTableFilter
+            onChange={this.handleFilterInput}
+            value={this.state.filterInput}
+            name="filterInput"
+          />
+        );
+      }
     }
 
     return null;
   }
 
+  /**
+   * @name selectedRowsClassName()
+   * @method
+   * @summary If any rows are selected, give them a className of "selected-row"
+   * @param {object} rowInfo row data passed in from ReactTable
+   * @returns {String} className to apply to row that is selected, or empty string if no row is selected
+   */
+  selectedRowsClassName(rowInfo) {
+    const { selectedRows } = this.props;
+    let className = "";
+
+    if (selectedRows && selectedRows.length) {
+      if (rowInfo !== undefined && selectedRows.includes(rowInfo.row._id)) {
+        className = "selected-row";
+      }
+    }
+
+    return className;
+  }
+
+  renderPaginationBottom = () => {
+    if (this.getTableData() === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  setMinRows = () => {
+    if (this.getTableData() === 0) {
+      return 3;
+    }
+
+    return 0;
+  }
 
   render() {
     const { ...otherProps } = this.props;
+    const defaultClassName = "-striped -highlight";
 
     // All available props: https://github.com/tannerlinsley/react-table#props
     return (
       <div>
         {this.renderTableFilter()}
         <ReactTable
-          className={"-striped -highlight"}
+          className={otherProps.tableClassName || defaultClassName}
           columns={this.renderColumns()}
-          data={this.renderData()}
+          data={otherProps.data || this.renderData()}
           defaultFilterMethod={this.customFilter}
           defaultPageSize={otherProps.defaultPageSize}
           filterable={this.renderColumnFilter()}
-          minRows={otherProps.minRows}
-
+          minRows={this.setMinRows()}
           previousText={otherProps.previousText}
           nextText={otherProps.nextText}
           loadingText={otherProps.loadingText}
-          noDataText={otherProps.noDataText}
+          noDataText={() => <span className="sortableTable-noDataText">{this.props.noDataMessage}</span>}
           pageText={otherProps.pageText}
           ofText={otherProps.ofText}
           rowsText={otherProps.rowsText}
-
+          showPaginationTop={otherProps.showPaginationTop}
+          sortable={otherProps.isSortable}
           PaginationComponent={SortableTablePagination}
-
+          showPaginationBottom={this.renderPaginationBottom()}
           getTrProps={(state, rowInfo, column, instance) => { // eslint-disable-line no-unused-vars
+            if (otherProps.getTrProps) {
+              return otherProps.getTrProps();
+            }
+
             return {
               onClick: e => { // eslint-disable-line no-unused-vars
                 this.handleClick(rowInfo);
-              }
+              },
+              className: this.selectedRowsClassName(rowInfo)
             };
           }}
+          getTableProps={otherProps.getTableProps}
+          getTrGroupProps={otherProps.getTrGroupProps}
+          getTheadProps={otherProps.getTheadProps}
+          getPaginationProps={otherProps.getPaginationProps}
         />
       </div>
     );
   }
 }
 
+/**
+  * @name SortableTable propTypes
+  * @type {propTypes}
+  * @param {Object} props - React PropTypes
+  * @property {Object} collection collection to get data from
+  * @property {Array} columnMetadata provides filtered columns with i18n headers
+  * @property {Array} data provides array of objects to be used in place of publication data
+  * @property {Number} defaultPageSize how many results per page
+  * @property {Boolean} filterType filter by table, column, or both
+  * @property {Array} filteredFields provides filtered columns, use columnMetadata instead
+  * @property {Boolean} isFilterable show / hide column filter
+  * @property {Boolean} isResizeable allow resizing of table columns
+  * @property {Boolean} isSortable allow column sorting
+  * @property {String} matchingResultsCount provides Count publication to get count from
+  * @property {Number} minRows minimum amount of rows to display in table
+  * @property {String} noDataMessage text to display when no data is available
+  * @property {Function} onRowClick provides function / action when clicking on row
+  * @property {String} publication provides publication to get Meteor data from
+  * @property {object} query provides query for publication filtering
+  * @property {Array} selectedRows provides selected rows in the table
+  * @property {Function} transform transform of collection for grid results
+  * @return {Array} React propTypes
+  */
 SortableTable.propTypes = {
-  /** @type {object} collection collection to get data from */
   collection: PropTypes.object,
-  /** @type {array} columnMetadata provides filtered columns with i18n headers */
   columnMetadata: PropTypes.array,
-  /** @type {number} defaultPageSize how many results per page */
+  data: PropTypes.array,
   defaultPageSize: PropTypes.number,
-  /** @type {bool} filterType filter by table, column, or both */
   filterType: PropTypes.string,
-  /** @type {array} filteredFields provides filtered columns, use columnMetadata instead */
   filteredFields: PropTypes.array,
-  /** @type {bool} isFilterable show / hide column filter */
   isFilterable: PropTypes.bool,
-  /** @type {bool} isResizeable allow resizing of table columns */
   isResizeable: PropTypes.bool,
-  /** @type {bool} isSortable allow column sorting */
   isSortable: PropTypes.bool,
-  /** @type {string} matchingResultsCount provides Count publication to get count from */
   matchingResultsCount: PropTypes.string,
-  /** @type {number} minRows minimum amount of rows to display in table */
   minRows: PropTypes.number,
-  /** @type {string} noDataMessage text to display when no data is available */
   noDataMessage: PropTypes.string,
-  /** @type {function} onRowClick provides function / action when clicking on row */
   onRowClick: PropTypes.func,
-  /** @type {string} publication provides publication to get Meteor data from */
   publication: PropTypes.string,
-  /** @type {object} query provides query for publication filtering */
   query: PropTypes.object,
-  /** @type {function} transform transform of collection for grid results */
+  selectedRows: PropTypes.array,
   transform: PropTypes.func
 };
 
@@ -267,7 +368,6 @@ SortableTable.defaultProps = {
   isResizeable: true,
   isSortable: true,
   minRows: 0,
-  // Text props where translations are needed
   noDataMessage: "No results found",
   previousText: "Previous",
   nextText: "Next",
@@ -276,6 +376,16 @@ SortableTable.defaultProps = {
   pageText: "Page",
   ofText: "of",
   rowsText: "rows"
+  // noDataMessage: <Translation defaultValue="No results found" i18nKey={"reactionUI.components.sortableTable.tableText.noDataMessage"} />,
+  // previousText: <Translation defaultValue="Previous" i18nKey={"reactionUI.components.sortableTable.tableText.previousText"} />,
+  // nextText: <Translation defaultValue="Next" i18nKey={"reactionUI.components.sortableTable.tableText.nextText"} />,
+  // loadingText: <Translation defaultValue="Loading..." i18nKey={"reactionUI.components.sortableTable.tableText.loadingText"} />,
+  // noDataText: <Translation defaultValue="No results found" i18nKey={"reactionUI.components.sortableTable.tableText.noDataText"} />,
+  // pageText: <Translation defaultValue="Page" i18nKey={"reactionUI.components.sortableTable.tableText.pageText"} />,
+  // ofText: <Translation defaultValue="of" i18nKey={"reactionUI.components.sortableTable.tableText.ofText"} />,
+  // rowsText: <Translation defaultValue="rows" i18nKey={"reactionUI.components.sortableTable.tableText.rowsText"} />
 };
+
+registerComponent("SortableTable", SortableTable);
 
 export default SortableTable;

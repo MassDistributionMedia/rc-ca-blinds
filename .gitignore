@@ -15,7 +15,6 @@
 *.sublime-project
 *.sublime-workspace
 
-jsdoc.json
 lib-cov
 logs
 node_modules

@@ -13,6 +13,7 @@ import RenderWidthHeightList, {
   width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
+import { Components } from "@reactioncommerce/reaction-components";
 
 class VariantList extends Component {
   handleVariantEditClick = (event, editButtonProps) => {
@@ -29,7 +30,7 @@ class VariantList extends Component {
     }
   }
 
-  handleChildleVariantClick = (event, variant) => {
+  handleChildVariantClick = (event, variant) => {
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
     }
@@ -58,7 +59,7 @@ class VariantList extends Component {
       addButton = (
         <div className="rui items flex">
           <div className="rui item full justify center">
-            <IconButton
+            <Components.IconButton
               i18nKeyTooltip="variantList.createVariant"
               icon="fa fa-plus"
               primary={true}
@@ -75,7 +76,7 @@ class VariantList extends Component {
         const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
 
         return (
-          <EditContainer
+          <Components.EditContainer
             data={variant}
             disabled={this.props.editable === false}
             editView="variantForm"
@@ -87,7 +88,7 @@ class VariantList extends Component {
             permissions={["createProduct"]}
             showsVisibilityButton={true}
           >
-            <Variant
+            <Components.Variant
               displayPrice={displayPrice}
               editable={this.props.editable}
               index={index}
@@ -97,7 +98,7 @@ class VariantList extends Component {
               soldOut={this.isSoldOut(variant)}
               variant={variant}
             />
-          </EditContainer>
+          </Components.EditContainer>
         );
       });
     }
@@ -113,7 +114,7 @@ class VariantList extends Component {
       return variantList;
     } else if (variants.length > 1 || variants.length === 0) {
       return [
-        <Divider
+        <Components.Divider
           i18nKeyLabel="productDetail.options"
           key="dividerWithLabel"
           label="Options"
@@ -122,7 +123,7 @@ class VariantList extends Component {
       ];
     } else if (variants.length === 1) {
       return [
-        <Divider key="divider" />,
+        <Components.Divider key="divider" />,
         variantList
       ];
     }
@@ -137,8 +138,41 @@ class VariantList extends Component {
      *  Which happens on one of Meteor's cycles
      *  see: http://stackoverflow.com/a/42896843/1762493
      */
-    if (ReactionProduct.selectedVariant() === null) {
-      return; // or return null;
+    // if (ReactionProduct.selectedVariant() === null) {
+    //   return; // or return null;
+    let childVariants = [];
+
+    if (this.props.childVariants) {
+      childVariants = this.props.childVariants.map((childVariant, index) => {
+        const media = this.props.childVariantMedia.filter((mediaItem) => {
+          if (mediaItem.metadata.variantId === childVariant._id) {
+            return true;
+          }
+          return false;
+        });
+
+        return (
+          <Components.EditContainer
+            data={childVariant}
+            disabled={this.props.editable === false}
+            editView="variantForm"
+            i18nKeyLabel="productDetailEdit.editVariant"
+            key={index}
+            label="Edit Variant"
+            onEditButtonClick={this.handleChildVariantEditClick}
+            onVisibilityButtonClick={this.handleVariantVisibilityClick}
+            permissions={["createProduct"]}
+            showsVisibilityButton={true}
+          >
+            <Components.ChildVariant
+              isSelected={this.props.variantIsSelected(childVariant._id)}
+              media={media}
+              onClick={this.handleChildVariantClick}
+              variant={childVariant}
+            />
+          </Components.EditContainer>
+        );
+      });
     }
     const currentVariant = ReactionProduct.selectedVariant();
 
@@ -147,7 +181,7 @@ class VariantList extends Component {
     const props = this.props;
     if (childVariants.length) {
       return [
-        <Divider
+        <Components.Divider
           key="availableOptionsDivider"
           i18nKeyLabel="availableOptions"
           label="Available Options"

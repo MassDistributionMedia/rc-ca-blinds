@@ -5,12 +5,13 @@ jobs:
     working_directory: /home/reaction
 
     docker:
-      - image: node:7
+      - image: node:8
 
     environment:
-      - DOCKER_VERSION: 17.03.1-ce
-      - DOCKER_COMPOSE_VERSION: 1.13.0
+      - DOCKER_VERSION: 17.05.0-ce
+      - DOCKER_COMPOSE_VERSION: 1.15.0
       - METEOR_ALLOW_SUPERUSER: true
+      - TOOL_NODE_FLAGS: "--max-old-space-size=4096"
 
     steps:
       - setup_remote_docker
@@ -38,8 +39,8 @@ jobs:
           name: Restoring Meteor dev_bundle cache
           key: dev_bundle
 
-      - run: npm test
-      - run: reaction test
+      # run reaction tests
+      - run: .circleci/tests.sh
 
       - save_cache:
           name: Saving Meteor dev_bundle to cache
@@ -51,7 +52,20 @@ jobs:
           command: .circleci/build.sh
           no_output_timeout: 30m
 
+      - run:
+          command: .reaction/jsdoc/build.sh
+          no_output_timeout: 2m
+
       # deploy the build (if on a deployment branch)
+
+      - deploy:
+          name: Deploy to S3 if tests pass and branch is Master
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              aws s3 sync /tmp/reaction-docs ${API_DOC_BUCKET} --delete --region ${API_DOC_BUCKET_REGION}
+            else
+              echo "Not master branch so not deploying"
+            fi
       - deploy:
           name: Docker Image Deploment
           command: .circleci/deploy.sh
