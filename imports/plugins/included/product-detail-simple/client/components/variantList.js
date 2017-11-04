@@ -1,18 +1,5 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import Variant from "./variant";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
-import { ChildVariant } from "./";
-import { Reaction } from "/client/api";
-import { ReactionProduct } from "/lib/api";
-import { Products } from "/lib/collections";
-
-import RenderWidthHeightList, {
-  WIDTH_HEIGHT_VARIANT_TYPE,
-  width_heightVariantUploadForm,
-} from "/imports/plugins/custom/width-height-variant/client/render-list";
-
 import { Components } from "@reactioncommerce/reaction-components";
 
 class VariantList extends Component {
@@ -132,14 +119,7 @@ class VariantList extends Component {
   }
 
   renderChildVariants() {
-    /**
-     * This `if` is to handle error:
-     *  Exception from Tracker recompute function
-     *  Which happens on one of Meteor's cycles
-     *  see: http://stackoverflow.com/a/42896843/1762493
-     */
-    // if (ReactionProduct.selectedVariant() === null) {
-    //   return; // or return null;
+
     let childVariants = [];
 
     if (this.props.childVariants) {
@@ -192,22 +172,17 @@ class VariantList extends Component {
       ];
     }
 
-    return (
-      <RenderList
-        renderType={type}
-        renderList={props.childVariants}
-        parentProps={props}
-        parentMethods={methods}
-      />
-    );
-  } // end renderChildVariants()
+    return null;
+  }
 
   render() {
     return (
+
       <div className="product-variants">
         {this.renderVariants()}
         {this.renderChildVariants()}
       </div>
+
     );
   }
 }

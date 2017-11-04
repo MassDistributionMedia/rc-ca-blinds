@@ -14,6 +14,8 @@ import { ProductDetail, ProductNotFound } from "../components";
 import { SocialContainer, VariantListContainer } from "./";
 import { MediaGalleryContainer } from "/imports/plugins/core/ui/client/containers";
 import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/client/providers";
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'; // http://www.material-ui.com/#/get-started/usage
+
 
 
 import OptionProductDetailContainer from "/imports/plugins/custom/product-detail-option/client/containers/productDetailContainer";
@@ -258,7 +260,7 @@ class REALProductDetailContainer extends Component {
     return (
       <TranslationProvider>
         <DragDropProvider>
-          <StyleRoot>
+          <MuiThemeProvider>
             <ProductDetail
               cartQuantity={this.state.cartQuantity}
               mediaGalleryComponent={<MediaGalleryContainer media={this.props.media} />}
@@ -271,7 +273,7 @@ class REALProductDetailContainer extends Component {
               onProductFieldChange={this.handleProductFieldChange}
               {...this.props}
             />
-          </StyleRoot>
+          </MuiThemeProvider>
         </DragDropProvider>
       </TranslationProvider>
     );
