@@ -26,7 +26,7 @@ Reaction.registerPackage({
   registry: [
     // Dashboard card
     {
-      provides: "dashboard",
+      provides: ["dashboard"],
       label: "Search",
       description: "Search",
       icon: "fa fa-search",
@@ -36,11 +36,11 @@ Reaction.registerPackage({
     // Settings Panel
     {
       label: "Search Settings",
+      icon: "fa fa-search",
       route: "/dashboard/search",
-      provides: "settings",
+      provides: ["settings"],
       container: "dashboard",
       template: "searchSettings"
     }
   ]
 });
-

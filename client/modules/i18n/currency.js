@@ -1,17 +1,64 @@
 import accounting from "accounting-js";
 import { Meteor } from "meteor/meteor";
-import { Template } from "meteor/templating";
-import { localeDep, i18nextDep } from  "./main";
-import { Reaction, Logger, i18next } from "/client/api";
+import { Reaction, Logger } from "/client/api";
+import { Shops, Accounts } from "/lib/collections";
+import { currencyDep } from "./main";
 
 /**
- * formatPriceString
- * @summary return shop /locale specific formatted price
- * also accepts a range formatted with " - "
- * @param {String} currentPrice - currentPrice or "xx.xx - xx.xx" formatted String
+ * @name findCurrency
+ * @summary Private function for returning user currency
+ * @private
+ * @param {Object}  defaultCurrency    The default currency
+ * @param {Boolean} useDefaultShopCurrency - flag for displaying shop's currency in Admin view of PDP
+ * @return {Object}  user currency or shop currency if none is found
+ */
+function findCurrency(defaultCurrency, useDefaultShopCurrency) {
+  const shop = Shops.findOne(Reaction.getPrimaryShopId(), {
+    fields: {
+      currencies: 1,
+      currency: 1
+    }
+  });
+
+  const shopCurrency = shop && shop.currency || "USD";
+  const user = Accounts.findOne({
+    _id: Meteor.userId()
+  });
+  const profileCurrency = user.profile && user.profile.currency;
+  if (typeof shop === "object" && shop.currencies && profileCurrency) {
+    let userCurrency = {};
+    if (shop.currencies[profileCurrency]) {
+      if (useDefaultShopCurrency) {
+        userCurrency = shop.currencies[shop.currency];
+        userCurrency.exchangeRate = 1;
+      } else {
+        userCurrency = shop.currencies[profileCurrency];
+        userCurrency.exchangeRate = shop.currencies[profileCurrency].rate;
+      }
+    }
+    return userCurrency;
+  }
+  return shopCurrency;
+}
+
+/**
+ * @name formatPriceString
+ * @summary Return shop/locale specific formatted price. Also accepts a range formatted with " - ".
+ * @memberof i18n
+ * @method
+ * @param {String} formatPrice - currentPrice or "xx.xx - xx.xx" formatted String
+ * @param {Boolean} useDefaultShopCurrency - flag for displaying shop's currency in Admin view of PDP
  * @return {String} returns locale formatted and exchange rate converted values
  */
-export function formatPriceString(formatPrice) {
+export function formatPriceString(formatPrice, useDefaultShopCurrency) {
+  let defaultShopCurrency = useDefaultShopCurrency;
+
+  // in case useDefaultShopCurrency is a Spacebars.kw we have this check
+  if (typeof useDefaultShopCurrency === "object" || !useDefaultShopCurrency) {
+    defaultShopCurrency = false;
+  }
+
+  currencyDep.depend();
   const locale = Reaction.Locale.get();
 
   if (typeof locale !== "object" || typeof locale.currency !== "object") {
@@ -22,6 +69,9 @@ export function formatPriceString(formatPrice) {
   if (typeof formatPrice !== "string" && typeof formatPrice !== "number") {
     return false;
   }
+
+  // get user currency instead of locale currency
+  const userCurrency = findCurrency(locale.currency, defaultShopCurrency);
 
   // for the cases then we have only one price. It is a number.
   const currentPrice = formatPrice.toString();
@@ -36,23 +86,29 @@ export function formatPriceString(formatPrice) {
     try {
       // we know the locale, but we don"t know exchange rate. In that case we
       // should return to default shop currency
-      if (typeof locale.currency.rate !== "number") {
+      if (typeof userCurrency.rate !== "number") {
         throw new Meteor.Error("exchangeRateUndefined");
       }
-      prices[i] *= locale.currency.rate;
+      prices[i] *= userCurrency.rate;
 
       price = _formatPrice(price, originalPrice, prices[i],
-        currentPrice, locale.currency, i, len);
+        currentPrice, userCurrency, i, len);
     } catch (error) {
       Logger.debug("currency error, fallback to shop currency");
       price = _formatPrice(price, originalPrice, prices[i],
         currentPrice, locale.shopCurrency, i, len);
     }
   }
-
   return price;
 }
 
+/**
+ * @name formatNumber
+ * @memberof i18n
+ * @method
+ * @param {String} currentPrice - current Price
+ * @return {String} return formatted number
+ */
 export function formatNumber(currentPrice) {
   const locale = Reaction.Locale.get();
   let price = currentPrice;

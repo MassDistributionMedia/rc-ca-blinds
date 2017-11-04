@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import Helmet from "react-helmet";
 import classnames from "classnames";
 import { Translation } from "/imports/plugins/core/ui/client/components";
@@ -65,7 +66,9 @@ class GooglePlusSocialButton extends Component {
     });
 
     return (
-      <a className="btn btn-flat googleplus-share" href="#" onClick={this.handleClick} target="_blank">
+      <a className="btn btn-flat googleplus-share" aria-label="Share to Google Plus" href="#" onClick={this.handleClick}
+        target="_blank"
+      >
         <Helmet
           meta={getGooglePlusMeta(this.props)}
         />

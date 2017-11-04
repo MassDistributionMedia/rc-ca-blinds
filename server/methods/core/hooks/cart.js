@@ -6,6 +6,7 @@ import "../cart";
 
 // // Meteor.after to call after
 MethodHooks.after("cart/submitPayment", function (options) {
+  // TODO: REVIEW WITH AARON - this is too late to fail. We need to copy cart to order either way at this point
   // if cart/submit had an error we won't copy cart to Order
   // and we'll throw an error.
   Logger.debug("MethodHooks after cart/submitPayment", options);
@@ -23,7 +24,7 @@ MethodHooks.after("cart/submitPayment", function (options) {
     // create order
     if (cart) {
       if (!cart.billing) {
-        Logger.info("MethodHooks after cart/submitPayment. No billing address after payment! userId:", Meteor.userId(), "options:", options);
+        Logger.debug("MethodHooks after cart/submitPayment. No billing address after payment! userId:", Meteor.userId(), "options:", options);
       }
 
       if (cart.items && cart.billing && cart.billing[0].paymentMethod) {
@@ -37,6 +38,8 @@ MethodHooks.after("cart/submitPayment", function (options) {
         );
       }
     }
+  } else {
+    throw new Meteor.Error("Error after submitting payment", options.error);
   }
   return result;
 });

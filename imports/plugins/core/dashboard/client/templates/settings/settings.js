@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { Template } from "meteor/templating";
 import { Reaction } from "/client/api";
 import { Packages } from "/lib/collections";
 
@@ -13,6 +14,10 @@ Template.settingsHeader.helpers({
    */
   registry() {
     return Reaction.getActionView() || {};
+  },
+
+  isActionViewAtRootView() {
+    return Reaction.isActionViewAtRootView();
   },
 
   /**
@@ -32,7 +37,7 @@ Template.settingsHeader.helpers({
 
     if (reactionApp) {
       const settingsData = _.find(reactionApp.registry, function (item) {
-        return item.route === Reaction.Router.getRouteName() && item.provides === "settings";
+        return item.route === Reaction.Router.getRouteName() && item.provides && item.provides.includes("settings");
       });
 
       return settingsData;
@@ -48,6 +53,10 @@ Template.settingsHeader.helpers({
 Template.settingsHeader.events({
   "click [data-event-action=closeSettings]": () => {
     Reaction.hideActionView();
+  },
+
+  "click .js-back-button"() {
+    Reaction.popActionView();
   }
 });
 

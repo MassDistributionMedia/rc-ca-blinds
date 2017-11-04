@@ -1,0 +1,42 @@
+[{
+  "i18n": "fr",
+  "ns": "reaction-social",
+  "translation": {
+    "reaction-social": {
+      "admin": {
+        "dashboard": {
+          "socialLabel": "Social",
+          "socialTitle": "Social",
+          "socialDescription": "configuration Canal social"
+        },
+        "settings": {
+          "public": {
+            "apps": {
+              "facebook": {
+                "title": "Facebook",
+                "appId": "ID de l'application",
+                "appSecret": "App secret",
+                "profilePage": "Page de profil"
+              },
+              "googleplus": {
+                "title": "Google+",
+                "profilePage": "Page de profil"
+              },
+              "pinterest": {
+                "title": "Pinterest",
+                "profilePage": "Page de profil"
+              },
+              "twitter": {
+                "title": "Twitter",
+                "username": "Nom d'utilisateur",
+                "profilePage": "Page de profil"
+              }
+            }
+          },
+          "socialSettingsLabel": "Paramètres sociaux",
+          "socialSettingsSaved": "paramètres sociaux enregistrés"
+        }
+      }
+    }
+  }
+}]

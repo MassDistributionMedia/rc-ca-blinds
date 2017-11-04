@@ -1,13 +1,21 @@
+import { Meteor } from "meteor/meteor";
+import { check, Match } from "meteor/check";
 import { Translations } from "/lib/collections";
 import { Reaction } from "/server/api";
 import { loadCoreTranslations } from "/server/startup/i18n";
 
 /**
- * Reaction Shop Methods
+ * @file Meteor methods for i18n on the server-side
+ * Meteor helper functions for loading and flushing translations
+ * @namespace Meteor/i18n
  */
+
 Meteor.methods({
   /**
-   * i18n/flushTranslations
+   * @name flushTranslations
+   * @method
+   * @memberof Meteor/i18n
+   * @example Meteor.call("i18n/flushTranslations"))
    * @summary Helper method to remove all translations, and reload from jsonFiles
    * @return {undefined}
    */
@@ -23,7 +31,9 @@ Meteor.methods({
     Reaction.Import.flush();
   },
   /**
-   * i18n/addTranslation
+   * @name addTranslation
+   * @method
+   * @memberof Meteor/i18n
    * @param {String | Array} lng - language
    * @param {String} namespace - namespace
    * @param {String} key - i18n key
@@ -51,6 +61,6 @@ Meteor.methods({
     `;
 
     const setTran = `"translation.${namespace}.${key}": "${message}"`;
-    Translations.update({tran}, {setTran});
+    Translations.update({ tran }, { setTran });
   }
 });

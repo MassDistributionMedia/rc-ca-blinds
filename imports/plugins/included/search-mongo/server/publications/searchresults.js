@@ -1,5 +1,7 @@
 import _ from "lodash";
+import escapeStringRegex from "escape-string-regexp";
 import { Meteor } from "meteor/meteor";
+import { Roles } from "meteor/alanning:roles";
 import { check, Match } from "meteor/check";
 import { Reaction, Logger } from "/server/api";
 import { ProductSearch, OrderSearch, AccountSearch } from "/lib/collections";
@@ -10,10 +12,10 @@ function getProductFindTerm(searchTerm, searchTags, userId) {
   const shopId = Reaction.getShopId();
   const findTerm = {
     shopId: shopId,
-    $text: {$search: searchTerm}
+    $text: { $search: searchTerm }
   };
   if (searchTags.length) {
-    findTerm.hashtags = {$all: searchTags};
+    findTerm.hashtags = { $all: searchTags };
   }
   if (!Roles.userIsInRole(userId, ["admin", "owner"], shopId)) {
     findTerm.isVisible = true;
@@ -29,14 +31,17 @@ getResults.products = function (searchTerm, facets, maxResults, userId) {
   const productResults = ProductSearch.find(findTerm,
     {
       fields: {
-        score: {$meta: "textScore"},
+        score: { $meta: "textScore" },
         title: 1,
         hashtags: 1,
         description: 1,
         handle: 1,
-        price: 1
+        price: 1,
+        isSoldOut: 1,
+        isLowQuantity: 1,
+        isBackorder: 1
       },
-      sort: {score: {$meta: "textScore"}},
+      sort: { score: { $meta: "textScore" } },
       limit: maxResults
     }
   );
@@ -45,38 +50,57 @@ getResults.products = function (searchTerm, facets, maxResults, userId) {
 
 getResults.orders = function (searchTerm, facets, maxResults, userId) {
   let orderResults;
-  const searchPhone = _.replace(searchTerm, /\D/g, "");
+  const regexSafeSearchTerm = escapeStringRegex(searchTerm);
   const shopId = Reaction.getShopId();
   const findTerm = {
     $and: [
       { shopId: shopId },
-      {$or: [
-        { _id: searchTerm },
+      { $or: [
+        { _id: {
+          $regex: `^${regexSafeSearchTerm}`,
+          $options: "i"
+        } },
         { userEmails: {
-          $regex: searchTerm,
+          $regex: regexSafeSearchTerm,
           $options: "i"
         } },
         { shippingName: {
-          $regex: searchTerm,
+          $regex: regexSafeSearchTerm,
           $options: "i"
         } },
         { billingName: {
-          $regex: searchTerm,
+          $regex: regexSafeSearchTerm,
+          $options: "i"
+        } },
+        { billingCard: {
+          $regex: regexSafeSearchTerm,
           $options: "i"
         } },
         { billingPhone: {
-          $regex: "^" + searchPhone + "$",
+          $regex: regexSafeSearchTerm,
           $options: "i"
         } },
         { shippingPhone: {
-          $regex: "^" + searchPhone + "$",
+          $regex: regexSafeSearchTerm,
+          $options: "i"
+        } },
+        { "product.title": {
+          $regex: regexSafeSearchTerm,
+          $options: "i"
+        } },
+        { "variants.title": {
+          $regex: regexSafeSearchTerm,
+          $options: "i"
+        } },
+        { "variants.optionTitle": {
+          $regex: regexSafeSearchTerm,
           $options: "i"
         } }
       ] }
-    ]};
+    ] };
   if (Reaction.hasPermission("orders", userId)) {
     orderResults = OrderSearch.find(findTerm, { limit: maxResults });
-    Logger.debug(`Found ${orderResults.count()} orders searching for ${searchTerm}`);
+    Logger.debug(`Found ${orderResults.count()} orders searching for ${regexSafeSearchTerm}`);
   }
   return orderResults;
 };
@@ -88,8 +112,8 @@ getResults.accounts = function (searchTerm, facets, maxResults, userId) {
   if (Reaction.hasPermission("reaction-accounts", userId)) {
     const findTerm = {
       $and: [
-        {shopId: shopId},
-        {$or: [
+        { shopId: shopId },
+        { $or: [
           { emails: {
             $regex: searchTerm,
             $options: "i"
@@ -107,7 +131,7 @@ getResults.accounts = function (searchTerm, facets, maxResults, userId) {
             $options: "i"
           } }
         ] }
-      ]};
+      ] };
     accountResults = AccountSearch.find(findTerm, {
       limit: maxResults
     });

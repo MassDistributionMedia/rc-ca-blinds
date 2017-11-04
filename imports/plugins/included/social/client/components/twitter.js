@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import Helmet from "react-helmet";
 import classnames from "classnames";
 import { Translation } from "/imports/plugins/core/ui/client/components";
@@ -77,7 +78,9 @@ class TwitterSocialButton extends Component {
     });
 
     return (
-      <a className="btn btn-flat twitter-share" href="#" onClick={this.handleClick} target="_blank">
+      <a className="btn btn-flat twitter-share" aria-label="Share to Twitter" href="#" onClick={this.handleClick}
+        target="_blank"
+      >
         <Helmet
           meta={getTwitterMeta(this.props)}
         />

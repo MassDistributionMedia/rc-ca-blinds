@@ -9,8 +9,7 @@ Reaction.registerPackage({
     name: "Inventory"
   },
   registry: [{
-    provides: "dashboard",
-    template: "inventoryDashboard",
+    provides: ["dashboard"],
     label: "Inventory",
     description: "Inventory utilities",
     icon: "fa fa-building",

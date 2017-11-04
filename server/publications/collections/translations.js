@@ -1,9 +1,18 @@
+import { Meteor } from "meteor/meteor";
+import { check, Match } from "meteor/check";
 import { Shops, Translations } from "/lib/collections";
 import { Reaction } from "/server/api";
 
 /**
+* @file Translations publication
+*
+*
+* @module Translations
+*/
+
+/**
  * Translations publication
- * @param {String, Array} sessionLanguages - current sessionLanguage default to 'en'
+ * @param {String|Array} sessionLanguages - String or array of langauges. current sessionLanguage, default to 'en'
  * @returns { Object } returns Translations
  * @todo like to see the langages validated more with a schema
  */
@@ -17,7 +26,7 @@ Meteor.publish("Translations", function (languages) {
   // set shop default
   sessionLanguages.push(shopLanguage);
   // lets get all these langauges
-  if (typeof languages === "array") {
+  if (Array.isArray(languages)) {
     sessionLanguages.concat(languages);
   } else {
     sessionLanguages.push(languages);
@@ -26,7 +35,7 @@ Meteor.publish("Translations", function (languages) {
   for (const sessionLanguage of sessionLanguages) {
     langTranQuery.push({
       i18n: sessionLanguage,
-      shopId: shopId
+      shopId: Reaction.getPrimaryShopId()
     });
   }
 

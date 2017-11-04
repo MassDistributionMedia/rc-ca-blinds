@@ -1,23 +1,21 @@
-import React, { Component, PropTypes } from "react";
-import { Translation } from "../translation";
+import React from "react";
+import PropTypes from "prop-types";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 
-class CardTitle extends Component {
+const CardTitle = (props) => {
+  const { element, ...rest } = props;
 
-  render() {
-    const { element, ...props } = this.props;
-
-    if (element) {
-      return React.cloneElement(element, props);
-    }
-
-    return (
-      <h3 className="panel-title">
-        <Translation defaultValue={this.props.title} i18nKey={this.props.i18nKeyTitle} />
-        {this.props.children}
-      </h3>
-    );
+  if (element) {
+    return React.cloneElement(element, rest);
   }
-}
+
+  return (
+    <h3 className="panel-title">
+      <Components.Translation defaultValue={props.title} i18nKey={props.i18nKeyTitle} />
+      {props.children}
+    </h3>
+  );
+};
 
 CardTitle.propTypes = {
   children: PropTypes.node,
@@ -25,5 +23,7 @@ CardTitle.propTypes = {
   i18nKeyTitle: PropTypes.string,
   title: PropTypes.string
 };
+
+registerComponent("CardTitle", CardTitle);
 
 export default CardTitle;

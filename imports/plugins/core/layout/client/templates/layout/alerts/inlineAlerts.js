@@ -1,10 +1,11 @@
+import _ from "lodash";
 import { i18next } from "/client/api";
 import { Mongo } from "meteor/mongo";
 
 /*
  * Forked and modifed from https://github.com/asktomsk/bootstrap-alerts/
  */
-Alerts = {
+const Alerts = {
 
   /*
   Default options. Can be overridden for application
@@ -74,7 +75,6 @@ Alerts = {
    */
   add: function (alertMessage, mode, alertOptions) {
     let a;
-    let count;
     let message = alertMessage;
     let options = alertOptions;
     // check options to see if we have translation
@@ -99,7 +99,8 @@ Alerts = {
         return;
       }
     }
-    count = Alerts.collection_.find({}).count();
+
+    const count = Alerts.collection_.find({}).count();
     if (count >= options.alertsLimit) {
       Alerts.collection_.find({}, {
         sort: {
@@ -144,4 +145,5 @@ Alerts = {
   collection_: new Mongo.Collection(null)
 };
 
+window.Alerts = Alerts;
 export default Alerts;

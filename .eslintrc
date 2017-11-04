@@ -3,33 +3,44 @@
   "env": {
     "browser": true,
     "node": true,
-    "es6": true
+    "es6": true,
+    "mocha": true
+  },
+  "globals": {
+    "browser": true,
+    "Assets": true, // Meteor global
+    "Package": true, // Meteor global
+    "FS": true, // gridFS,
+    "Alerts": true,  // this needs to get cleaned up, but ignoring for now
+    "jest": true,
+    "expect": true,
+    "test": true
   },
   "parserOptions": {
      "ecmaVersion": 6,
      "sourceType": "module",
+      "ecmaFeatures": {
+        "arrowFunctions": true,
+        "blockBindings": true,
+        "classes": true,
+        "defaultParams": true,
+        "destructuring": true,
+        "forOf": true,
+        "generators": false,
+        "modules": true,
+        "objectLiteralComputedProperties": true,
+        "objectLiteralDuplicateProperties": false,
+        "objectLiteralShorthandMethods": true,
+        "objectLiteralShorthandProperties": true,
+        "spread": true,
+        "superInFunctions": true,
+        "templateStrings": true,
+        "jsx": true
+      },
      "allowImportExportEverywhere": true
   },
   "plugins": ["react"],
-  "ecmaFeatures": {
-    "arrowFunctions": true,
-    "blockBindings": true,
-    "classes": true,
-    "defaultParams": true,
-    "destructuring": true,
-    "forOf": true,
-    "generators": false,
-    "modules": true,
-    "objectLiteralComputedProperties": true,
-    "objectLiteralDuplicateProperties": false,
-    "objectLiteralShorthandMethods": true,
-    "objectLiteralShorthandProperties": true,
-    "spread": true,
-    "superInFunctions": true,
-    "templateStrings": true,
-    "jsx": true
-  },
-  // NOTE: We're now using eslint-3
+  // NOTE: We're now using eslint-4
   "rules": {
     /**
      * Strict mode
@@ -41,8 +52,8 @@
     /**
      * ES6
      */
+    "object-curly-spacing": ["error", "always", { "objectsInObjects": true }],
     "no-var": 2, // http://eslint.org/docs/rules/no-var
-
     /**
      * Variables
      */
@@ -54,6 +65,7 @@
       "args": "after-used"
     }],
     "no-use-before-define": [2, "nofunc"], // http://eslint.org/docs/rules/no-use-before-define
+    "no-implicit-globals": 2, // http://eslint.org/docs/rules/no-implicit-globals
 
     /**
      * Possible errors
@@ -119,8 +131,8 @@
     /**
      * Best practices
      */
-    "consistent-return": [1, { // http://eslint.org/docs/rules/consistent-return
-      "treatUndefinedAsUnspecified": false
+    "consistent-return": [0, { // http://eslint.org/docs/rules/consistent-return
+      "treatUndefinedAsUnspecified": true
     }],
     "curly": [2, "multi-line"], // http://eslint.org/docs/rules/curly
     "default-case": 2, // http://eslint.org/docs/rules/default-case
@@ -159,7 +171,8 @@
     "no-self-compare": 2, // http://eslint.org/docs/rules/no-self-compare
     "no-sequences": 2, // http://eslint.org/docs/rules/no-sequences
     "no-throw-literal": 2, // http://eslint.org/docs/rules/no-throw-literal
-    "no-with": 2, // http://eslint.org/docs/rules/no-with
+    "no-with": 2, // http://eslint.org/docs/rules/no-with,
+    "no-undef": 2,
     "radix": 2, // http://eslint.org/docs/rules/radix
     "vars-on-top": 2, // http://eslint.org/docs/rules/vars-on-top
     "wrap-iife": [2, "any"], // http://eslint.org/docs/rules/wrap-iife
@@ -168,7 +181,20 @@
       "ignoreComments": true,
       "ignoreUrls": true
     }], // http://eslint.org/docs/rules/max-len
-    "valid-jsdoc": 1, // http://eslint.org/docs/rules/valid-jsdoc
+    "require-jsdoc": [0, {
+      "require": {
+        "FunctionDeclaration": true,
+        "MethodDefinition": false,
+        "ClassDeclaration": false,
+        "ArrowFunctionExpression": false
+        }
+    }], // https://eslint.org/docs/rules/require-jsdoc
+    "valid-jsdoc": [0, {
+      "prefer": {
+        "arg": "param",
+        "argument": "param"
+        }
+    }], // http://eslint.org/docs/rules/valid-jsdoc
     "quote-props": [2, "consistent-as-needed"], // http://eslint.org/docs/rules/quote-props
     /**
      * Style
@@ -226,6 +252,7 @@
     }], // http://eslint.org/docs/rules/space-before-function-paren
     "space-infix-ops": 2, // http://eslint.org/docs/rules/space-infix-ops
     "space-in-parens": [2, "never"], // http://eslint.org/docs/rules/space-in-parens
-    "spaced-comment": [2, "always"] // http://eslint.org/docs/rules/spaced-comment
+    "spaced-comment": [2, "always"], // http://eslint.org/docs/rules/spaced-comment
+    "arrow-spacing": [2, { "before": true, "after": true }] // https://eslint.org/docs/rules/arrow-spacing
   }
 }

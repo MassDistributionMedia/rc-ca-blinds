@@ -7,6 +7,14 @@
       "languages": {
         "select": "Velg Språk"
       },
+      "admin": {
+        "groups": {
+          "email": "Epost",
+          "description": "Legg til en produkt beskrivelse",
+          "remove": "Fjern",
+          "dashboard": "Dashboard"
+        }
+      },
       "app": {
         "save": "Lagre",
         "saveAndContinue": "Lagre og fortsett",
@@ -24,7 +32,11 @@
         "yearOptions": "Velg år",
         "shopSettings": "Butikk Innstillinger",
         "dashboard": "Dashboard",
-        "print": "Skriv ut"
+        "print": "Skriv ut",
+        "notFoundTitle": "Oops!"
+      },
+      "shopSettings": {
+        "options": "Innstillinger"
       },
       "header": {
         "tagsAdd": "Legg til tag",
@@ -48,7 +60,6 @@
         "addToCart": "Legg i handlekurv",
         "chooseOptions": "Vær vennlig å velg variant før du legger i handlekurven.",
         "outOfStock": "Beklager, denne varen finnes ikke på lager!",
-        "productDeleteError": "En feil oppstod ved sletting av produkt.",
         "publishFirst": "Publiser produkt først før du kan legge det i handlekurven.",
         "quantityAbbreviation": "stk",
         "selectOption": "Velg et alternativ før du legger i handlekurven",
@@ -57,12 +68,16 @@
         "soldOut": "Utsolgt!",
         "backOrder": "Restordre",
         "limitedSupply": "Begrenset lager",
-        "publishProductVisible": "er synlig",
-        "publishProductHidden": "er skjult",
+        "publishProductVisible": "{{product}}er synlig",
+        "publishProductHidden": "{{product}}er skjult",
         "startTracking": "Start sporing",
         "addBarcode": "Legg til Strekkode",
         "quantity": "Antall",
-        "quantityGreaterThanZero": "Feil: Antall må være større enn null"
+        "quantityGreaterThanZero": "Feil: Antall må være større enn null",
+        "notFoundTitle": "Oops!"
+      },
+      "tags": {
+        "addTag": "Legg til tag"
       },
       "productDetailEdit": {
         "title": "Produkt tittel",
@@ -79,22 +94,33 @@
         "duplicateProduct": "Dupliser Produkt",
         "pinProduct": "Fest Produkt",
         "toggleSize": "Bytt størrelse",
-        "deleteProduct": "Slett Produkt",
         "publish": "Publiser",
-        "moreOptions": "Flere varianter"
+        "moreOptions": "Flere varianter",
+        "details": "Detaljer"
+      },
+      "productVariant": {
+        "inventoryQuantity": "Antall",
+        "title": "Produkt tittel",
+        "barcode": "Strekkode"
       },
       "variantList": {
         "moreOptions": "Det er flere alternativ for den valgte varianten.",
         "createVariant": "Opprett variant"
       },
       "gridPackage": {
-        "pkgEnabled": " er aktivert.",
-        "pkgDisabled": " er deaktivert."
+        "details": "Detaljer",
+        "pkgEnabled": "{{app}} er aktivert.",
+        "pkgDisabled": " {{app}}er deaktivert."
       },
       "cartDrawer": {
         "empty": "Vi er lei handlekurven din er tom.",
         "keepShopping": "Fortsett å handle",
-        "checkout": "Fortsett til kassen"
+        "checkout": "Fortsett til kassen",
+        "new": "Ny",
+        "coreOrderWorkflow/created": "Opprettet",
+        "coreOrderWorkflow/completed": "Fullført",
+        "coreOrderWorkflow/canceled": "Avbrutt",
+        "coreOrderWorkflow/shipped": "Sendt"
       },
       "cartSubTotals": {
         "head": "Din handlekurv",
@@ -110,6 +136,7 @@
       "order": {
         "created": "Opprettet",
         "reference": "Referanse",
+        "cancelInvoice": "Avbryt",
         "invoice": "Faktura",
         "ordersNotFound": "Ingen Ordre Funnet",
         "approveInvoice": "Godkjenn",
@@ -117,10 +144,13 @@
         "capturePayment": "Til betaling",
         "paymentCaptured": "Betalt",
         "capturedTotal": "Totalt innbetalt",
+        "canceledLabel": "Avbrutt",
         "refundAmount": "Refundert",
         "applyRefund": "Refunder",
         "adjustedTotal": "Endret Total",
         "processor": "Betalingstilbyder",
+        "completed": "Fullført",
+        "itemsFrom": "vare(r) fra",
         "filter": {
           "new": "Ny",
           "captured": "Betalt",
@@ -128,7 +158,8 @@
           "completed": "Fullført",
           "canceled": "Avbrutt",
           "refunded": "Refundert"
-        }
+        },
+        "shipped": "Sendt"
       },
       "orderShipping": {
         "shipTo": "Send til",
@@ -140,6 +171,9 @@
         "shipped": "Sendt",
         "shippingNotifyCustomer": "Varsle kunden om at varene er klare til å sendes.",
         "resendNotification": "Send varsel om sending på nytt."
+      },
+      "orderWorkflow": {
+        "invoice": "Faktura"
       },
       "cartCompleted": {
         "thankYou": "Takk for handelen, og velkommen tilbake!",
@@ -174,6 +208,23 @@
       "addressBookEdit": {
         "editAddress": "Rediger denne addressen"
       },
+      "shop": {
+        "description": "Legg til en produkt beskrivelse",
+        "email": "Epost",
+        "addressBook": {
+          "country": "Land",
+          "fullName": "Fullt navn",
+          "address1": "Adresselinje2",
+          "address2": "Adresselinje2",
+          "postal": "Postnummer",
+          "city": "By",
+          "region": "Fylke",
+          "phone": "Telefon",
+          "isShippingDefault": "Gjør dette til din standard frakt adresse?",
+          "isBillingDefault": "Gjør dette til din standard faktura adresse?",
+          "isCommercial": "Dette er en bedriftsadresse."
+        }
+      },
       "address": {
         "country": "Land",
         "fullName": "Fullt navn",
@@ -194,19 +245,8 @@
         "reviewPayment": "Se igjennom",
         "complete": "Fullført"
       },
-      "checkoutPayment": {
-        "addPaymentToCompleteOrder": "Legg til betalingsalternativ for å fullføre bestillingen",
-        "processingError": "Det oppstod et problem med din betaling.",
-        "completeYourOrder": "Fullfør ordren"
-      },
       "checkoutReview": {
         "review": "Se igjennom"
-      },
-      "checkoutShipping": {
-        "selectShippingOption": "Velg frakt alternativ",
-        "noShippingMethods": "Det er ingen tilgjengelige frakt alternativer.",
-        "configureNow": "Konfigurer nå.",
-        "shipping": "Frakt"
       },
       "consoleIcon": {
         "iconTitle": "Vis konsoll",
@@ -224,7 +264,14 @@
         "twitter": "Twitter",
         "weibo": "Weibo"
       },
+      "search": {
+        "accountSearchResults": {
+          "phone": "Telefon",
+          "emails": "Epost"
+        }
+      },
       "accountsUI": {
+        "oops": "Oops!",
         "members": "Bruker",
         "guest": "Gjest",
         "addMember": "Legg til en bruker",
@@ -261,6 +308,7 @@
         "signedIn": "Du er logget inn.",
         "signOut": "Logg ut",
         "signUp": "Registrer",
+        "signUpButton": "Registrer",
         "signupCode": "Registrerings Kode",
         "signUpWithYourEmailAddress": "Registrer med din epost addresse",
         "terms": "Vilkår",

@@ -1,4 +1,5 @@
 import { SimpleSchema } from "meteor/aldeed:simple-schema";
+import { registerSchema } from "@reactioncommerce/reaction-collections";
 
 /**
 * TaxCodes Schema
@@ -11,12 +12,21 @@ export const TaxCodes = new SimpleSchema({
     unique: true
   },
   shopId: {
+    type: String
+  },
+  taxCode: {
     type: String,
-    optional: true
+    label: "Tax Code"
+  },
+  taxCodeProvider: {
+    type: String,
+    label: "Tax Code Provider"
   },
   ssuta: {
     type: Boolean,
-    label: "Streamlined Sales Tax"
+    label: "Streamlined Sales Tax",
+    optional: true,
+    defaultValue: false
   },
   title: {
     type: String,
@@ -36,3 +46,5 @@ export const TaxCodes = new SimpleSchema({
     blackbox: true
   }
 });
+
+registerSchema("TaxCodes", TaxCodes);

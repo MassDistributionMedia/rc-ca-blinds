@@ -1,4 +1,6 @@
+import { Template } from "meteor/templating";
 import { Reaction } from "/client/api";
+import { translateRegistry } from "/lib/api";
 
 //
 // registry helper for the dashboard, assembles i18n labels
@@ -9,7 +11,7 @@ Template.dashboardHeader.helpers({
     const route = Reaction.Router.getRouteName();
     const registry = Reaction.getRegistryForCurrentRoute() || {};
     if (registry && route) {
-      return Reaction.translateRegistry(registry);
+      return translateRegistry(registry);
     }
   }
 });

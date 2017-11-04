@@ -1,7 +1,8 @@
-import { Packages } from "/lib/collections";
-import { Logger, Reaction } from "/server/api";
+import _ from "lodash";
 import { HTTP } from "meteor/http";
 import { Meteor } from "meteor/meteor";
+import { Packages } from "/lib/collections";
+import { Logger, Reaction } from "/server/api";
 
 /**
  * meteor-geocoder
@@ -12,16 +13,9 @@ import { Meteor } from "meteor/meteor";
  * Copyright (c) 2014 Eric Dobbertin
  */
 
-// backwards compatibility
-if (typeof Meteor.wrapAsync === "undefined") {
-  Meteor.wrapAsync = Meteor._wrapAsync;
-}
-/* eslint func-style: 1 */
-//
-// TODO review GeoCoder export construction
 //
 // init geocoder
-export const GeoCoder = function geoCoderConstructor(options) {
+function GeoCoder(options) {
   let extra;
   const self = this;
   // fetch shop settings for api auth credentials
@@ -48,7 +42,7 @@ export const GeoCoder = function geoCoderConstructor(options) {
     httpAdapter: "https",
     extra: extra
   }, options || {});
-};
+}
 
 function gc(address, options, callback) {
   const g = require("node-geocoder")(options.geocoderProvider, options.httpAdapter,
@@ -88,7 +82,7 @@ GeoCoder.prototype.reverse = function geoCoderReverse(lat, lng, callback) {
     rv(lat, lng, this.options, geoCallback);
   } else {
     try {
-      address = Meteor.wrapAsync(rv)(lat, lng, this.options);
+      const address = Meteor.wrapAsync(rv)(lat, lng, this.options);
       return address[0];
     } catch (_error) {
       return {
@@ -137,3 +131,5 @@ GeoCoder.prototype.geoip = function geoCoderGeocode(address, callback) {
     }
   }
 };
+
+export default GeoCoder;

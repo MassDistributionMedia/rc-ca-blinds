@@ -1,7 +1,10 @@
+/* global baseStyles */
 import postcss from "postcss";
 import postcssJS from "postcss-js";
 import autoprefixer from "autoprefixer";
 import cssAnnotation from "css-annotation";
+import { check, Match } from "meteor/check";
+import { Meteor } from "meteor/meteor";
 import { Shops, Themes } from "/lib/collections";
 import { Reaction } from "./core";
 
@@ -23,7 +26,7 @@ function cssToObject(styles) {
 
 function objectToCSS(styles) {
   const prefixedStyles = prefixer(styles);
-  return postcss().process(prefixedStyles, {parser: postcssJS});
+  return postcss().process(prefixedStyles, { parser: postcssJS });
 }
 
 function themeToCSS(theme) {

@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { Media, Products } from "/lib/collections";
 import { Template } from "meteor/templating";
+import { Media } from "/lib/collections";
 
 /**
  * cartDrawerItems helpers
@@ -10,10 +10,10 @@ import { Template } from "meteor/templating";
  */
 Template.cartDrawerItems.helpers({
   product: function () {
-    return Products.findOne(this.productId);
+    return this;
   },
   media: function () {
-    const product = Products.findOne(this.productId);
+    const product = this;
     let defaultImage = Media.findOne({
       "metadata.variantId": this.variants._id
     });
@@ -22,10 +22,12 @@ Template.cartDrawerItems.helpers({
       return defaultImage;
     } else if (product) {
       _.some(product.variants, function (variant) {
-        defaultImage = Media.findOne({
-          "metadata.variantId": variant._id
-        });
-        return !!defaultImage;
+        if (variant) {
+          defaultImage = Media.findOne({
+            "metadata.variantId": variant._id
+          });
+          return !!defaultImage;
+        }
       });
     }
     return defaultImage;

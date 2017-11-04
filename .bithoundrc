@@ -1,5 +1,6 @@
 {
   "ignore": [
+    "**/packages/**",
     "**/deps/**",
     "**/node_modules/**",
     "**/thirdparty/**",
@@ -41,6 +42,7 @@
     "**/extjs/resources/**",
     "**/extjs/src/**",
     "**/extjs/welcome/**",
+    "**/jsdoc/templates/**",
     "bower_components/**"
   ],
   "test": [
@@ -56,16 +58,14 @@
   },
   "dependencies": {
     "mute": [
-      "wdio-mocha-framework"
+      "enzyme",
+      "jsdoc"
     ],
     "unused-ignores": [
-      "jquery",
       "sweetalert2",
       "font-awesome",
-      "bcrypt",
       "react-addons-pure-render-mixin",
       "url",
-      "griddle-react",
       "tether-tooltip",
       "react-textarea-autosize",
       "react-color",

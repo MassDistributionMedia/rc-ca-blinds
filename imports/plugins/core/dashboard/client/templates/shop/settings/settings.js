@@ -1,4 +1,7 @@
 import _ from "lodash";
+import { Meteor } from "meteor/meteor";
+import { Template } from "meteor/templating";
+import { AutoForm } from "meteor/aldeed:autoform";
 import { Reaction, i18next } from "/client/api";
 import { Media, Packages, Shops } from "/lib/collections";
 
@@ -23,11 +26,11 @@ Template.shopBrandImageOption.helpers({
         Meteor.call("shop/updateBrandAssets", asset, (error, result) => {
           if (error) {
             // Display Error
-            return Alerts.toast("Couldn't update brand asset.", "error");
+            return Alerts.toast(i18next.t("shopSettings.shopBrandAssetsFailed"), "error");
           }
 
           if (result === 1) {
-            Alerts.toast("Updated brand asset", "success");
+            Alerts.toast(i18next.t("shopSettings.shopBrandAssetsSaved"), "success");
           }
         });
       }
@@ -60,6 +63,18 @@ Template.shopBrandImageOption.helpers({
  *
  */
 Template.shopSettings.helpers({
+  checked(enabled) {
+    if (enabled === true) {
+      return "checked";
+    }
+    return "";
+  },
+  shown(enabled) {
+    if (enabled !== true) {
+      return "hidden";
+    }
+    return "";
+  },
   brandImageSelectProps() {
     const media = Media.find({
       "metadata.type": "brandAsset"
@@ -82,8 +97,8 @@ Template.shopSettings.helpers({
       optionTemplate: "shopBrandImageOption",
       selected: selectedMediaId,
       classNames: {
-        itemList: {half: true},
-        input: {hidden: true}
+        itemList: { half: true },
+        input: { hidden: true }
       },
       onSelect(value) {
         const asset = {
@@ -123,33 +138,30 @@ Template.shopSettings.helpers({
   },
 
   shop: function () {
-    return Shops.findOne();
+    return Shops.findOne({
+      _id: Reaction.getShopId()
+    });
   },
   packageData: function () {
     return Packages.findOne({
-      name: "core"
+      name: "core",
+      shopId: Reaction.getShopId()
     });
   },
   addressBook: function () {
-    const address = Shops.findOne().addressBook;
+    const address = Shops.findOne({
+      _id: Reaction.getShopId()
+    }).addressBook;
     return address[0];
   },
-  paymentMethodOptions() {
-    const paymentMethods = Reaction.Apps({provides: "paymentMethod"});
-    const options = [{
-      label: i18next.t("app.auto"),
-      value: "none"
-    }];
-
-    if (paymentMethods && _.isArray(paymentMethods)) {
-      for (const method of paymentMethods) {
-        options.push({
-          label: i18next.t(method.i18nKeyLabel),
-          value: method.packageName
-        });
-      }
+  showAppSwitch() {
+    if (Reaction.getMarketplaceSettings()) {
+      // if marketplace is enabled, only the primary shop can switch apps on and off.
+      return Reaction.getShopId() === Reaction.getPrimaryShopId();
     }
-    return options;
+
+    // If marketplace is disabled, every shop can switch apps
+    return true;
   }
 });
 
@@ -160,12 +172,12 @@ Template.shopSettings.helpers({
 AutoForm.hooks({
   shopEditForm: {
     onSuccess: function () {
-      return Alerts.toast(i18next.t("shopSettings.shopGeneralSettingsSaved"),
+      return Alerts.toast(i18next.t("admin.alerts.shopGeneralSettingsSaved"),
         "success");
     },
     onError: function (operation, error) {
       return Alerts.toast(
-        `${i18next.t("shopSettings.shopGeneralSettingsFailed")} ${error}`, "error"
+        `${i18next.t("admin.alerts.shopGeneralSettingsFailed")} ${error}`, "error"
       );
     }
   }
@@ -174,12 +186,12 @@ AutoForm.hooks({
 AutoForm.hooks({
   shopEditAddressForm: {
     onSuccess: function () {
-      return Alerts.toast(i18next.t("shopSettings.shopAddressSettingsSaved"),
+      return Alerts.toast(i18next.t("admin.alerts.shopAddressSettingsSaved"),
         "success");
     },
     onError: function (operation, error) {
       return Alerts.toast(
-        `${i18next.t("shopSettings.shopAddressSettingsFailed")} ${error}`, "error"
+        `${i18next.t("admin.alerts.shopAddressSettingsFailed")} ${error}`, "error"
       );
     }
   }
@@ -189,12 +201,12 @@ AutoForm.hooks({
   shopEditExternalServicesForm: {
     onSuccess: function () {
       return Alerts.toast(
-        i18next.t("shopSettings.shopExternalServicesSettingsSaved"), "success"
+        i18next.t("admin.alerts.shopExternalServicesSettingsSaved"), "success"
       );
     },
     onError: function (operation, error) {
       return Alerts.toast(
-        `${i18next.t("shopSettings.shopExternalServicesSettingsFailed")} ${error}`,
+        `${i18next.t("admin.alerts.shopExternalServicesSettingsFailed")} ${error}`,
         "error"
       );
     }
@@ -204,27 +216,32 @@ AutoForm.hooks({
 AutoForm.hooks({
   shopEditOptionsForm: {
     onSuccess: function () {
-      return Alerts.toast(i18next.t("shopSettings.shopOptionsSettingsSaved"),
+      return Alerts.toast(i18next.t("admin.alerts.shopOptionsSettingsSaved"),
         "success");
     },
     onError: function (operation, error) {
       return Alerts.toast(
-        `${i18next.t("shopSettings.shopOptionsSettingsFailed")} ${error}`, "error"
+        `${i18next.t("admin.alerts.shopOptionsSettingsFailed")} ${error}`, "error"
       );
     }
   }
 });
 
-AutoForm.hooks({
-  shopEditPaymentMethodsForm: {
-    onSuccess: function () {
-      return Alerts.toast(i18next.t("shopSettings.shopPaymentMethodsSaved"),
-        "success");
-    },
-    onError: function (operation, error) {
-      return Alerts.toast(
-        `${i18next.t("shopSettings.shopPaymentMethodsFailed")} ${error}`, "error"
-      );
-    }
+Template.shopSettings.events({
+  /**
+   * settings update enabled status for services on change
+   * @param  {event} event    jQuery Event
+   * @return {void}
+   */
+  "change input[name=enabled]": (event) => {
+    const settingsKey = event.target.getAttribute("data-key");
+    const packageId = event.target.getAttribute("data-id");
+    const fields = [{
+      property: "enabled",
+      value: event.target.checked
+    }];
+
+    Meteor.call("registry/update", packageId, settingsKey, fields);
+    Meteor.call("shop/togglePackage", packageId, !event.target.checked);
   }
 });

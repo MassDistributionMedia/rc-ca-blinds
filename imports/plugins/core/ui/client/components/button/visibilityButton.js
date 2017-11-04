@@ -1,4 +1,5 @@
 import React from "react";
+import { registerComponent } from "@reactioncommerce/reaction-components";
 import IconButton from "./iconButton";
 
 /**
@@ -16,10 +17,14 @@ const VisibilityButton = (props) => {
     <IconButton
       icon="fa fa-eye-slash"
       onIcon="fa fa-eye"
+      bezelStyle="solid"
+      primary={true}
       toggle={true}
       {...props}
     />
   );
 };
+
+registerComponent("VisibilityButton", VisibilityButton);
 
 export default VisibilityButton;

@@ -1,4 +1,8 @@
 import faker from "faker";
+import _ from "lodash";
+import { Meteor } from "meteor/meteor";
+import { Random } from "meteor/random";
+import { Factory } from "meteor/dburles:factory";
 import "./shops";
 import { getShop } from "./shops";
 import moment from "moment";
@@ -10,7 +14,7 @@ export function getUser() {
 
 export function getUsers(limit = 2) {
   const users = [];
-  const existingUsers = Meteor.users.find({}, {limit: limit}).fetch();
+  const existingUsers = Meteor.users.find({}, { limit: limit }).fetch();
   for (let i = 0; i < limit; i = i + 1) {
     const user = existingUsers[i] || Factory.create("user");
     users.push(user);

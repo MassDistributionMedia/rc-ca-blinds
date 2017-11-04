@@ -1,7 +1,8 @@
 .DS_Store
 .fileStorage/
-.c9/
+.vscode
 .idea
+.c9
 *.csv
 *.dat
 *.gz
@@ -13,7 +14,6 @@
 *.sublime-project
 *.sublime-workspace
 
-jsdoc.json
 lib-cov
 logs
 node_modules
@@ -23,6 +23,10 @@ results
 allure-results
 
 client/plugins.js
+client/plugins.css
+client/plugins.less
+client/plugins.styl
+client/plugins.scss
 server/plugins.js
 
 ; custom/client/*

@@ -1,5 +1,6 @@
 import later from "later";
 import moment from "moment";
+import { Job } from "meteor/vsivsi:job-collection";
 import { Jobs } from "/lib/collections";
 import { Hooks, Logger } from "/server/api";
 
@@ -26,7 +27,7 @@ export default function () {
     pollInterval: 60 * 60 * 1000, // backup polling, see observer below
     workTimeout: 60 * 1000
   }, (job, callback) => {
-    Logger.info("Processing jobControl/removeStaleJobs...");
+    Logger.debug("Processing jobControl/removeStaleJobs...");
 
     // TODO: set this interval in the admin UI
     const olderThan = moment().subtract(3, "days")._d;

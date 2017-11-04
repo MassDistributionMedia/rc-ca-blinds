@@ -1,9 +1,8 @@
 import React, { Component } from "react";
-import { composeWithTracker } from "react-komposer";
+import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import { Reaction } from "/client/api";
 import { SocialButtons } from "../components";
-import { createSocialSettings } from "../lib/helpers";
-
+import { createSocialSettings } from "../../lib/helpers";
 
 class SocialContainer extends Component {
   render() {

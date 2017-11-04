@@ -1,7 +1,29 @@
-import React, { Component, PropTypes } from "react";
-import { TextField, Button } from "../";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import Velocity from "velocity-animate";
+import "velocity-animate/velocity.ui";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 
 class Metafield extends Component {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.metafield.key !== this.props.metafield.key) {
+      const input = this.refs.keyInput.refs.input;
+
+      Velocity.RunSequence([
+        { e: input, p: { backgroundColor: "#e2f2e2" }, o: { duration: 200 } },
+        { e: input, p: { backgroundColor: "#fff" }, o: { duration: 100 } }
+      ]);
+    }
+
+    if (nextProps.metafield.value !== this.props.metafield.value) {
+      const input = this.refs.valueInput.refs.input;
+
+      Velocity.RunSequence([
+        { e: input, p: { backgroundColor: "#e2f2e2" }, o: { duration: 200 } },
+        { e: input, p: { backgroundColor: "#fff" }, o: { duration: 100 } }
+      ]);
+    }
+  }
 
   get detailNamePlaceholder() {
     return this.props.detailNamePlaceholder || "Detail Name";
@@ -61,11 +83,11 @@ class Metafield extends Component {
   renderActionButton() {
     if (this.props.blank === true) {
       return (
-        <Button icon="plus" onClick={this.handleSubmit} type="submit" />
+        <Components.Button icon="plus" onClick={this.handleSubmit} type="submit" />
       );
     }
     return (
-      <Button icon="times-circle" onClick={this.handleRemove} type="button" />
+      <Components.Button icon="times-circle" onClick={this.handleRemove} type="button" />
     );
   }
 
@@ -78,22 +100,24 @@ class Metafield extends Component {
       return (
         <div className="rui list-group-item metafield-list-item">
           <form className="form form-inline" onSubmit={this.handleSubmit}>
-            <TextField
+            <Components.TextField
               className="metafield-key-input"
               i18nKeyPlaceholder={this.i18nKeyDetailName}
               name="key"
               onBlur={this.handleBlur}
               onChange={this.handleChange}
+              onReturnKeyDown={this.handleBlur}
               placeholder={this.detailNamePlaceholder}
               ref="keyInput"
               value={this.props.metafield.key}
             />
-            <TextField
+            <Components.TextField
               className="metafield-value-input"
               i18nKeyPlaceholder={this.i18nKeyDetailInformation}
               name="value"
               onBlur={this.handleBlur}
               onChange={this.handleChange}
+              onReturnKeyDown={this.handleBlur}
               placeholder={this.detailInfoPlaceholder}
               ref="valueInput"
               value={this.props.metafield.value}
@@ -124,5 +148,7 @@ Metafield.propTypes = {
   onChange: PropTypes.func,
   onRemove: PropTypes.func
 };
+
+registerComponent("Metafield", Metafield);
 
 export default Metafield;

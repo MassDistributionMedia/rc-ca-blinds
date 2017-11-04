@@ -9,8 +9,7 @@ Reaction.registerPackage({
     name: "Layout"
   },
   registry: [{
-    provides: "dashboard",
-    template: "layoutDashboard",
+    provides: ["dashboard"],
     label: "Layout",
     description: "Layout utilities",
     icon: "fa fa-object-group",

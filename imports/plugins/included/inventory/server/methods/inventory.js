@@ -2,22 +2,31 @@ import { Meteor } from "meteor/meteor";
 import { check, Match } from "meteor/check";
 import { Catalog } from "/lib/api";
 import { Inventory } from "/lib/collections";
-import * as Schemas from "/lib/collections/schemas";
 import { Logger, Reaction } from "/server/api";
 
-
+/**
+ * inventory/register
+ * @summary check a product and update Inventory collection with inventory documents.
+ * @param {Object} product - valid Schemas.Product object
+ * @return {Number} - returns the total amount of new inventory created
+ */
 export function registerInventory(product) {
-  check(product, Match.OneOf(Schemas.ProductVariant, Schemas.Product));
+  // Retrieve schemas
+  // TODO: Permit product type registration and iterate through product types and schemas
+  const simpleProductSchema = Reaction.collectionSchema("Products", { type: "simple" });
+  const variantProductSchema = Reaction.collectionSchema("Products", { type: "variant" });
+  check(product, Match.OneOf(simpleProductSchema, variantProductSchema));
   let type;
   switch (product.type) {
     case "variant":
-      check(product, Schemas.ProductVariant);
+      check(product, variantProductSchema);
       type = "variant";
       break;
     default:
-      check(product, Schemas.Product);
+      check(product, simpleProductSchema);
       type = "simple";
   }
+
   let totalNewInventory = 0;
   const productId = type === "variant" ? product.ancestors[0] : product._id;
   const variants = Catalog.getVariants(productId);
@@ -37,13 +46,13 @@ export function registerInventory(product) {
       const newQty = variant.inventoryQuantity || 0;
       let i = inventoryVariantCount + 1;
 
-      Logger.info(
+      Logger.debug(
         `inserting ${newQty - inventoryVariantCount
-          } new inventory items for ${variant._id}`
+        } new inventory items for ${variant._id}`
       );
 
       const batch = Inventory.
-      _collection.rawCollection().initializeUnorderedBulkOp();
+        _collection.rawCollection().initializeUnorderedBulkOp();
       while (i <= newQty) {
         const id = Inventory._makeNewID();
         batch.insert({
@@ -77,92 +86,90 @@ export function registerInventory(product) {
   return totalNewInventory;
 }
 
+function adjustInventory(product, userId, context) {
+  // TODO: This can fail even if updateVariant succeeds.
+  // Should probably look at making these two more atomic
+  const simpleProductSchema = Reaction.collectionSchema("Products", { type: "simple" });
+  const variantProductSchema = Reaction.collectionSchema("Products", { type: "variant" });
+  let type;
+  let results;
+  // adds or updates inventory collection with this product
+  switch (product.type) {
+    case "variant":
+      check(product, variantProductSchema);
+      type = "variant";
+      break;
+    default:
+      check(product, simpleProductSchema);
+      type = "simple";
+  }
+
+  // calledByServer is only true if this method was triggered by the server, such as from a webhook.
+  // there will be a null connection and no userId.
+  const calledByServer = (context && context.connection === null && !Meteor.userId());
+  // if this method is calledByServer, skip permission check.
+  // user needs createProduct permission to adjust inventory
+  // REVIEW: Should this be checking shop permission instead?
+  if (!calledByServer && !Reaction.hasPermission("createProduct", userId, product.shopId)) {
+    throw new Meteor.Error(403, "Access Denied");
+  }
+
+  // Quantity and variants of this product's variant inventory
+  if (type === "variant") {
+    const variant = {
+      _id: product._id,
+      qty: product.inventoryQuantity || 0
+    };
+
+    const inventory = Inventory.find({
+      productId: product.ancestors[0],
+      variantId: product._id
+    });
+    const itemCount = inventory.count();
+
+    if (itemCount !== variant.qty) {
+      if (itemCount < variant.qty) {
+        // we need to register some new variants to inventory
+        results = itemCount + Meteor.call("inventory/register", product);
+      } else if (itemCount > variant.qty) {
+        // determine how many records to delete
+        const removeQty = itemCount - variant.qty;
+        // we're only going to delete records that are new
+        const removeInventory = Inventory.find({
+          "variantId": variant._id,
+          "workflow.status": "new"
+        }, {
+          sort: {
+            updatedAt: -1
+          },
+          limit: removeQty
+        }).fetch();
+
+        results = itemCount;
+        // delete latest inventory "status:new" records
+        for (const inventoryItem of removeInventory) {
+          results -= Meteor.call("inventory/remove", inventoryItem);
+          // we could add handling for the case when aren't enough "new" items
+        }
+      }
+      Logger.debug(
+        `adjust variant ${variant._id} from ${itemCount} to ${results}`
+      );
+    }
+  }
+}
+
 Meteor.methods({
-  /**
-   * inventory/register
-   * @summary check a product and update Inventory collection with inventory documents.
-   * @param {Object} product - valid Schemas.Product object
-   * @return {Number} - returns the total amount of new inventory created
-   */
   "inventory/register": function (product) {
-    if (!Reaction.hasPermission("createProduct")) {
+    if (!Reaction.hasPermission("createProduct", this.userId, product.shopId)) {
       throw new Meteor.Error(403, "Access Denied");
     }
     registerInventory(product);
   },
-  /**
-   * inventory/adjust
-   * @summary adjust existing inventory when changes are made we get the
-   * inventoryQuantity for each product variant, and compare the qty to the qty
-   * in the inventory records we will add inventoryItems as needed to have the
-   * same amount as the inventoryQuantity but when deleting, we'll refuse to
-   * delete anything not workflow.status = "new"
-   *
-   * @param  {Object} product - Schemas.Product object
-   * @return {[undefined]} returns undefined
-   * @todo  should be variant
-   */
-  "inventory/adjust": function (product) {
-    check(product, Match.OneOf(Schemas.Product, Schemas.ProductVariant));
-    let type;
-    let results;
-    // adds or updates inventory collection with this product
-    switch (product.type) {
-      case "variant":
-        check(product, Schemas.ProductVariant);
-        type = "variant";
-        break;
-      default:
-        check(product, Schemas.Product);
-        type = "simple";
-    }
-    // user needs createProduct permission to adjust inventory
-    if (!Reaction.hasPermission("createProduct")) {
-      throw new Meteor.Error(403, "Access Denied");
-    }
-    // this.unblock();
-
-    // Quantity and variants of this product's variant inventory
-    if (type === "variant") {
-      const variant = {
-        _id: product._id,
-        qty: product.inventoryQuantity || 0
-      };
-
-      const inventory = Inventory.find({
-        productId: product.ancestors[0],
-        variantId: product._id
-      });
-      const itemCount = inventory.count();
-
-      if (itemCount !== variant.qty) {
-        if (itemCount < variant.qty) {
-          // we need to register some new variants to inventory
-          results = itemCount + Meteor.call("inventory/register", product);
-        } else if (itemCount > variant.qty) {
-          // determine how many records to delete
-          const removeQty = itemCount - variant.qty;
-          // we're only going to delete records that are new
-          const removeInventory = Inventory.find({
-            "variantId": variant._id,
-            "workflow.status": "new"
-          }, {
-            sort: {
-              updatedAt: -1
-            },
-            limit: removeQty
-          }).fetch();
-
-          results = itemCount;
-          // delete latest inventory "status:new" records
-          for (const inventoryItem of removeInventory) {
-            results -= Meteor.call("inventory/remove", inventoryItem);
-            // we could add handling for the case when aren't enough "new" items
-          }
-          Logger.info(`adjust variant ${variant._id} from ${itemCount} to ${results}`);
-        }
-      }
-    }
+  "inventory/adjust": function (product) { // TODO: this should be variant
+    const simpleProductSchema = Reaction.collectionSchema("Products", { type: "simple" });
+    const variantProductSchema = Reaction.collectionSchema("Products", { type: "variant" });
+    check(product, Match.OneOf(simpleProductSchema, variantProductSchema));
+    adjustInventory(product, this.userId, this);
   }
-
 });

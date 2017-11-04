@@ -1,53 +1,83 @@
+import store from "amplify-store";
 import { Meteor } from "meteor/meteor";
 import { Tracker } from "meteor/tracker";
-import Logger from "/client/modules/logger";
-import Reaction from "./main";
+import { Accounts } from "meteor/accounts-base";
 
-// @see https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API
-let hidden;
-// let visibilityState; // keep this for a some case
-if (typeof document.hidden !== "undefined") {
-  hidden = "hidden";
-  // visibilityState = "visibilityState";
-} else if (typeof document.mozHidden !== "undefined") {
-  hidden = "mozHidden";
-  // visibilityState = "mozVisibilityState";
-} else if (typeof document.msHidden !== "undefined") {
-  hidden = "msHidden";
-  // visibilityState = "msVisibilityState";
-} else if (typeof document.webkitHidden !== "undefined") {
-  hidden = "webkitHidden";
-  // visibilityState = "webkitVisibilityState";
-}
+import { Reaction, Logger } from "/client/api";
+
+
+const cookieName = "_RcFallbackLoginToken";
 
 /**
  *  Startup Reaction
  *  Init Reaction client
  */
 Meteor.startup(function () {
-  // warn on insecure exporting of PackageRegistry settings
-  if (typeof PackageRegistry !== "undefined" && PackageRegistry !== null) {
-    const msg = "PackageRegistry: Insecure export to client.";
-    Logger.warn(msg, PackageRegistry);
-  }
   // init the core
   Reaction.init();
   // initialize anonymous guest users
   return Tracker.autorun(function () {
     const userId = Meteor.userId();
+
+    if (userId && !isLocalStorageAvailable() && !readCookie(cookieName)) {
+      Logger.debug("No local storage available. About to set up fallback login " +
+        "mechanism with cookie login token.");
+      Meteor.call("accounts/createFallbackLoginToken", (err, token) => {
+        if (!err && token) {
+          window.onbeforeunload = () => createSessionCookie(cookieName, token);
+          return;
+        }
+        // Can't set login cookie. Fail silently.
+        Logger.error("Setting up fallback login mechanism failed!");
+      });
+    }
+
     // TODO: maybe `visibilityState` will be better here
-    let isHidden;
     let loggingIn;
     let sessionId;
     Tracker.nonreactive(function () {
-      isHidden = document[hidden];
       loggingIn = Accounts.loggingIn();
-      sessionId = amplify.store("Reaction.session");
+      sessionId = store("Reaction.session");
     });
+
     if (!userId) {
-      if (!isHidden && !loggingIn || typeof sessionId !== "string") {
-        Accounts.loginWithAnonymous();
+      if (!loggingIn || typeof sessionId !== "string") {
+        if (!isLocalStorageAvailable() && readCookie(cookieName)) {
+          // If re-login through local storage fails, RC falls back
+          // to cookie-based login. E.g. Applies for Safari browser in
+          // incognito mode.
+          Accounts.loginWithToken(readCookie(cookieName));
+        } else {
+          Accounts.loginWithAnonymous();
+        }
       }
     }
   });
 });
+
+function isLocalStorageAvailable() {
+  try {
+    localStorage.testKey = "testValue";
+  } catch (e) {
+    return false;
+  }
+  delete localStorage.testKey;
+  return true;
+}
+
+function readCookie(name) {
+  const nameEq = name + "=";
+  const ca = document.cookie.split(";");
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === " ") c = c.substring(1, c.length);
+    if (c.indexOf(nameEq) === 0) {
+      return c.substring(nameEq.length, c.length);
+    }
+  }
+  return null;
+}
+
+function createSessionCookie(name, value) {
+  document.cookie = name + "=" + value + "; path=/";
+}

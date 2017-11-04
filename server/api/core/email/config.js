@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer from "@reactioncommerce/nodemailer";
 import getServiceConfig from "nodemailer-wellknown";
 import url from "url";
 import { Meteor } from "meteor/meteor";
@@ -33,14 +33,14 @@ export function getMailUrl() {
 
   // create a mail url from well-known provider settings (if they exist)
   // https://github.com/nodemailer/nodemailer-wellknown
-  if (service && service !== "custom" && user && password) {
+  if (service && service !== "custom") {
     const conf = getServiceConfig(service);
 
     if (conf) {
       // account for local test providers like Maildev
       if (!conf.host) {
         mailString = `smtp://localhost:${conf.port}`;
-      } else {
+      } else if (user && password) {
         mailString = `smtp://${encodeURIComponent(user)}:${password}@${conf.host}:${conf.port}`;
       }
     }
@@ -65,7 +65,7 @@ export function getMailUrl() {
 
 /**
  * getMailConfig - get the email sending config for Nodemailer
- * @return {Object} returns a config object
+ * @return {{host: String, port: Number, secure: Boolean, auth: Object, logger: Boolean}} returns a config object
  */
 export function getMailConfig() {
   const processUrl = process.env.MAIL_URL;
@@ -78,22 +78,34 @@ export function getMailConfig() {
   if (mailString) {
     // parse the url
     const parsedUrl = url.parse(mailString);
-    const creds = parsedUrl.auth.split(":");
+    const creds = !!parsedUrl.auth && parsedUrl.auth.split(":");
     parsedUrl.port = Number(parsedUrl.port);
 
     Logger.debug(`Using ${parsedUrl.hostname} to send email`);
 
     // create a nodemailer config from the SMTP url string
-    return {
+    const config = {
       host: parsedUrl.hostname,
       port: parsedUrl.port,
-      secure: parsedUrl.port === "465" || parsedUrl.port === "587",
-      auth: {
-        user: creds[0],
-        pass: creds[1]
-      },
+      // since the port is casted to number above
+      secure: parsedUrl.port === 465,
       logger: process.env.EMAIL_DEBUG === "true"
     };
+
+    // add user/pass to the config object if they were found
+    if (!!creds) {
+      config.auth = {
+        user: creds[0],
+        pass: creds[1]
+      };
+    }
+
+    // don't enforce checking TLS on localhost
+    if (parsedUrl.hostname === "localhost") {
+      config.ignoreTLS = true;
+    }
+
+    return config;
   }
 
   // check for mail settings in the database
@@ -109,7 +121,7 @@ export function getMailConfig() {
 
   // if a service provider preset was chosen, return a Nodemailer config for it
   // https://github.com/nodemailer/nodemailer-wellknown
-  if (service && service !== "custom" && user && password) {
+  if (service && service !== "custom") {
     Logger.debug(`Using ${service} to send email`);
 
     // get the config from nodemailer-wellknown
@@ -120,24 +132,37 @@ export function getMailConfig() {
       return conf;
     }
 
-    // add the credentials to the config
-    conf.auth = { user, pass: password };
+    // add any credentials to the config
+    if (user && password) {
+      conf.auth = { user, pass: password };
+    }
 
     return conf;
   }
 
   // if a custom config was chosen and all necessary fields exist in the database,
   // return the custom Nodemailer config
-  if ((!service || service === "custom") && user && password && host && port) {
-    Logger.debug(`Using ${host} to send email`);
-
-    return {
+  if ((!service || service === "custom") && host && port) {
+    const conf = {
       host,
       port,
-      secure: port === 465 || port === 587,
-      auth: { user, pass: password },
+      secure: port === 465,
       logger: process.env.EMAIL_DEBUG === "true"
     };
+
+    // don't enforce checking TLS on localhost
+    if (conf.host === "localhost") {
+      conf.ignoreTLS = true;
+    }
+
+    // add any credentials to the config
+    if (user && password) {
+      conf.auth = { user, pass: password };
+    }
+
+    Logger.debug(`Using ${host} to send email`);
+
+    return conf;
   }
 
   // else, return the direct mail config and a warning

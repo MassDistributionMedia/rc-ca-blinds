@@ -15,9 +15,10 @@ export function getRegistryDomain(requestUrl) {
 
 
 /**
- *  @private setDomain
- *  @summary update the default shop url if ROOT_URL supplied is different from current
- *  @return {String} returns insert result
+ * setDomain
+ * @private
+ * @summary update the default shop url if ROOT_URL supplied is different from current
+ * @return {String} returns insert result
  */
 export function setDomain() {
   let currentDomain;
@@ -25,12 +26,12 @@ export function setDomain() {
   try {
     currentDomain = Shops.findOne().domains[0];
   } catch (_error) {
-    Logger.error("Failed to determine default shop.", _error);
+    Logger.error(_error, "Failed to determine default shop.");
   }
   // if the server domain changes, update shop
   const domain = getRegistryDomain();
   if (currentDomain && currentDomain !== domain) {
-    Logger.info("Updating domain to " + domain);
+    Logger.debug("Updating domain to " + domain);
     Shops.update({
       domains: currentDomain
     }, {

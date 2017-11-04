@@ -1,13 +1,17 @@
 import { Mongo } from "meteor/mongo";
 import { EJSON } from "meteor/ejson";
+import { check, Match } from "meteor/check";
+import { Random } from "meteor/random";
+import { MongoInternals } from "meteor/mongo";
 import * as Collections from "/lib/collections";
 import Hooks from "../hooks";
-import Logger from "../logger";
+import { Logger } from "../logger";
 import doRightJoinNoIntersection from "./rightJoin";
 
 /**
  * @file Exposes the Import object implementing methods for bulk imports.
  * @author Tom De Caluwé
+ * @namespace Import
  */
 
 export const Import = {};
@@ -49,6 +53,9 @@ Import.indication = function (field, collection, probability) {
 
 /**
  * Import.identify
+ * @name identify
+ * @method
+ * @memberof Import
  * @summary Tries to identify the schema associated with a document.
  * @param {Object} document - A document with unknown schema
  * @returns {Mongo.Collection} Returns a MongoDB collection in which the
@@ -67,7 +74,7 @@ Import.identify = function (document) {
 
   const probabilities = {};
 
-  for (key of Object.keys(document)) {
+  for (const key of Object.keys(document)) {
     if (this._indications[key]) {
       const collection = this._name(this._indications[key].collection);
       probabilities[collection] = probabilities[collection] || 1.0 * this._indications[
@@ -76,13 +83,13 @@ Import.identify = function (document) {
   }
 
   let total = 1.0;
-  for (key of Object.keys(probabilities)) {
+  for (const key of Object.keys(probabilities)) {
     total *= probabilities[key];
   }
 
   let max = 0.0;
   let name;
-  for (key of Object.keys(probabilities)) {
+  for (const key of Object.keys(probabilities)) {
     const probability = total / probabilities[key];
     if (probability > max) {
       max = probability;
@@ -100,6 +107,9 @@ Import.identify = function (document) {
 };
 
 /**
+ * @name commit
+ * @method
+ * @memberof Import
  * @summary Commit the buffer for a given collection to the database.
  * @param {Mongo.Collection} collection The target collection to be flushed to disk
  * @returns {undefined}
@@ -146,6 +156,9 @@ Import.commit = function (collection) {
 };
 
 /**
+ * @name flush
+ * @method
+ * @memberof Import
  * @summary Process the buffer for a given collection and commit the database.
  * @param {Mongo.Collection} collection optional - supply a Mongo collection, or leave empty to commit all buffer entries
  * @returns {undefined}
@@ -161,6 +174,9 @@ Import.flush = function (collection) {
 };
 
 /**
+ * @name context
+ * @method
+ * @memberof Import
  * @summary Get a validation context for a given collection.
  * @param {Mongo.Collection} collection The target collection
  * @param {Object} [selector] A selector object to retrieve the correct schema.
@@ -187,6 +203,9 @@ Import.context = function (collection, selector) {
 };
 
 /**
+ * @name buffer
+ * @method
+ * @memberof Import
  * @summary Get an import buffer for a given collection.
  * @param {Object} collection The target collection
  * @returns {Object} return buffer
@@ -212,10 +231,12 @@ Import.buffer = function (collection) {
 };
 
 /**
+ * @name product
+ * @method
+ * @memberof Import
  * @summary Store a product in the import buffer.
  * @param {Object} key A key to look up the product
  * @param {Object} product The product data to be updated
- * @param {Object} parent A key to identify the parent product
  * @returns {Object}
  * Importing a variant currently consists of the following steps:
  *
@@ -223,13 +244,20 @@ Import.buffer = function (collection) {
  * * Push the variant if it doesn't exist.
  * * Update the variant.
  */
-Import.product = function (key, product, parent) {
-  check(parent, Object);
-
+Import.product = function (key, product) {
+  // If product has an _id, we use it to look up the product before
+  // updating the product so as to avoid trying to change the _id
+  // which is immutable.
+  if (product._id && !key._id) {
+    key._id = product._id;
+  }
   return this.object(Collections.Products, key, product);
 };
 
 /**
+ * @name package
+ * @method
+ * @memberof Import
  * @summary Store a package in the import buffer.
  * @param {Object} pkg The package data to be updated
  * @param {String} shopId The package data to be updated
@@ -251,6 +279,28 @@ Import.package = function (pkg, shopId) {
 //
 
 /**
+ * @name template
+ * @method
+ * @memberof Import
+ * @summary Store a template in the import buffer.
+ * @param {Object} templateInfo The template data to be updated
+ * @returns {undefined}
+ */
+Import.template = function (templateInfo) {
+  check(templateInfo, Object);
+
+  const key = {
+    name: templateInfo.name,
+    type: templateInfo.type || "template"
+  };
+
+  return this.object(Collections.Templates, key, templateInfo);
+};
+
+/**
+ * @name translation
+ * @method
+ * @memberof Import
  * @summary Store a translation in the import buffer.
  * @param {Object} key A key to look up the translation
  * @param {Object} translation The translation data to be updated
@@ -262,6 +312,9 @@ Import.translation = function (key, translation) {
 };
 
 /**
+ * @name shop
+ * @method
+ * @memberof Import
  * @summary Store a shop in the import buffer.
  * @param {Object} key A key to look up the shop
  * @param {Object} shop The shop data to be updated
@@ -272,6 +325,9 @@ Import.shop = function (key, shop) {
 };
 
 /**
+ * @name layout
+ * @method
+ * @memberof Import
  * @summary store a shop layout in the import buffer
  * @param {Array} layout - an array of layouts to be added to shop
  * @param {String} shopId shopId
@@ -288,6 +344,9 @@ Import.layout = function (layout, shopId) {
 };
 
 /**
+ * @name shipping
+ * @method
+ * @memberof Import
  * @summary Store shipping in the import buffer.
  * @param {Object} key A shipping service key used in combination with provider
  * @param {Object} shipping The shipping data to be updated
@@ -315,6 +374,9 @@ Import.shipping = function (key, shipping) {
 };
 
 /**
+ * @name tag
+ * @method
+ * @memberof Import
  * @summary Store a tag in the import buffer.
  * @param {Object} key A key to look up the tag
  * @param {Object} tag The tag data to be updated
@@ -325,6 +387,9 @@ Import.tag = function (key, tag) {
 };
 
 /**
+ * @name object
+ * @method
+ * @memberof Import
  * @summary Push a new upsert document to the import buffer.
  * @param {Mongo.Collection} collection The target collection
  * @param {Object} key A key to look up the object
@@ -338,7 +403,9 @@ Import.object = function (collection, key, object) {
   const updateObject = object;
 
   // enforce strings instead of Mongo.ObjectId
-  if (!collection.findOne(key) && !object._id) key._id = Random.id();
+  if (!collection.findOne(key) && !object._id) {
+    key._id = Random.id();
+  }
 
   // hooks for additional import manipulation.
   const importObject = Hooks.Events.run(`onImport${this._name(collection)}`, object);
@@ -378,6 +445,9 @@ Import.object = function (collection, key, object) {
 };
 
 /**
+ * @name process
+ * @method
+ * @memberof Import
  * @summary Process a json array of import documents using a callback.
  * @param {Object[]} json An array containing the import documents
  * @param {string[]} keys Fields that should be used as the import key.

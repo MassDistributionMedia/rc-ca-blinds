@@ -1,7 +1,6 @@
+import { Components } from "@reactioncommerce/reaction-components";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
-import { EditButton, VisibilityButton } from "/imports/plugins/core/ui/client/components";
-import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
 import { Template } from "meteor/templating";
 
@@ -60,7 +59,7 @@ Template.variant.helpers({
     const data = Template.currentData();
 
     return {
-      component: EditButton,
+      component: Components.EditButton,
       toggleOn: variantIsInActionView(data._id),
       onClick() {
         showVariant(data);
@@ -71,7 +70,7 @@ Template.variant.helpers({
     const variant = Template.currentData();
 
     return {
-      component: VisibilityButton,
+      component: Components.VisibilityButton,
       toggleOn: variant.isVisible,
       onClick(event) {
         event.stopPropagation();
@@ -90,7 +89,7 @@ function showVariant(variant) {
 
   ReactionProduct.setCurrentVariant(variant._id);
   Session.set("variant-form-" + variant._id, true);
-  Reaction.Router.go("product", {handle: selectedProduct.handle, variantId: variant._id});
+  Reaction.Router.go("product", { handle: selectedProduct.handle, variantId: variant._id });
 
   if (Reaction.hasPermission("createProduct")) {
     Reaction.showActionView({

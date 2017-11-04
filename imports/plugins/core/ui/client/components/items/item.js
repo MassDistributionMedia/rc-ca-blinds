@@ -1,19 +1,19 @@
 import React from "react";
+import PropTypes from "prop-types";
+import { registerComponent } from "@reactioncommerce/reaction-components";
 
-class Item extends React.Component {
-  render() {
-    return (
-      <div className="rui item">
-        {this.props.children}
-      </div>
-    );
-  }
-}
+const Item = ({ children }) => (
+  <div className="rui item">
+    {children}
+  </div>
+);
 
 Item.displayName = "Item";
 
 Item.propTypes = {
-  children: React.PropTypes.node
+  children: PropTypes.node
 };
+
+registerComponent("Item", Item);
 
 export default Item;

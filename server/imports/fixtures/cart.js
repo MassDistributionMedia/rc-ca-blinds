@@ -1,5 +1,7 @@
 import faker from "faker";
+import _ from "lodash";
 import { Factory } from "meteor/dburles:factory";
+import { Random } from "meteor/random";
 import { Cart, Products } from "/lib/collections";
 import "./shops";
 import { getShop } from "./shops";
@@ -27,12 +29,72 @@ export function getCartItem(options = {}) {
   const defaults = {
     _id: Random.id(),
     productId: product._id,
-    shopId: getShop()._id,
+    shopId: options.shopId || getShop()._id,
     quantity: _.random(1, selectedOption.inventoryQuantity),
+    product: product,
     variants: selectedOption,
-    title: "cart title"
+    title: product.title
   };
   return _.defaults(options, defaults);
+}
+
+function getSingleCartItem(options = {}) {
+  const cartItem = getCartItem(options);
+  const quantity = options.cartQuantity || 1;
+  cartItem.quantity = quantity;
+  return cartItem;
+}
+
+export function createCart(productId, variantId) {
+  const product = Products.findOne(productId);
+  const variant = Products.findOne(variantId);
+  const user = Factory.create("user");
+  const cartItem = {
+    _id: Random.id(),
+    productId: product._id,
+    shopId: getShop()._id,
+    quantity: 1,
+    product: product,
+    variants: variant,
+    title: product.title
+  };
+
+  const cart = {
+    shopId: getShop()._id,
+    userId: user._id,
+    sessionId: Random.id(),
+    email: faker.internet.email(),
+    items: [cartItem],
+    shipping: [
+      {
+        _id: Random.id(),
+        shopId: getShop()._id,
+        address: getAddress()
+      }
+    ],
+    billing: [
+      {
+        _id: Random.id(),
+        shopId: getShop()._id,
+        address: getAddress()
+      }
+    ],
+    workflow: {
+      status: "checkoutPayment",
+      workflow: [
+        "checkoutLogin",
+        "checkoutAddressBook",
+        "coreCheckoutShipping",
+        "checkoutReview",
+        "checkoutPayment"
+      ]
+    },
+    createdAt: faker.date.past(),
+    updatedAt: new Date()
+  };
+  const newCartId = Cart.insert(cart);
+  const insertedCart = Cart.findOne(newCartId);
+  return insertedCart;
 }
 
 
@@ -41,6 +103,22 @@ export default function () {
    * Cart Factory
    * @summary define cart Factory
    */
+
+  const cartNoItems = {
+    shopId: getShop()._id,
+    userId: Factory.get("user"),
+    sessionId: Random.id(),
+    email: faker.internet.email(),
+    items: [],
+    shipping: [],
+    billing: [],
+    workflow: {
+      status: "new",
+      workflow: []
+    },
+    createdAt: faker.date.past(),
+    updatedAt: new Date()
+  };
 
   const cart = {
     shopId: getShop()._id,
@@ -60,18 +138,41 @@ export default function () {
     createdAt: faker.date.past(),
     updatedAt: new Date()
   };
+
+  const cartOne = {
+    items: [
+      getSingleCartItem()
+    ]
+  };
+
+  const cartTwo = {
+    items: [
+      getSingleCartItem({ cartQuantity: 2 })
+    ]
+  };
+
+  const cartMultiItems = {
+    items: [getSingleCartItem(), getSingleCartItem()]
+  };
+
+  const cartMultiShopItems = {
+    items: [getSingleCartItem(), getSingleCartItem({ shopId: Random.id() })]
+  };
+
   const addressForOrder = getAddress();
   const cartToOrder = {
     shopId: getShop()._id,
     shipping: [
       {
         _id: Random.id(),
+        shopId: getShop()._id,
         address: addressForOrder
       }
     ],
     billing: [
       {
         _id: Random.id(),
+        shopId: getShop()._id,
         address: addressForOrder
       }
     ],
@@ -94,4 +195,9 @@ export default function () {
   Factory.define("cart", Cart, Object.assign({}, cart));
   Factory.define("cartToOrder", Cart, Object.assign({}, cart, cartToOrder));
   Factory.define("anonymousCart", Cart, Object.assign({}, cart, anonymousCart));
+  Factory.define("cartOne", Cart, Object.assign({}, cart, cartToOrder, cartOne));
+  Factory.define("cartTwo", Cart, Object.assign({}, cart, cartToOrder, cartTwo));
+  Factory.define("cartMultiItems", Cart, Object.assign({}, cart, cartToOrder, cartMultiItems));
+  Factory.define("cartMultiShop", Cart, Object.assign({}, cart, cartToOrder, cartMultiShopItems));
+  Factory.define("cartNoItems", Cart, Object.assign({}, cart, cartToOrder, cartNoItems));
 }

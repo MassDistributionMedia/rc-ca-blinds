@@ -1,7 +1,9 @@
-import React, { Component, PropTypes } from "react";
-import ReactDOM from "react-dom";
+/* global FB, data */
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import Helmet from "react-helmet";
 import classnames from "classnames";
+import { $ } from "meteor/jquery";
 import { Translation } from "/imports/plugins/core/ui/client/components";
 
 export function getOpenGraphMeta(props) {
@@ -19,6 +21,7 @@ export function getOpenGraphMeta(props) {
 
 
   if (props.media) {
+    let media;
     if (!/^http(s?):\/\/+/.test(data.media)) {
       media = location.origin + data.media;
     }
@@ -89,7 +92,9 @@ class FacebookSocialButton extends Component {
     });
 
     return (
-      <a className="btn btn-flat facebook-share" href="#" onClick={this.handleClick} target="_blank">
+      <a className="btn btn-flat facebook-share" aria-label="Share to Facebook" href="#" onClick={this.handleClick}
+        target="_blank"
+      >
         <Helmet
           meta={getOpenGraphMeta(this.props)}
         />

@@ -26,9 +26,10 @@
   width: 25%;
   padding: 10px;
 
-  @media only screen and (max-width: @screen-xs-max) {
-    max-width: 33%;
-    width: 33%;
+  @media only screen and (max-width: @screen-xs) {
+    max-width: 47.5%;
+    width: 47.5%;
+    justify-content: space-between;
   }
 }
 
@@ -41,6 +42,13 @@
 
 .variant-select-option button {
   padding: 0;
+  border-color: @border-color;
+  background: @white;
+
+  &:hover {
+    border-color: @border-color;
+    background-color: @black10;
+  }
 }
 
 .variant-select-option img {
@@ -53,6 +61,7 @@
   display: flex;
   flex: 0 0 auto;
   justify-content: center;
+  white-space: pre-wrap;
   padding: 10px;
 }
 

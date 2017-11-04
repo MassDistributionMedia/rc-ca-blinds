@@ -1,7 +1,8 @@
-import React, { Component, PropTypes} from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import classnames from "classnames";
 import TextareaAutosize from "react-textarea-autosize";
-import { Translation } from "../translation";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 import { i18next } from "/client/api";
 
 class TextField extends Component {
@@ -11,6 +12,42 @@ class TextField extends Component {
    */
   get value() {
     return this.props.value || "";
+  }
+
+  /**
+   * Getter: isValid
+   * @return {Boolean} true/false if field is valid from props.isValid or props.valitation[this.props.name].isValid
+   */
+  get isValid() {
+    const { isValid } = this.props;
+
+    if (typeof isValid === "boolean") {
+      return isValid;
+    } else if (this.validationMessage) {
+      return false;
+    }
+
+    return undefined;
+  }
+
+  get isHelpMode() {
+    // TODO: add functionality to toggle helpMode on / off.
+    // When on, helpText will always show.
+    // When off, only validation messages will show.
+    // For now, all helpText will show, meaning this doesn't affect how the app currently works.
+    // This is here just to lay the foundation for when we add the toggle.
+
+    return true;
+  }
+
+  get validationMessage() {
+    const { name, validation } = this.props;
+
+    if (typeof validation === "object" && validation.messages && validation.messages[name]) {
+      return validation.messages[name];
+    }
+
+    return undefined;
   }
 
   /**
@@ -38,6 +75,34 @@ class TextField extends Component {
   }
 
   /**
+   * onFocus
+   * @summary set the state when the input is focused
+   * @param  {Event} event Event object
+   * @return {void}
+   */
+  onFocus = (event) => {
+    if (this.props.onFocus) {
+      this.props.onFocus(event, event.target.value, this.props.name);
+    }
+  }
+
+  /**
+   * onKeyDown
+   * @summary set the state when the value of the input is changed
+   * @param  {Event} event Event object
+   * @return {void}
+   */
+  onKeyDown = (event) => {
+    if (this.props.onKeyDown) {
+      this.props.onKeyDown(event, this.props.name);
+    }
+
+    if (this.props.onReturnKeyDown && event.keyCode === 13) {
+      this.props.onReturnKeyDown(event, event.target.value, this.props.name);
+    }
+  }
+
+  /**
    * Render a multiline input (textarea)
    * @return {JSX} jsx
    */
@@ -48,12 +113,16 @@ class TextField extends Component {
 
     return (
       <TextareaAutosize
-        className="{this.props.name}-edit-input"
+        className={`${this.props.name}-edit-input`}
         onBlur={this.onBlur}
         onChange={this.onChange}
+        onFocus={this.onFocus}
         placeholder={placeholder}
         ref="input"
         value={this.value}
+        style={this.props.style}
+        disabled={this.props.disabled}
+        id={this.props.id}
       />
     );
   }
@@ -77,10 +146,15 @@ class TextField extends Component {
         name={this.props.name}
         onBlur={this.onBlur}
         onChange={this.onChange}
+        onFocus={this.onFocus}
+        onKeyDown={this.onKeyDown}
         placeholder={placeholder}
         ref="input"
-        type="text"
+        type={this.props.type || "text"}
         value={this.value}
+        style={this.props.style}
+        disabled={this.props.disabled}
+        id={this.props.id}
       />
     );
   }
@@ -97,11 +171,15 @@ class TextField extends Component {
     return this.renderSingleLineInput();
   }
 
+  /**
+   * Render the label for the text field if one is provided in props
+   * @return {ReactNode|null} react node or null
+   */
   renderLabel() {
     if (this.props.label) {
       return (
         <label>
-          <Translation defaultValue={this.props.label} i18nKey={this.props.i18nKeyLabel} />
+          <Components.Translation defaultValue={this.props.label} i18nKey={this.props.i18nKeyLabel} />
         </label>
       );
     }
@@ -109,11 +187,35 @@ class TextField extends Component {
     return null;
   }
 
+  /**
+   * Render help text or validation message
+   * @return {ReactNode|null} react node or null
+   */
   renderHelpText() {
-    if (this.props.helpText) {
+    const helpMode = this.isHelpMode;
+    const message = this.validationMessage;
+    let helpText = this.props.helpText;
+    let i18nKey = this.props.i18nKeyHelpText;
+
+    if (this.isValid === false && message) {
+      helpText = message.message;
+      i18nKey = message.i18nKeyMessage;
+    }
+
+    // If this is a validation message, show even if helpMode is false
+    if (this.isValid === false && message) {
       return (
         <span className="help-block">
-          <Translation defaultValue={this.props.helpText} i18nKey={this.props.i18nKeyHelpText} />
+          <Components.Translation defaultValue={helpText} i18nKey={i18nKey} />
+        </span>
+      );
+    }
+
+    // If this is a non-validation message, only show if helpMode is true
+    if (helpText && helpMode) {
+      return (
+        <span className="help-block">
+          <Components.Translation defaultValue={helpText} i18nKey={i18nKey} />
         </span>
       );
     }
@@ -131,6 +233,8 @@ class TextField extends Component {
       "rui": true,
       "textfield": true,
       "form-group": true,
+      "has-error": this.isValid === false,
+      "has-success": this.isValid === true,
 
       // Alignment
       "center": this.props.align === "center",
@@ -139,7 +243,7 @@ class TextField extends Component {
     });
 
     return (
-      <div className={classes}>
+      <div className={classes} style={this.props.textFieldStyle}>
         {this.renderLabel()}
         {this.renderField()}
         {this.renderHelpText()}
@@ -149,24 +253,32 @@ class TextField extends Component {
   }
 }
 
-TextField.defaultProps = {
-
-};
-
 TextField.propTypes = {
   align: PropTypes.oneOf(["left", "center", "right", "justify"]),
   className: PropTypes.string,
+  disabled: PropTypes.bool,
   helpText: PropTypes.string,
   i18nKeyHelpText: PropTypes.string,
   i18nKeyLabel: PropTypes.string,
   i18nKeyPlaceholder: PropTypes.string,
+  id: PropTypes.string,
+  isValid: PropTypes.bool,
   label: PropTypes.string,
   multiline: PropTypes.bool,
   name: PropTypes.string,
   onBlur: PropTypes.func,
   onChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  onKeyDown: PropTypes.func,
+  onReturnKeyDown: PropTypes.func,
   placeholder: PropTypes.string,
-  value: PropTypes.string
+  style: PropTypes.object,
+  textFieldStyle: PropTypes.object,
+  type: PropTypes.string,
+  validation: PropTypes.object,
+  value: PropTypes.any
 };
+
+registerComponent("TextField", TextField);
 
 export default TextField;

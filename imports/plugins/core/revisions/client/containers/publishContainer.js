@@ -1,11 +1,12 @@
-import React, { Component, PropTypes } from "react";
-import { composeWithTracker } from "react-komposer";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import PublishControls from "../components/publishControls";
 import { Revisions } from "/lib/collections";
 import { Meteor } from "meteor/meteor";
 import TranslationProvider from "/imports/plugins/core/ui/client/providers/translationProvider";
 import { isRevisionControlEnabled } from "../../lib/api";
-import { i18next } from "/client/api";
+import { Reaction, i18next } from "/client/api";
 
 /*
  * PublishContainer is a container component connected to Meteor data source.
@@ -13,23 +14,28 @@ import { i18next } from "/client/api";
 class PublishContainer extends Component {
   handlePublishClick = (revisions) => {
     if (Array.isArray(revisions)) {
-      const documentIds = revisions.map((revision) => {
+      let documentIds = revisions.map((revision) => {
+        if (revision.parentDocument && revision.documentType !== "product") {
+          return revision.parentDocument;
+        }
         return revision.documentId;
       });
 
+      const documentIdsSet = new Set(documentIds); // ensures they are unique
+      documentIds = Array.from(documentIdsSet);
       Meteor.call("revisions/publish", documentIds, (error, result) => {
-        if (result === true) {
+        if (result && result.status === "success") {
           const message = i18next.t("revisions.changedPublished", {
             defaultValue: "Changes published successfully"
           });
 
           Alerts.toast(message, "success");
-        } else {
-          const message = i18next.t("revisions.noChangesPublished", {
-            defaultValue: "There are no changes to publish"
-          });
 
-          Alerts.toast(message, "warning");
+          if (this.props.onPublishSuccess) {
+            this.props.onPublishSuccess(result);
+          }
+        } else {
+          Alerts.toast(error.message, "error");
         }
       });
     }
@@ -74,6 +80,7 @@ class PublishContainer extends Component {
           onAction={this.handlePublishActions}
           onVisibilityChange={this.props.onVisibilityChange}
           revisions={this.props.revisions}
+          isPreview={this.props.isPreview}
         />
       </TranslationProvider>
     );
@@ -84,13 +91,17 @@ PublishContainer.propTypes = {
   documentIds: PropTypes.arrayOf(PropTypes.string),
   documents: PropTypes.arrayOf(PropTypes.object),
   isEnabled: PropTypes.bool,
+  isPreview: PropTypes.bool,
   onAction: PropTypes.func,
+  onPublishSuccess: PropTypes.func,
   onVisibilityChange: PropTypes.func,
   revisions: PropTypes.arrayOf(PropTypes.object)
 };
 
 function composer(props, onData) {
-  if (props.documentIds) {
+  const viewAs = Reaction.getUserPreferences("reaction-dashboard", "viewAs", "administrator");
+
+  if (Array.isArray(props.documentIds) && props.documentIds.length) {
     const subscription = Meteor.subscribe("Revisions", props.documentIds);
 
     if (subscription.ready()) {
@@ -103,6 +114,11 @@ function composer(props, onData) {
           },
           {
             "documentData.ancestors": {
+              $in: props.documentIds
+            }
+          },
+          {
+            parentDocument: {
               $in: props.documentIds
             }
           }
@@ -118,7 +134,8 @@ function composer(props, onData) {
         isEnabled: isRevisionControlEnabled(),
         documentIds: props.documentIds,
         documents: props.documents,
-        revisions
+        revisions,
+        isPreview: viewAs === "customer" ? true : false
       });
 
       return;
@@ -126,7 +143,8 @@ function composer(props, onData) {
   }
 
   onData(null, {
-    isEnabled: isRevisionControlEnabled()
+    isEnabled: isRevisionControlEnabled(),
+    isPreview: viewAs === "customer" ? true : false
   });
 }
 

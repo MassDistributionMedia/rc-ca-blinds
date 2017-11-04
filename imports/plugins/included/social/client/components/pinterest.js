@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Translation } from "/imports/plugins/core/ui/client/components";
 
@@ -48,7 +49,9 @@ class PinterestSocialButton extends Component {
     });
 
     return (
-      <a className="btn btn-flat pinterest-share" href={this.url} onClick={this.handleClick} target="_blank">
+      <a className="btn btn-flat pinterest-share" aria-label="Share to Pinterest" href={this.url} onClick={this.handleClick}
+        target="_blank"
+      >
         <i className={iconClassNames} />
         {this.renderText()}
       </a>

@@ -1,11 +1,19 @@
 import _ from "lodash";
+import { Template } from "meteor/templating";
+import { Meteor } from "meteor/meteor";
 import { ReactiveDict } from "meteor/reactive-dict";
+import { Reaction } from "/client/api";
 import Logger from "/client/modules/logger";
 import { ReactionProduct } from "/lib/api";
 import { Media, Products } from "/lib/collections";
-import { PublishContainer } from "/imports/plugins/core/revisions";
 import { isRevisionControlEnabled } from "/imports/plugins/core/revisions/lib/api";
 import { applyProductRevision } from "/lib/api/products";
+
+function updateVariantProductField(variants, field, value) {
+  return variants.map(variant => {
+    Meteor.call("products/updateProductField", variant._id, field, value);
+  });
+}
 
 Template.productSettings.onCreated(function () {
   this.state = new ReactiveDict();
@@ -37,15 +45,6 @@ Template.productSettings.onCreated(function () {
 });
 
 Template.productSettings.helpers({
-  PublishContainerComponent() {
-    const instance = Template.instance();
-    const productIds = instance.state.get("productIds") || [];
-
-    return {
-      component: PublishContainer,
-      documentIds: productIds
-    };
-  },
   isVisible() {
     const instance = Template.instance();
     const products = instance.state.get("products") || [];
@@ -58,7 +57,7 @@ Template.productSettings.helpers({
     return false;
   },
   hasSelectedProducts() {
-    return this.products.length > 0;
+    return this.products && this.products.length > 0;
   },
   itemWeightActive: function (weight) {
     const instance = Template.instance();
@@ -76,15 +75,32 @@ Template.productSettings.helpers({
   }
 });
 
-Template.productSettingsGridItem.helpers({
-  displayPrice: function () {
+Template.productSettingsListItem.events({
+  "click [data-event-action=product-click]": function () {
+    Reaction.Router.go("product", {
+      handle: this.handle
+    });
+
+    Reaction.state.set("edit/focus", "productDetails");
+
+    // Set actionView to product admin
+    Reaction.setActionView({
+      i18nKeyLabel: "productDetailEdit.productSettings",
+      label: "Product Settings",
+      template: "ProductAdmin"
+    });
+  }
+});
+
+Template.productSettingsListItem.helpers({
+  displayPrice() {
     if (this._id) {
       return ReactionProduct.getProductPriceRange(this._id).range;
     }
     return null;
   },
 
-  media: function () {
+  media() {
     const media = Media.findOne({
       "metadata.productId": this._id,
       "metadata.priority": 0,
@@ -93,55 +109,17 @@ Template.productSettingsGridItem.helpers({
 
     return media instanceof FS.File ? media : false;
   },
-  additionalMedia: function () {
-    const mediaArray = Media.find({
-      "metadata.productId": this._id,
-      "metadata.priority": {
-        $gt: 0
-      },
-      "metadata.toGrid": 1
-    }, { limit: 3 });
 
-    if (mediaArray.count() > 1) {
-      return mediaArray;
-    }
-    return false;
-  },
-  weightClass: function () {
-    const tag = ReactionProduct.getTag();
-    const positions = this.positions && this.positions[tag] || {};
-    const weight = positions.weight || 0;
-    switch (weight) {
-      case 1:
-        return "product-medium";
-      case 2:
-        return "product-large";
-      default:
-        return "product-small";
-    }
-  },
+  listItemActiveClassName(productId) {
+    const handle = Reaction.Router.current().params.handle;
 
-  isMediumWeight: function () {
-    const tag = ReactionProduct.getTag();
-    const positions = this.positions && this.positions[tag] || {};
-    const weight = positions.weight || 0;
-    return weight === 1;
-  },
-  isLargeWeight: function () {
-    const tag = ReactionProduct.getTag();
-    const positions = this.positions && this.positions[tag] || {};
-    const weight = positions.weight || 0;
-    return weight === 3;
-  },
-  shouldShowAdditionalImages: function () {
-    if (this.isMediumWeight && this.mediaArray) {
-      return true;
+    if (ReactionProduct.equals("productId", productId) && handle) {
+      return "active";
     }
-    return false;
+
+    return "";
   }
 });
-
-Template.productSettingsListItem.inheritsHelpersFrom("productSettingsGridItem");
 
 /**
  * productExtendedControls events
@@ -158,6 +136,13 @@ Template.productSettings.events({
         // visibility toggle. This is to ensure that all selected products will become visible or not visible
         // at the same time so it's not confusing.
         Meteor.call("products/updateProductField", product._id, "isVisible", !products[0].isVisible);
+        // update the variants visibility
+        const variants = Products.find({
+          ancestors: {
+            $in: [product._id]
+          }
+        });
+        updateVariantProductField(variants, "isVisible", !products[0].isVisible);
       }
     } else {
       // The legacy behavior will bulk toggle visibilty of each product seperatly.
@@ -172,24 +157,23 @@ Template.productSettings.events({
   "click [data-event-action=cloneProduct]": function () {
     ReactionProduct.cloneProduct(this.products);
   },
-  "click [data-event-action=deleteProduct]": function () {
-    ReactionProduct.maybeDeleteProduct(this.products);
+  "click [data-event-action=archiveProduct]": function () {
+    ReactionProduct.archiveProduct(this.products);
   },
   "click [data-event-action=changeProductWeight]": function (event) {
     event.preventDefault();
     const tag = ReactionProduct.getTag();
     for (const product of this.products) {
-      const weight = $(event.currentTarget).data("event-data") || 0;
+      const weight = Template.instance().$(event.currentTarget).data("event-data") || 0;
       const positions = {
         weight: weight,
         updatedAt: new Date()
       };
       /* eslint no-loop-func: 1 */
       //
-      // TODO review Template.productSettings events for no-loop-func
       //
       Meteor.call("products/updateProductPosition", product._id, positions, tag,
-        (error) => {
+        (error) => { // eslint-disable-line no-loop-func
           if (error) {
             Logger.warn(error);
             throw new Meteor.Error(403, error);

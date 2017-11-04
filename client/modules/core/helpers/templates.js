@@ -1,17 +1,18 @@
+import _ from "lodash";
+import * as tz from "moment-timezone";
+import moment from "moment";
+import "moment/min/locales.min.js";
+import { Meteor } from "meteor/meteor";
+import { Template } from "meteor/templating";
+import { Accounts } from "meteor/accounts-base";
+import { Spacebars } from "meteor/spacebars";
+import { Roles } from "meteor/alanning:roles";
 import { i18next } from "/client/api";
 import { Reaction } from "../";
 import * as Collections from "/lib/collections";
 import * as Schemas from "/lib/collections/schemas";
-import { Meteor } from "meteor/meteor";
-import { Template } from "meteor/templating";
-import moment from "moment-timezone";
+import { toCamelCase } from "/lib/api";
 
-/*
- *
- * Reaction Spacebars helpers
- * See: http://docs.meteor.com/#/full/template_registerhelper
- *
- */
 
 Template.registerHelper("Collections", function () {
   return Collections;
@@ -24,46 +25,70 @@ Template.registerHelper("Schemas", function () {
 /**
  * currentUser
  * @summary overrides Meteor Package.blaze currentUser method
- * @return {[Boolean]} returns true/null if user has registered
+ * @return {Boolean} returns true/null if user has registered
  */
-if (Package.blaze) {
-  Package.blaze.Blaze.Template.registerHelper("currentUser", function () {
-    if (typeof Reaction === "object") {
-      const shopId = Reaction.getShopId();
-      const user = Accounts.user();
-      if (!shopId || typeof user !== "object") return null;
-      // shoppers should always be guests
-      const isGuest = Roles.userIsInRole(user, "guest", shopId);
-      // but if a user has never logged in then they are anonymous
-      const isAnonymous = Roles.userIsInRole(user, "anonymous", shopId);
 
-      return isGuest && !isAnonymous ? user : null;
-    }
-    return null;
-  });
-}
+Template.registerHelper("currentUser", function () {
+  if (typeof Reaction === "object") {
+    const shopId = Reaction.getShopId();
+    const user = Accounts.user();
+    if (!shopId || typeof user !== "object") return null;
+    // shoppers should always be guests
+    const isGuest = Roles.userIsInRole(user, "guest", shopId);
+    // but if a user has never logged in then they are anonymous
+    const isAnonymous = Roles.userIsInRole(user, "anonymous", shopId);
+
+    return isGuest && !isAnonymous ? user : null;
+  }
+  return null;
+});
+
 
 /**
  * registerHelper monthOptions
  * @summary formats moment.js months into an array for autoform selector
  * @return {Array} returns array of months [value:, label:]
  */
-Template.registerHelper("monthOptions", function () {
+Template.registerHelper("monthOptions", function (showDefaultOption = true) {
   const label = i18next.t("app.monthOptions", "Choose month");
-  const monthOptions = [{
-    value: "",
-    label: label
-  }];
-  const months = moment.months();
+  const localLocale = tz;
+
+  // adding cases where our lang w/o region
+  // isn't predefined in moment.
+  // because using defineLocale throws
+  // ugly deprecation warnings, we aren't doing:
+  //
+  // localLocale.defineLocale("zh", {
+  //   parentLocale: "zh-cn"
+  // });
+  let lang = i18next.language;
+  if (lang === "zh") {
+    lang = "zh-cn";
+  }
+
+  localLocale.locale(lang);
+  const monthOptions = [];
+
+  if (showDefaultOption) {
+    monthOptions.push({
+      value: "",
+      label: label
+    });
+  }
+
+  const months = localLocale.months();
+  // parse into autoform array
   for (const index in months) {
     if ({}.hasOwnProperty.call(months, index)) {
       const month = months[index];
+      const mnum = parseInt(index, 10) + 1;
       monthOptions.push({
-        value: parseInt(index, 10) + 1,
-        label: month
+        value: mnum,
+        label: `${mnum} | ${month}`
       });
     }
   }
+
   return monthOptions;
 });
 
@@ -72,12 +97,17 @@ Template.registerHelper("monthOptions", function () {
  * @summary formats moment.js next 9 years into array for autoform selector
  * @return {Array} returns array of years [value:, label:]
  */
-Template.registerHelper("yearOptions", function () {
+Template.registerHelper("yearOptions", function (showDefaultOption = true) {
   const label = i18next.t("app.yearOptions", "Choose year");
-  const yearOptions = [{
-    value: "",
-    label: label
-  }];
+  const yearOptions = [];
+
+  if (showDefaultOption) {
+    yearOptions.push({
+      value: "",
+      label: label
+    });
+  }
+
   let year = new Date().getFullYear();
   for (let i = 1; i < 9; i++) {
     yearOptions.push({
@@ -159,7 +189,7 @@ Template.registerHelper("capitalize", function (str) {
  * @return {String|undefined} returns camelCased string
  */
 Template.registerHelper("toCamelCase", function (str) {
-  return !!str && str.toCamelCase();
+  return !!str && toCamelCase(str);
 });
 
 
@@ -276,11 +306,8 @@ Template.registerHelper("nl2br", function (text) {
  * @return {Date} return formatted date
  */
 Template.registerHelper("dateFormat", function (context, block) {
-  if (window.moment) {
-    const f = block.hash.format || "MMM DD, YYYY hh:mm:ss A";
-    return moment(context).format(f);
-  }
-  return context;
+  const f = block.hash.format || "MMM DD, YYYY hh:mm:ss A";
+  return moment(context).format(f);
 });
 
 /**
@@ -294,10 +321,7 @@ Template.registerHelper("dateFormat", function (context, block) {
  * @return {Date} return formatted date
  */
 Template.registerHelper("timeAgo", function (context) {
-  if (window.moment) {
-    return moment(context).from(new Date());
-  }
-  return context;
+  return moment(context).from(new Date());
 });
 
 

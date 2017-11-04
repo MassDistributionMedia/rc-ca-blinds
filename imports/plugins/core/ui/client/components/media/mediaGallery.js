@@ -1,8 +1,21 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import Dropzone from "react-dropzone";
-import MediaItem from "./media";
+import Measure from "react-measure";
+import { Components } from "@reactioncommerce/reaction-components";
 
 class MediaGallery extends Component {
+  constructor() {
+    super();
+    this.state = {
+      dimensions: {
+        width: -1,
+        height: -1
+      }
+    };
+    this.onDrop = this.onDrop.bind(this);
+  }
+
   get hasMedia() {
     return Array.isArray(this.props.media) && this.props.media.length > 0;
   }
@@ -16,17 +29,27 @@ class MediaGallery extends Component {
   }
 
   get featuredMedia() {
-    return this.props.featuredMedia;
+    return this.props.featuredMedia || this.props.media[0];
   }
 
   handleDropClick = () => {
     this.refs.dropzone.open();
   }
 
+  onDrop(files) {
+    if (files.length === 0) {
+      return;
+    }
+    return this.props.onDrop(files);
+  }
+
   renderAddItem() {
     if (this.props.editable) {
       return (
-        <div className="gallery-image add" onClick={this.handleDropClick}>
+        <div
+          className="gallery-image add"
+          onClick={this.handleDropClick}
+        >
           <img
             alt=""
             className="img-responsive"
@@ -42,33 +65,61 @@ class MediaGallery extends Component {
     return null;
   }
 
-  renderMedia() {
+  renderFeaturedMedia() {
+    const { width, height } = this.state.dimensions;
+
     if (this.hasMedia) {
       return this.props.media.map((media, index) => {
-        if (index === 0 && this.allowFeaturedMediaHover) {
+        if (index === 0) {
           return (
-            <MediaItem
-              editable={this.props.editable}
-              index={index}
+            <Measure
               key={index}
-              metadata={this.featuredMedia.metadata}
-              onMouseEnter={this.props.onMouseEnterMedia}
-              onMouseLeave={this.props.onMouseLeaveMedia}
-              onMove={this.props.onMoveMedia}
-              onRemoveMedia={this.props.onRemoveMedia}
-              source={this.featuredMedia}
-            />
+              bounds
+              onResize={(contentRect) => {
+                this.setState({ dimensions: contentRect.bounds });
+              }}
+            >
+              {({ measureRef }) =>
+                <div ref={measureRef}>
+                  <Components.MediaItem
+                    editable={this.props.editable}
+                    index={index}
+                    key={index}
+                    revision={this.featuredMedia.revision}
+                    metadata={this.featuredMedia.metadata}
+                    onMouseEnter={this.props.onMouseEnterMedia}
+                    onMove={this.props.onMoveMedia}
+                    onRemoveMedia={this.props.onRemoveMedia}
+                    source={this.featuredMedia}
+                    mediaHeight={height}
+                    mediaWidth={width}
+                    isFeatured={true}
+                    {...this.props}
+                  />
+                </div>
+              }
+            </Measure>
           );
         }
+      });
+    }
 
+    return (
+      <Components.MediaItem />
+    );
+  }
+
+  renderMediaThumbnails() {
+    if (this.hasMedia) {
+      return this.props.media.map((media, index) => {
         return (
-          <MediaItem
+          <Components.MediaItem
             editable={this.props.editable}
             index={index}
             key={index}
+            revision={media.revision}
             metadata={media.metadata}
             onMouseEnter={this.props.onMouseEnterMedia}
-            onMouseLeave={this.props.onMouseLeaveMedia}
             onMove={this.props.onMoveMedia}
             onRemoveMedia={this.props.onRemoveMedia}
             source={media}
@@ -76,18 +127,18 @@ class MediaGallery extends Component {
         );
       });
     }
-
-    return (
-      <MediaItem />
-    );
+    return null;
   }
 
   renderMediaGalleryUploader() {
+    const containerWidth = this.props.mediaGalleryWidth;
+    let featured = this.renderAddItem();
     let gallery;
 
     // Only render media only if there is any
     if (this.hasMedia) {
-      gallery = this.renderMedia();
+      featured = this.renderFeaturedMedia();
+      gallery = this.renderMediaThumbnails();
     }
 
     return (
@@ -96,12 +147,19 @@ class MediaGallery extends Component {
           className="rui gallery-drop-pane"
           disableClick={true}
           multiple={true}
-          onDrop={this.props.onDrop}
+          disablePreview={true}
+          onDrop={this.onDrop}
           ref="dropzone"
+          accept="image/jpg, image/png, image/jpeg"
         >
-          <div className="gallery">
-            {gallery}
-            {this.renderAddItem()}
+          <div className="rui gallery">
+            <div className="featuredImage" style={{ height: containerWidth + "px" }}>
+              {featured}
+            </div>
+            <div className="rui gallery-thumbnails">
+              {gallery}
+              {this.renderAddItem()}
+            </div>
           </div>
         </Dropzone>
       </div>
@@ -109,10 +167,17 @@ class MediaGallery extends Component {
   }
 
   renderMediaGallery() {
+    const containerWidth = this.props.mediaGalleryWidth;
+
     return (
       <div className="rui media-gallery">
-        <div className="gallery">
-          {this.renderMedia()}
+        <div className="rui gallery">
+          <div className="featuredImage" style={{ height: containerWidth + "px" }}>
+            {this.renderFeaturedMedia()}
+          </div>
+          <div className="rui gallery-thumbnails">
+            {this.renderMediaThumbnails()}
+          </div>
         </div>
       </div>
     );
@@ -132,6 +197,8 @@ MediaGallery.propTypes = {
   editable: PropTypes.bool,
   featuredMedia: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   media: PropTypes.arrayOf(PropTypes.object),
+  mediaGalleryHeight: PropTypes.number,
+  mediaGalleryWidth: PropTypes.number,
   onDrop: PropTypes.func,
   onMouseEnterMedia: PropTypes.func,
   onMouseLeaveMedia: PropTypes.func,

@@ -1,9 +1,10 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import TetherComponent from "react-tether";
 import classnames from "classnames";
+import { registerComponent } from "@reactioncommerce/reaction-components";
 
 class Tooltip extends Component {
-
   /**
    * attachment
    * @description Return the attachment for the tooltip or the default
@@ -36,7 +37,7 @@ class Tooltip extends Component {
           "tooltip-theme-arrows": true
         })}
         constraints={[{
-          to: "scrollParent",
+          to: "window",
           attachment: "together"
         }]}
       >
@@ -58,5 +59,7 @@ Tooltip.propTypes = {
 Tooltip.defaultProps = {
   attachment: "bottom center"
 };
+
+registerComponent("Tooltip", Tooltip);
 
 export default Tooltip;

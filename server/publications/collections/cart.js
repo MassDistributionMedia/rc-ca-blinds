@@ -1,4 +1,6 @@
-import { Cart } from "/lib/collections";
+import { Meteor } from "meteor/meteor";
+import { check, Match } from "meteor/check";
+import { Cart, Media } from "/lib/collections";
 import { Reaction } from "/server/api";
 
 /**
@@ -29,7 +31,12 @@ Meteor.publish("Cart", function (sessionId, userId) {
   // issues/5103
 
   // shopId is also required.
-  const shopId = Reaction.getShopId();
+  let shopId = Reaction.getPrimaryShopId();
+  const marketplaceSettings = Reaction.getMarketplaceSettings();
+  if (marketplaceSettings && marketplaceSettings.public && marketplaceSettings.public.merchantCart === true) {
+    shopId = Reaction.getShopId();
+  }
+
   if (!shopId) {
     return this.ready();
   }
@@ -58,4 +65,39 @@ Meteor.publish("Cart", function (sessionId, userId) {
   const cartId = Meteor.call("cart/createCart", this.userId, sessionId);
 
   return Cart.find(cartId);
+});
+
+
+Meteor.publish("CartImages", function (cartItems) {
+  check(cartItems, Array);
+
+  // Ensure each of these are unique
+  const productIds = [...new Set(cartItems.map((item) => item.product._id))];
+  const variantIds = [...new Set(cartItems.map((item) => item.variants._id))];
+
+  // return image for each the top level product or the variant and let the client code decide which to display
+  const productImages = Media.find(
+    { "$or":
+    [{
+      "metadata.productId": { $in: productIds }
+    },
+    {
+      "metadata.productId": { $in: variantIds }
+    }
+    ],
+    "metadata.workflow": { $nin: ["archived", "unpublished"] }
+    }
+  );
+
+  return productImages;
+});
+
+Meteor.publish("CartItemImage", function (cartItem) {
+  check(cartItem, Match.Optional(Object));
+  const productId = cartItem.productId;
+
+  return Media.find({
+    "metadata.productId": productId,
+    "metadata.workflow": { $nin: ["archived", "unpublished"] }
+  });
 });

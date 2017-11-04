@@ -1,10 +1,6 @@
-import { BlazeLayout } from "meteor/kadira:blaze-layout";
+import { Template } from "meteor/templating";
+import { Meteor } from "meteor/meteor";
 import Router from "./main";
-
-//
-// Layout container uses body
-//
-BlazeLayout.setRoot("body");
 
 //
 // pathFor

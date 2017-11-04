@@ -1,3 +1,4 @@
+import { Template } from "meteor/templating";
 import { ReactionProduct } from "/lib/api";
 import { Media } from "/lib/collections";
 
@@ -11,13 +12,13 @@ Template.productList.helpers({
   },
   media: function () {
     let defaultImage;
-    const variants = getTopVariants();
+    const variants = ReactionProduct.getTopVariants();
     if (variants.length > 0) {
       const variantId = variants[0]._id;
       defaultImage = Media.findOne({
         "metadata.variantId": variantId
       }, {
-        sort: { "metadata.priority": 1, uploadedAt: 1 }
+        sort: { "metadata.priority": 1, "uploadedAt": 1 }
       });
     }
     if (defaultImage) {

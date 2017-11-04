@@ -18,7 +18,11 @@
                 "user": "",
                 "password": "",
                 "host": "",
-                "port": ""
+                "port": "",
+                "service": "custom"
+            },
+            "cart": {
+                "cleanupDurationDays": "older than 3 days"
             },
             "services": [{
                 "facebook": {
@@ -36,7 +40,9 @@
         "name": "reaction-paypal",
         "enabled": true,
         "settings": {
-            "express_enabled": true,
+            "express": {
+              "enabled": true
+            },
             "express_mode": false,
             "merchantId": "",
             "username": "",

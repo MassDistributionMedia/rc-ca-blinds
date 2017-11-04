@@ -1,5 +1,7 @@
 /* eslint dot-notation: 0 */
+import _ from "lodash";
 import { Meteor } from "meteor/meteor";
+import { Factory } from "meteor/dburles:factory";
 import { expect } from "meteor/practicalmeteor:chai";
 import { sinon } from "meteor/practicalmeteor:sinon";
 import { Roles } from "meteor/alanning:roles";
@@ -36,7 +38,7 @@ describe("Account Publications", function () {
       };
       const cursor = publication.apply(thisContext);
       // verify
-      data = cursor.fetch()[0];
+      const data = cursor.fetch()[0];
       expect(data._id).to.equal(user._id);
     });
 
@@ -64,7 +66,7 @@ describe("Account Publications", function () {
       const publication = Meteor.server.publish_handlers["ShopMembers"];
       const cursor = publication.apply(thisContext);
       // verify
-      data = cursor.fetch();
+      const data = cursor.fetch();
       // we expect services will be clean object
       expect(data.some(_user => {
         // we expect two users. First will be without services, second with

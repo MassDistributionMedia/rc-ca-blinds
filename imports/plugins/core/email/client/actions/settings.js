@@ -1,20 +1,9 @@
+import _ from "lodash";
+import { Meteor } from "meteor/meteor";
 import Alert from "sweetalert2";
-import { Reaction, i18next } from "/client/api";
+import { i18next } from "/client/api";
 
 export default {
-
-  /**
-   * Open the email settings menu
-   * @return {Boolean} returns true if action view toggled
-   */
-  toggleSettings() {
-    Reaction.showActionView({
-      label: i18next.t("mail.headers.emailSettings"),
-      template: "emailSettings"
-    });
-    return true;
-  },
-
   /**
    * Save email settings
    * @param {Object} settings - object of mail provider settings
@@ -29,12 +18,12 @@ export default {
       return callback();
     }
 
-    if (service !== "custom" && (!user || !password)) {
+    if (service !== "custom" && service !== "Maildev" && (!user || !password)) {
       Alert(i18next.t("app.error"), i18next.t("mail.alerts.userPassRequired", { service }), "error");
       return callback();
     }
 
-    if (service === "custom" && (!host || !port || !user || !password)) {
+    if (service === "custom" && (!host || !port)) {
       Alert(i18next.t("app.error"), i18next.t("mail.alerts.allFieldsRequired"), "error");
       return callback();
     }
@@ -48,7 +37,7 @@ export default {
     }
 
     const save = () => {
-      Meteor.call("email/saveSettings", settings, (err) => {
+      Meteor.call("email/saveSettings", _.pick(settings, ["service", "host", "port", "user", "password"]), (err) => {
         if (err) {
           return Alert(i18next.t("app.error"),
             i18next.t("mail.alerts.saveFailed", { error: err.reason }),

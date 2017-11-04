@@ -1,5 +1,5 @@
 /* eslint camelcase: 0 */
-import _ from "lodash";
+import moment from "moment";
 import { Meteor } from "meteor/meteor";
 import { check, Match } from "meteor/check";
 import { Reaction, Logger } from "/server/api";
@@ -9,7 +9,7 @@ import { transformations } from "./transformations";
 
 
 const requiredFields = {};
-requiredFields.products = ["_id", "hashtags", "shopId", "handle", "price", "isVisible"];
+requiredFields.products = ["_id", "hashtags", "shopId", "handle", "price", "isVisible", "isSoldOut", "isLowQuantity", "isBackorder"];
 requiredFields.orders = ["_id", "shopId", "shippingName", "shippingPhone", "billingName", "userEmails",
   "shippingAddress", "billingAddress", "shippingStatus", "billingStatus", "orderTotal", "orderDate"];
 requiredFields.accounts = ["_id", "shopId", "emails", "profile"];
@@ -25,7 +25,7 @@ const supportedLanguages = ["da", "nl", "en", "fi", "fr", "de", "hu", "it", "nb"
 
 function filterFields(customFields) {
   const fieldNames = [];
-  const fieldKeys = _.keys(customFields);
+  const fieldKeys = Object.keys(customFields);
   for (const fieldKey of fieldKeys) {
     if (customFields[fieldKey]) {
       fieldNames.push(fieldKey);
@@ -37,8 +37,8 @@ function filterFields(customFields) {
 // get the weights for all enabled fields
 function getScores(customFields, settings, collection = "products") {
   const weightObject = {};
-  for (const weight of _.keys(settings[collection].weights)) {
-    if (_.includes(customFields, weight)) {
+  for (const weight of Object.keys(settings[collection].weights)) {
+    if (customFields.includes(weight)) {
       weightObject[weight] = settings[collection].weights[weight];
     }
   }
@@ -48,7 +48,7 @@ function getScores(customFields, settings, collection = "products") {
 function getSearchLanguage() {
   const shopId = Reaction.getShopId();
   const shopLanguage = Shops.findOne(shopId).language;
-  if (_.includes(supportedLanguages, shopLanguage)) {
+  if (supportedLanguages.includes(shopLanguage)) {
     return { default_language: shopLanguage };
   }
   return { default_language: "en" };
@@ -86,7 +86,7 @@ export function buildProductSearch(cb) {
   Logger.debug("Start (re)Building ProductSearch Collection");
   ProductSearch.remove({});
   const { fieldSet, weightObject, customFields } = getSearchParameters();
-  const products = Products.find({type: "simple"}).fetch();
+  const products = Products.find({ type: "simple" }).fetch();
   for (const product of products) {
     const productRecord = {};
     for (const field of fieldSet) {
@@ -109,6 +109,18 @@ export function buildProductSearch(cb) {
   if (cb) {
     cb();
   }
+}
+
+// we build this immediately on startup so that search will not throw an error
+export function buildEmptyProductSearch() {
+  const { weightObject, customFields } = getSearchParameters();
+  const indexObject = {};
+  for (const field of customFields) {
+    indexObject[field] = "text";
+  }
+  const rawProductSearchCollection = ProductSearch.rawCollection();
+  rawProductSearchCollection.dropIndexes("*");
+  rawProductSearchCollection.createIndex(indexObject, weightObject, getSearchLanguage());
 }
 
 export function rebuildProductSearchIndex(cb) {
@@ -140,10 +152,16 @@ export function ensureProductSearchIndex() {
 export function buildOrderSearchRecord(orderId) {
   const order = Orders.findOne(orderId);
   const user = Meteor.users.findOne(order.userId);
+  const anonymousUserEmail = order.email;
+
   const userEmails = [];
-  if (user) {
+  if (user && user.emails.length) {
     for (const email of user.emails) {
       userEmails.push(email.address);
+    }
+  } else {
+    if (anonymousUserEmail) {
+      userEmails.push(anonymousUserEmail);
     }
   }
   const orderSearch = {};
@@ -154,35 +172,56 @@ export function buildOrderSearchRecord(orderId) {
       orderSearch[field] = order[field];
     }
   }
-  orderSearch.billingName = order.billing[0].address.fullName;
-  orderSearch.billingPhone = _.replace(order.billing[0].address.phone, /\D/g, "");
-  orderSearch.shippingName = order.shipping[0].address.fullName;
-  orderSearch.shippingPhone = _.replace(order.shipping[0].address.phone, /\D/g, "");
+  // get the billing object for the current shop on the order (and not hardcoded [0])
+  const shopBilling = order.billing && order.billing.find(
+    billing => billing && billing.shopId === Reaction.getShopId()
+  ) || {};
+
+  // get the shipping object for the current shop on the order (and not hardcoded [0])
+  const shopShipping = order.shipping.find(
+    shipping => shipping.shopId === Reaction.getShopId()
+  ) || {};
+
+  orderSearch.billingName = shopBilling.address && shopBilling.address.fullName;
+  orderSearch.billingPhone = shopBilling.address && shopBilling.address.phone.replace(/\D/g, "");
+  orderSearch.shippingName = shopShipping.address && shopShipping.address.fullName;
+  if (shopShipping.address && shopShipping.address.phone) {
+    orderSearch.shippingPhone = shopShipping.address && shopShipping.address.phone.replace(/\D/g, "");
+  }
+
   orderSearch.billingAddress = {
-    address: order.billing[0].address.address1,
-    postal: order.billing[0].address.postal,
-    city: order.billing[0].address.city,
-    region: order.billing[0].address.region,
-    country: order.billing[0].address.country
+    address: shopBilling.address && shopBilling.address.address1,
+    postal: shopBilling.address && shopBilling.address.postal,
+    city: shopBilling.address && shopBilling.address.city,
+    region: shopBilling.address && shopBilling.address.region,
+    country: shopBilling.address && shopBilling.address.country
   };
   orderSearch.shippingAddress = {
-    address: order.shipping[0].address.address1,
-    postal: order.shipping[0].address.postal,
-    city: order.shipping[0].address.city,
-    region: order.shipping[0].address.region,
-    country: order.shipping[0].address.country
+    address: shopShipping.address && shopShipping.address.address1,
+    postal: shopShipping.address && shopShipping.address.postal,
+    city: shopShipping.address && shopShipping.address.city,
+    region: shopShipping.address && shopShipping.address.region,
+    country: shopShipping.address && shopShipping.address.country
   };
   orderSearch.userEmails = userEmails;
-  orderSearch.orderTotal = order.billing[0].invoice.total;
+  orderSearch.orderTotal = shopBilling.invoice && shopBilling.invoice.total;
   orderSearch.orderDate = moment(order.createdAt).format("YYYY/MM/DD");
-  orderSearch.billingStatus = order.billing[0].paymentMethod.status;
-  if (order.shipping[0].shipped) {
+  orderSearch.billingStatus = shopBilling.paymentMethod && shopBilling.paymentMethod.status;
+  orderSearch.billingCard = shopBilling.paymentMethod && shopBilling.paymentMethod.storedCard;
+  orderSearch.currentWorkflowStatus = order.workflow.status;
+  if (shopShipping.shipped) {
     orderSearch.shippingStatus = "Shipped";
-  } else if (order.shipping[0].packed) {
+  } else if (shopShipping.packed) {
     orderSearch.shippingStatus = "Packed";
   } else {
     orderSearch.shippingStatus = "New";
   }
+  orderSearch.product = {};
+  orderSearch.variants = {};
+  orderSearch.product.title = order.items.map(item => item.product && item.product.title);
+  orderSearch.variants.title = order.items.map(item => item.variants && item.variants.title);
+  orderSearch.variants.optionTitle = order.items.map(item => item.variants && item.variants.optionTitle);
+
   OrderSearch.insert(orderSearch);
 }
 
@@ -194,7 +233,7 @@ export function buildOrderSearch(cb) {
   }
   const rawOrderSearchCollection = OrderSearch.rawCollection();
   rawOrderSearchCollection.dropIndexes("*");
-  rawOrderSearchCollection.createIndex({shopId: 1, shippingName: 1, billingName: 1, userEmails: 1});
+  rawOrderSearchCollection.createIndex({ shopId: 1, shippingName: 1, billingName: 1, userEmails: 1 });
   if (cb) {
     cb();
   }
@@ -210,7 +249,7 @@ export function buildAccountSearch(cb) {
   }
   const rawAccountSearchCollection = AccountSearch.rawCollection();
   rawAccountSearchCollection.dropIndexes("*");
-  rawAccountSearchCollection.createIndex({shopId: 1, emails: 1});
+  rawAccountSearchCollection.createIndex({ shopId: 1, emails: 1 });
   if (cb) {
     cb();
   }
@@ -221,7 +260,7 @@ export function buildAccountSearchRecord(accountId) {
   check(accountId, String);
   const account = Accounts.findOne(accountId);
   // let's ignore anonymous accounts
-  if (account.emails.length) {
+  if (account && account.emails && account.emails.length) {
     const accountSearch = {};
     for (const field of requiredFields.accounts) {
       if (transformations.accounts[field]) {
@@ -232,6 +271,6 @@ export function buildAccountSearchRecord(accountId) {
     }
     AccountSearch.insert(accountSearch);
     const rawAccountSearchCollection = AccountSearch.rawCollection();
-    rawAccountSearchCollection.createIndex({shopId: 1, emails: 1});
+    rawAccountSearchCollection.createIndex({ shopId: 1, emails: 1 });
   }
 }

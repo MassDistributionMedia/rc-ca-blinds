@@ -1,10 +1,9 @@
-import React, { Component, PropTypes } from "react";
-import { IconButton } from "../";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { SortableItem } from "../../containers";
-
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 
 class MediaItem extends Component {
-
   handleMouseEnter = (event) => {
     if (this.props.onMouseEnter) {
       this.props.onMouseEnter(event, this.props.source);
@@ -25,18 +24,54 @@ class MediaItem extends Component {
     }
   }
 
+  renderRevision() {
+    if (this.props.revision) {
+      if (this.props.revision.changeType === "remove") {
+        return (
+          <Components.IconButton
+            icon="fa"
+            status="danger"
+            i18nKeyTooltip="admin.mediaGallery.removedImage"
+            tooltip="Image has been deleted. Publish to save changes."
+            kind="mediaGalleryStatus"
+          />
+        );
+      }
+      return (
+        <Components.IconButton
+          icon="fa"
+          status="info"
+          i18nKeyTooltip="admin.mediaGallery.addedImage"
+          tooltip="This is a new image. Publish to save changes."
+          kind="mediaGalleryStatus"
+        />
+      );
+    }
+    return undefined;
+  }
+
   renderControls() {
     if (this.props.editable) {
+      // If we have a pending remove, don't show the remove button
+      if (!this.props.revision || this.props.revision.changeType !== "remove") {
+        return (
+          <div className="rui badge-container">
+            {this.renderRevision()}
+            <Components.IconButton
+              icon="fa fa-times"
+              onClick={this.handleRemoveMedia}
+              i18nKeyTooltip="admin.mediaGallery.deleteImage"
+              tooltip="Click to remove image"
+            />
+          </div>
+        );
+      }
       return (
         <div className="rui badge-container">
-          <IconButton
-            icon="fa fa-times"
-            onClick={this.handleRemoveMedia}
-          />
+          {this.renderRevision()}
         </div>
       );
     }
-
     return null;
   }
 
@@ -58,6 +93,7 @@ class MediaItem extends Component {
         alt=""
         className="img-responsive"
         src={this.source}
+        height={this.props.mediaHeight}
       />
     );
 
@@ -93,10 +129,17 @@ MediaItem.propTypes = {
   connectDropTarget: PropTypes.func,
   defaultSource: PropTypes.string,
   editable: PropTypes.bool,
+  isFeatured: PropTypes.bool,
+  mediaHeight: PropTypes.number,
+  mediaWidth: PropTypes.number,
+  metadata: PropTypes.object,
   onMouseEnter: PropTypes.func,
   onMouseLeave: PropTypes.func,
   onRemoveMedia: PropTypes.func,
+  revision: PropTypes.object,
   source: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
 };
 
-export default SortableItem("media", MediaItem);
+registerComponent("MediaItem", MediaItem, SortableItem("media"));
+
+export default SortableItem("media")(MediaItem);

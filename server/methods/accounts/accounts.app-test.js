@@ -1,11 +1,14 @@
 /* eslint dot-notation: 0 */
 import _ from  "lodash";
 import { Meteor } from "meteor/meteor";
+import { Factory } from "meteor/dburles:factory";
+import { check, Match } from "meteor/check";
+import { Random } from "meteor/random";
 import { Accounts as MeteorAccount } from "meteor/accounts-base";
-import { Accounts, Packages, Orders, Products, Shops, Cart }  from "/lib/collections";
-import { Reaction } from "/server/api";
 import { expect } from "meteor/practicalmeteor:chai";
 import { sinon } from "meteor/practicalmeteor:sinon";
+import { Accounts, Packages, Orders, Products, Shops, Cart }  from "/lib/collections";
+import { Reaction } from "/server/api";
 import { getShop, getAddress } from "/server/imports/fixtures/shops";
 import Fixtures from "/server/imports/fixtures";
 
@@ -17,7 +20,7 @@ before(function () {
 });
 
 describe("Account Meteor method ", function () {
-  const shopId = getShop()._id;
+  let shopId;
   const fakeUser = Factory.create("account");
   const originals = {};
   let sandbox;
@@ -41,6 +44,7 @@ describe("Account Meteor method ", function () {
   });
 
   beforeEach(function () {
+    shopId = getShop()._id;
     sandbox = sinon.sandbox.create();
   });
 
@@ -98,7 +102,7 @@ describe("Account Meteor method ", function () {
       account = Accounts.findOne(account._id);
       expect(account.profile.addressBook.length).to.equal(2);
       const newAddress = account.profile.addressBook[
-      account.profile.addressBook.length - 1];
+        account.profile.addressBook.length - 1];
       delete newAddress._id;
       expect(_.isEqual(address, newAddress)).to.be.true;
       return done();
@@ -157,43 +161,43 @@ describe("Account Meteor method ", function () {
       return done();
     });
 
-    it("should disabled isShipping/BillingDefault properties inside sibling" +
-      " address if we enable their while adding",
-      function (done) {
-        const account = Factory.create("account");
-        sandbox.stub(Meteor, "userId", function () {
-          return account.userId;
-        });
-        sandbox.stub(Reaction, "getShopId", function () {
-          return shopId;
-        });
-        const sessionId = Random.id(); // Required for creating a cart
-        spyOnMethod("setShipmentAddress", account.userId);
-        spyOnMethod("setPaymentAddress", account.userId);
-
-        Meteor.call("cart/createCart", account.userId, sessionId);
-        // cart was created without any default addresses, we need to add one
-        const address = Object.assign({}, getAddress(), {
-          isShippingDefault: true,
-          isBillingDefault: true
-        });
-        Meteor.call("accounts/addressBookAdd", address);
-
-        // Now we need to override cart with new address
-        const newAddress = Object.assign({}, getAddress(), {
-          _id: Random.id(),
-          isShippingDefault: true,
-          isBillingDefault: true
-        });
-        Meteor.call("accounts/addressBookAdd", newAddress);
-
-        // now we need to get address ids from cart and compare their
-        const cart = Cart.findOne({userId: account.userId});
-        expect(cart.shipping[0].address._id).to.equal(newAddress._id);
-        expect(cart.billing[0].address._id).to.equal(newAddress._id);
-
-        return done();
+    it("should disable isShipping/BillingDefault properties inside sibling" +
+      " address if we enable them while adding",
+    function (done) {
+      const account = Factory.create("account");
+      sandbox.stub(Meteor, "userId", function () {
+        return account.userId;
       });
+      sandbox.stub(Reaction, "getShopId", function () {
+        return shopId;
+      });
+      const sessionId = Random.id(); // Required for creating a cart
+      spyOnMethod("setShipmentAddress", account.userId);
+      spyOnMethod("setPaymentAddress", account.userId);
+
+      Meteor.call("cart/createCart", account.userId, sessionId);
+      // cart was created without any default addresses, we need to add one
+      const address = Object.assign({}, getAddress(), {
+        isShippingDefault: true,
+        isBillingDefault: true
+      });
+      Meteor.call("accounts/addressBookAdd", address);
+
+      // Now we need to override cart with new address
+      const newAddress = Object.assign({}, getAddress(), {
+        _id: Random.id(),
+        isShippingDefault: true,
+        isBillingDefault: true
+      });
+      Meteor.call("accounts/addressBookAdd", newAddress);
+
+      // now we need to get address ids from cart and compare their
+      const cart = Cart.findOne({ userId: account.userId });
+      expect(cart.shipping[0].address._id).to.equal(newAddress._id);
+      expect(cart.billing[0].address._id).to.equal(newAddress._id);
+
+      return done();
+    });
   });
 
   describe("addressBookUpdate", function () {
@@ -329,8 +333,8 @@ describe("Account Meteor method ", function () {
         isBillingDefault: false
       });
       Meteor.call("accounts/addressBookUpdate", address);
-      let cart = Cart.findOne({userId: account.userId});
-      expect(cart.billing).to.be.undefined;
+      let cart = Cart.findOne({ userId: account.userId });
+      expect(cart.billing).to.be.defined;
       expect(cart.shipping).to.be.undefined;
 
       address = Object.assign({}, account.profile.addressBook[0], {
@@ -338,7 +342,7 @@ describe("Account Meteor method ", function () {
         isBillingDefault: true
       });
       Meteor.call("accounts/addressBookUpdate", address);
-      cart = Cart.findOne({userId: account.userId});
+      cart = Cart.findOne({ userId: account.userId });
       expect(cart).to.not.be.undefined;
 
       expect(cart.billing[0].address._id).to.equal(address._id);
@@ -347,41 +351,41 @@ describe("Account Meteor method ", function () {
 
     it("should disable isShipping/BillingDefault properties inside sibling" +
       " address if we enable them while editing",
-      function (done) {
-        let account = Factory.create("account");
-        spyOnMethod("setShipmentAddress", account.userId);
-        spyOnMethod("setPaymentAddress", account.userId);
-        sandbox.stub(Meteor, "userId", function () {
-          return account.userId;
-        });
-        sandbox.stub(Reaction, "getShopId", () => shopId);
-        Meteor.call("cart/createCart", account.userId, sessionId);
-        // cart was created without any default addresses, we need to add one
-        let address = Object.assign({}, account.profile.addressBook[0], {
-          isShippingDefault: true,
-          isBillingDefault: true
-        });
-        Meteor.call("accounts/addressBookUpdate", address);
+    function (done) {
+      let account = Factory.create("account");
+      spyOnMethod("setShipmentAddress", account.userId);
+      spyOnMethod("setPaymentAddress", account.userId);
+      sandbox.stub(Meteor, "userId", function () {
+        return account.userId;
+      });
+      sandbox.stub(Reaction, "getShopId", () => shopId);
+      Meteor.call("cart/createCart", account.userId, sessionId);
+      // cart was created without any default addresses, we need to add one
+      let address = Object.assign({}, account.profile.addressBook[0], {
+        isShippingDefault: true,
+        isBillingDefault: true
+      });
+      Meteor.call("accounts/addressBookUpdate", address);
 
-        // we add new address with disabled defaults
-        address = Object.assign({}, getAddress(), {
-          _id: Random.id(),
-          isShippingDefault: false,
-          isBillingDefault: false
-        });
-        Meteor.call("accounts/addressBookAdd", address);
-        // now we can test edit
-        Object.assign(address, {
-          isShippingDefault: true,
-          isBillingDefault: true
-        });
-        Meteor.call("accounts/addressBookUpdate", address);
-        account = Accounts.findOne(account._id);
+      // we add new address with disabled defaults
+      address = Object.assign({}, getAddress(), {
+        _id: Random.id(),
+        isShippingDefault: false,
+        isBillingDefault: false
+      });
+      Meteor.call("accounts/addressBookAdd", address);
+      // now we can test edit
+      Object.assign(address, {
+        isShippingDefault: true,
+        isBillingDefault: true
+      });
+      Meteor.call("accounts/addressBookUpdate", address);
+      account = Accounts.findOne(account._id);
 
-        expect(account.profile.addressBook[0].isBillingDefault).to.be.false;
-        expect(account.profile.addressBook[0].isShippingDefault).to.be.false;
-        return done();
-      }
+      expect(account.profile.addressBook[0].isBillingDefault).to.be.false;
+      expect(account.profile.addressBook[0].isShippingDefault).to.be.false;
+      return done();
+    }
     );
 
     it("should update cart default addresses via `type` argument", function () {
@@ -409,7 +413,7 @@ describe("Account Meteor method ", function () {
 
       Meteor.call("accounts/addressBookUpdate", address, null, "isBillingDefault");
       Meteor.call("accounts/addressBookUpdate", address, null, "isShippingDefault");
-      const cart = Cart.findOne({userId: userId});
+      const cart = Cart.findOne({ userId: userId });
       expect(cart.billing[0].address._id).to.equal(address._id);
       expect(cart.shipping[0].address._id).to.equal(address._id);
     });
@@ -463,7 +467,7 @@ describe("Account Meteor method ", function () {
       });
       const accountUpdateSpy = sandbox.spy(Accounts, "update");
       expect(() => Meteor.call("accounts/addressBookRemove",
-          address2._id, account2.userId)).to.throw;
+        address2._id, account2.userId)).to.throw;
       expect(accountUpdateSpy).to.not.have.been.called;
     });
 
@@ -491,29 +495,76 @@ describe("Account Meteor method ", function () {
       sandbox.stub(Reaction, "hasPermission", () => false);
       const createUserSpy = sandbox.spy(MeteorAccount, "createUser");
       // create user
-      expect(() => Meteor.call("accounts/inviteShopMember", shopId,
-          fakeUser.emails[0].address,
-          fakeUser.profile.addressBook[0].fullName)).to.throw(Meteor.Error, /Access denied/);
+      expect(() =>
+        Meteor.call("accounts/inviteShopMember", {
+          shopId,
+          groupId: Random.id(),
+          email: fakeUser.emails[0].address,
+          name: fakeUser.profile.addressBook[0].fullName
+        })
+      ).to.throw(Meteor.Error, /Access denied/);
       // expect that createUser shouldnt have run
       expect(createUserSpy).to.not.have.been.called;
-      // expect(createUserSpy).to.not.have.been.called.with({
-      //   username: fakeUser.profile.addressBook[0].fullName
-      // });
     });
 
     it("should let a Owner invite a user to the shop", function (done) {
       this.timeout(20000);
       this.retries(3);
       sandbox.stub(Reaction, "hasPermission", () => true);
-      // TODO checking this is failing, even though we can see it happening in the log.
-      // spyOn(Email, "send");
-      expect(function () {
-        return Meteor.call("accounts/inviteShopMember",
+      // TODO: Need to udpate this test to properly check the account created
+      // there's currently an error with Media branding asset when trying to do that
+      expect(() =>
+        Meteor.call("accounts/inviteShopMember", {
           shopId,
-          fakeUser.emails[0].address,
-          fakeUser.profile.addressBook[0].fullName);
-      }).to.not.throw(Meteor.Error, /Access denied/);
-      // expect(Email.send).toHaveBeenCalled();
+          groupId: Random.id(),
+          email: fakeUser.emails[0].address,
+          name: fakeUser.profile.addressBook[0].fullName
+        })
+      ).to.not.throw(Meteor.Error, /Access denied/);
+      return done();
+    });
+  });
+
+  describe("accounts/inviteShopOwner", function () {
+    beforeEach(function () {
+      sandbox.stub(Meteor, "user", function () {
+        return fakeUser;
+      });
+    });
+
+    it("should ensure only admin can invite as shop owner", function () {
+      sandbox.stub(Reaction, "hasPermission", () => false);
+      const createUserSpy = sandbox.spy(MeteorAccount, "createUser");
+      expect(() =>
+        Meteor.call("accounts/inviteShopOwner", {
+          email: fakeUser.emails[0].address,
+          name: fakeUser.profile.addressBook[0].fullName
+        })
+      ).to.throw(Meteor.Error, /Access denied/);
+      expect(createUserSpy).to.not.have.been.called;
+    });
+
+    it("should confirm if email already exists before creating", function (done) {
+      sandbox.stub(Reaction, "hasPermission", () => true);
+      expect(() =>
+        Meteor.call("accounts/inviteShopOwner", {
+          email: fakeUser.emails[0].address,
+          name: fakeUser.profile.addressBook[0].fullName
+        })
+      ).to.not.throw(Meteor.Error, /Access denied/);
+
+      return done();
+    });
+
+    it("should let admin invite a user to manage a shop", function (done) {
+      sandbox.stub(Reaction, "hasPermission", () => true);
+      expect(() =>
+        Meteor.call("accounts/inviteShopOwner", {
+          email: "custom@email.co",
+          name: "custom name"
+        })
+      ).to.not.throw(Meteor.Error, /Access denied/);
+
       return done();
     });
   });

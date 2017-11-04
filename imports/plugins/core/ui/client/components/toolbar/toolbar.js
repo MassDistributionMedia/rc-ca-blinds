@@ -1,25 +1,22 @@
-import React, { Children, Component, PropTypes } from "react";
-import TetherComponent from "react-tether";
-import classnames from "classnames";
+import React from "react";
+import PropTypes from "prop-types";
+import { registerComponent } from "@reactioncommerce/reaction-components";
 
-
-class Toolbar extends Component {
-  render() {
-    return (
-      <nav className="rui toolbar navbar-inverse">
-        {this.props.children}
-      </nav>
-    );
-  }
-}
+const Toolbar = ({ children }) => (
+  <nav className="rui toolbar navbar-inverse">
+    {children}
+  </nav>
+);
 
 Toolbar.propTypes = {
   attachment: PropTypes.string,
-  children: PropTypes.node,
+  children: PropTypes.node
 };
 
 Toolbar.defaultProps = {
   attachment: "top"
 };
+
+registerComponent("Toolbar", Toolbar);
 
 export default Toolbar;

@@ -1,4 +1,7 @@
-import { Products, Revisions } from "/lib/collections";
+import { Meteor } from "meteor/meteor";
+import { check } from "meteor/check";
+import { Roles } from "meteor/alanning:roles";
+import { Revisions } from "/lib/collections";
 import { Reaction } from "/server/api";
 
 /**
@@ -10,6 +13,7 @@ import { Reaction } from "/server/api";
 Meteor.publish("ProductRevisions", function (productIds) {
   check(productIds, Array);
 
+  const shop = Reaction.getShopId();
   // Authorized content curators fo the shop get special publication of the product
   // all all relevant revisions all is one package
   if (Roles.userIsInRole(this.userId, ["owner", "admin", "createProduct"], shop._id)) {

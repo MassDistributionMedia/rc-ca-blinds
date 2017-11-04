@@ -1,4 +1,6 @@
 import later from "later";
+import { Meteor } from "meteor/meteor";
+import { Job } from "meteor/vsivsi:job-collection";
 import { Jobs } from "/lib/collections";
 import { Hooks, Logger, Reaction } from "/server/api";
 
@@ -79,7 +81,7 @@ export default function () {
         // https://github.com/vsivsi/meteor-job-collection#set-how-many-times-this
         // -job-will-be-automatically-re-run-by-the-job-collection
         const success = "Latest exchange rates were fetched successfully.";
-        Logger.info(success);
+        Logger.debug(success);
         job.done(success, { repeatId: true });
       }
     });
@@ -115,7 +117,7 @@ export default function () {
           // https://github.com/vsivsi/meteor-job-collection#set-how-many-times-this
           // -job-will-be-automatically-re-run-by-the-job-collection
           const success = "Stale exchange rates were flushed.";
-          Logger.info(success);
+          Logger.debug(success);
           job.done(success, { repeatId: true });
         }
       });

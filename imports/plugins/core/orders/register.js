@@ -10,23 +10,26 @@ Reaction.registerPackage({
   },
   registry: [{
     route: "/dashboard/orders",
-    provides: "dashboard",
+    provides: ["dashboard"],
     workflow: "coreOrderWorkflow",
     name: "orders",
     label: "Orders",
     description: "Fulfill your orders",
     icon: "fa fa-sun-o",
-    priority: 1,
+    priority: 0,
     container: "core",
     template: "orders"
   }, {
     route: "/dashboard/orders",
     name: "dashboard/orders",
-    provides: "shortcut",
+    provides: ["shortcut"],
     label: "Orders",
     description: "Fulfill your orders",
     icon: "fa fa-sun-o",
-    priority: 1
+    priority: 1,
+    container: "dashboard",
+    template: "orders",
+    audience: ["seller"]
   }, {
     route: "/dashboard/pdf/orders/:id",
     workflow: "coreOrderPrintWorkflow",

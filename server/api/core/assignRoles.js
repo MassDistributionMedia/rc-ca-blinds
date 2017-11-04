@@ -1,15 +1,16 @@
+import _ from "lodash";
 import { Roles } from "meteor/alanning:roles";
 import { Logger } from "/server/api";
 
 /**
  * getRouteName
- * assemble route name to be standard
+ * @summary assemble route name to be standard
  * this is duplicate that exists in Reaction.Router
  * however this is to avoid a dependency in core
  * on the router
  * prefix/package name + registry name or route
- * @param  {[type]} packageName  [package name]
- * @param  {[type]} registryItem [registry object]
+ * @param  {string} packageName  [package name]
+ * @param  {object} registryItem [registry object]
  * @return {String}              [route name]
  */
 function getRouteName(packageName, registryItem) {
@@ -32,7 +33,7 @@ function getRouteName(packageName, registryItem) {
 
 /**
  * assignOwnerRoles
- * populate roles with all the packages and their permissions
+ * @summary populate roles with all the packages and their permissions
  * this is the main way that roles are inserted and created for
  * admin user.
  * we assign all package roles to each owner account for each shopId
@@ -49,7 +50,7 @@ export function assignOwnerRoles(shopId, pkgName, registry) {
   const globalRoles = defaultRoles;
 
   if (registry) {
-      // for each registry item define and push roles
+    // for each registry item define and push roles
     for (const registryItem of registry) {
       // packages don't need to define specific permission routes.,
       // the routeName will be used as default roleName for each route.
@@ -63,7 +64,12 @@ export function assignOwnerRoles(shopId, pkgName, registry) {
       // define permissions if you need to check custom permission
       if (registryItem.permissions) {
         for (const permission of registryItem.permissions) {
-          defaultRoles.push(permission.permission);
+          // A wrong value in permissions (ie. [String] instead of [Object] in any plugin register.js
+          // results in an undefined element in defaultRoles Array
+          // an undefined value would make Roles.getUsersInRole(defaultRoles) return ALL users
+          if (permission && typeof permission.permission === "string" && permission.permission.length) {
+            defaultRoles.push(permission.permission);
+          }
         }
       }
     }

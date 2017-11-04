@@ -1,9 +1,15 @@
 {
   "dependencies": {
     "bson": {
+<<<<<<< HEAD
       "version": "0.5.4",
       "resolved": "https://registry.npmjs.org/bson/-/bson-0.5.4.tgz",
       "from": "bson@https://registry.npmjs.org/bson/-/bson-0.5.4.tgz"
+=======
+      "version": "0.5.7",
+      "resolved": "https://registry.npmjs.org/bson/-/bson-0.5.7.tgz",
+      "from": "bson@>=0.5.4 <0.6.0"
+>>>>>>> upstream/master
     },
     "buffer-shims": {
       "version": "1.0.0",
@@ -31,9 +37,15 @@
       "from": "gridfs-stream@https://registry.npmjs.org/gridfs-stream/-/gridfs-stream-1.1.1.tgz"
     },
     "inherits": {
+<<<<<<< HEAD
       "version": "2.0.1",
       "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz",
       "from": "inherits@https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz"
+=======
+      "version": "2.0.3",
+      "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.3.tgz",
+      "from": "inherits@>=2.0.1 <2.1.0"
+>>>>>>> upstream/master
     },
     "isarray": {
       "version": "1.0.0",
@@ -61,9 +73,15 @@
       "from": "readable-stream@https://registry.npmjs.org/readable-stream/-/readable-stream-2.1.5.tgz"
     },
     "require_optional": {
+<<<<<<< HEAD
       "version": "1.0.0",
       "resolved": "https://registry.npmjs.org/require_optional/-/require_optional-1.0.0.tgz",
       "from": "require_optional@https://registry.npmjs.org/require_optional/-/require_optional-1.0.0.tgz"
+=======
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/require_optional/-/require_optional-1.0.1.tgz",
+      "from": "require_optional@>=1.0.0 <1.1.0"
+>>>>>>> upstream/master
     },
     "resolve-from": {
       "version": "2.0.0",
@@ -71,9 +89,15 @@
       "from": "resolve-from@https://registry.npmjs.org/resolve-from/-/resolve-from-2.0.0.tgz"
     },
     "semver": {
+<<<<<<< HEAD
       "version": "5.3.0",
       "resolved": "https://registry.npmjs.org/semver/-/semver-5.3.0.tgz",
       "from": "semver@https://registry.npmjs.org/semver/-/semver-5.3.0.tgz"
+=======
+      "version": "5.4.1",
+      "resolved": "https://registry.npmjs.org/semver/-/semver-5.4.1.tgz",
+      "from": "semver@>=5.1.0 <6.0.0"
+>>>>>>> upstream/master
     },
     "string_decoder": {
       "version": "0.10.31",

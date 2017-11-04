@@ -6,24 +6,30 @@ Reaction.registerPackage({
   icon: "fa fa-truck",
   autoEnable: true,
   settings: {
-    name: "Flat Rate Service"
+    name: "Shipping",
+    shipping: {
+      enabled: true
+    }
   },
   registry: [
     {
-      provides: "dashboard",
+      provides: ["dashboard"],
       route: "/dashboard/shipping",
       name: "shipping",
       label: "Shipping",
-      description: "Provide shipping rates",
+      description: "Shipping dashboard",
       icon: "fa fa-truck",
       priority: 1,
       container: "core",
-      workflow: "coreDashboardWorkflow",
-      template: "shipping"
+      workflow: "coreDashboardWorkflow"
     },
     {
-      template: "flatRateCheckoutShipping",
-      provides: "shippingMethod"
+      provides: ["settings"],
+      name: "settings/shipping",
+      label: "Shipping",
+      description: "Configure shipping",
+      icon: "fa fa-truck",
+      template: "shippingSettings"
     }
   ]
 });

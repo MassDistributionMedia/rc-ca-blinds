@@ -7,85 +7,31 @@
       "languages": {
         "select": "Sélectionner la langue"
       },
+      "currencies": {
+        "select": "Sélectionnez la devise"
+      },
       "admin": {
         "shortcut": {
-          "dashboardLabel": "Tableau de bord",
-          "ordersLabel": "Commandes",
           "addProductLabel": "Ajouter un produit",
           "accountsLabel": "Comptes"
         },
         "dashboard": {
-          "accountsLabel": "Comptes",
-          "accountsTitle": "Comptes",
-          "accountsDescription": "Gérer les autorisations des membres",
-          "analyticsLabel": "Analytique",
-          "analyticsTitle": "Analytiques",
-          "analyticsDescription": "Intégrations de suivi et analytiques",
-          "authorizenetLabel": "Authorize.net",
-          "authorizenetTitle": "Authorize.net",
-          "authorizenetDescription": "Paiements Authorize.net",
-          "shippingLabel": "Expédition",
-          "shippingTitle": "Expédition",
-          "shippingDescription": "Fournir les frais d'expédition",
-          "braintreeLabel": "Braintree",
-          "braintreeTitle": "Braintree",
-          "braintreeDescription": "Paiements Braintree",
-          "catalogLabel": "Cataloque",
-          "catalogTitle": "Catalogue",
-          "catalogDescription": "Catalogue de produits",
-          "coreLabel": "Paramètres",
-          "coreTitle": "Tableau de bord",
-          "coreDescription": "Configuration des réactions",
-          "examplePaymentProviderLabel": "Exemple de paiement",
-          "examplePaymentProviderDescription": "Exemple de méthode de paiement",
-          "emailLabel": "E-mail",
-          "emailTitle": "E-mail",
-          "emailDescription": "Paramètres e-mail",
           "i18NLabel": "i18n",
           "i18NTitle": "i18n",
           "i18NDescription": "Services d'internationalisation",
-          "inventoryLabel": "Inventaire",
-          "inventoryTitle": "Inventaire",
-          "inventoryDescription": "Services d'inventaire",
-          "layoutLabel": "Mise en page",
-          "layoutTitle": "Mise en page",
-          "layoutDescription": "Services de mise en page",
-          "connectLabel": "Connecter",
-          "connectTitle": "Se connecter",
-          "connectDescription": "Connecter la réponse en tant que service déployé",
-          "ordersLabel": "Commandes",
-          "ordersTitle": "Commandes",
-          "ordersDescription": "Compléter votre commande",
-          "paypalLabel": "PayPal",
-          "paypalTitle": "PayPal",
-          "paypalDescription": "Paiements PayPal",
-          "revisionsLabel": "Révisions",
-          "revisionsTitle": "Révisions",
-          "revisionsDescription": "Contrôle de révision",
           "routingLabel": "Routage",
           "routingTitle": "Routage",
           "routingDescription": "Services de routage",
-          "searchLabel": "Recherche",
-          "searchTitle": "Recherche",
-          "searchDescription": "Recherche de produit",
-          "socialLabel": "Social",
-          "socialTitle": "Social",
-          "socialDescription": "Configuration des réseaux sociaux",
-          "taxesLabel": "Taxes",
-          "taxesTitle": "Taxes",
-          "taxesDescription": "Configuration de la taxe",
-          "themesLabel": "Thèmes",
-          "themesTitle": "Thèmes",
-          "themesDescription": "Thèmes et composants de l'IU",
-          "stripeLabel": "Stripe",
-          "stripeDescription": "Paiements Stripe",
           "filtrationLabel": "Filtrage",
           "filtrationDescription": "Filtrage des produits selon la réaction"
         },
         "groups": {
           "appearance": "Apparence",
+          "email": "Paramètres de messagerie",
           "connect": "Se connecter",
+          "description": "Description",
           "core": "Coeur",
+          "remove": "Supprimer",
           "dashboard": "Tableau de bord",
           "misc": "Divers",
           "paymentMethod": "Prestataires de paiement",
@@ -93,24 +39,13 @@
         },
         "settings": {
           "accountSettingsLabel": "Paramètres du compte",
+          "accountSettingsTitle": "services de connexion",
+          "accountSettingsDescription": "Authentification par des prestataires sociaux",
+          "saveSuccess": "Paramètres mis à jour.",
+          "saveFailed": "Impossible de mettre à jour les paramètres.",
           "addShopMemberLabel": "Ajouter un magasin membre",
-          "authorizenetSettingsLabel": "Paramètres Authorize.net",
           "permissionsSettingsLabel": "Autorisations",
-          "braintreeSettingsLabel": "Paramètres Braintree",
-          "localizationAndI18NLabel": "Localisation et i18n",
-          "searchSettingsLabel": "Paramètres de recherche",
-          "shopSettingsLabel": "Paramètres du magasin",
-          "socialSettingsLabel": "Paramètres sociaux",
-          "shippingSettingsLabel": "Paramètres d'expédition",
-          "stripeSettingsLabel": "Paramètres Stripe",
-          "inventorySettingsLabel": "Paramètres de l'inventaire",
-          "analyticsSettingsLabel": "Paramètres d'analyse",
-          "paypalSettingsLabel": "Paramètres PayPal",
-          "reactionConnectLabel": "Connecter la réaction",
-          "examplePaymentSettingsLabel": "Exemple de modalités de paiement",
-          "productSettingsLabel": "Paramètres du produit",
-          "productDetailsLabel": "Détails produit",
-          "taxSettingsLabel": "Paramètres de taxe"
+          "localizationAndI18NLabel": "Localisation et i18n"
         },
         "userAccountDropdown": {
           "profileLabel": "Profil"
@@ -158,7 +93,13 @@
         "notFoundError": "Page introuvable.",
         "productNotFound": "Ce produit est introuvable.",
         "loadMoreProducts": "Charger plus de produits",
-        "noProductsFound": "Aucun produit trouvé."
+        "noProductsFound": "Aucun produit trouvé.",
+        "private": "Privé",
+        "public": "Publique",
+        "shortcut": {
+          "addProductLabel": "Ajouter le produit",
+          "accountsLabel": "Comptes"
+        }
       },
       "searchSettings": {
         "productSearchSettings": {
@@ -180,88 +121,30 @@
         "settingsfailed": "Echec de la mise à jour des paramètres de recherche"
       },
       "shopSettings": {
-        "general": "Général",
-        "address": "Adresse",
-        "import": "Importer",
         "localization": "Localisation",
         "options": "Options",
-        "availableOptions": "Options disponibles",
         "paymentMethods": "Méthodes de paiement",
         "externalServices": "Services externes",
-        "shopGeneralSettingsSaved": "Paramètres généraux du magasin enregistrés.",
-        "shopGeneralSettingsFailed": "Echec de la mise à jour des paramètres généraux du magasin.",
-        "shopAddressSettingsSaved": "Les paramètres de l'adresse du magasin sont enregistrés.",
-        "shopAddressSettingsFailed": "Echec de la mise à jour des paramètres de l'adresse du magasin.",
-        "shopExternalServicesSettingsSaved": "Paramètres des services externes du magasin enregistrés.",
-        "shopExternalServicesSettingsFailed": "Echec de la mise à jour des paramètres des services externes du magasin.",
         "shopLocalizationSettingsSaved": "Paramètres de localisation du magasin enregistrés.",
         "shopLocalizationSettingsFailed": "Echec de la mise à jour des paramètres de localisation du magasin.",
-        "shopOptionsSettingsSaved": "Options du magasin enregistrées.",
-        "shopOptionsSettingsFailed": "Echec de la mise à jour des options du magasin.",
         "shopPaymentMethodsSaved": "Modalités de paiement enregistrées.",
         "shopPaymentMethodsFailed": "Echec de la mise à jour des paramètres de mode de paiement du magasin."
       },
-      "mail": {
-        "headers": {
-          "email": "E-mail",
-          "emailSettings": "Paramètres de l'e-mail",
-          "config": "Configuration",
-          "settings": "Fournisseur de messagerie",
-          "status": "Statut",
-          "actions": "Actions"
+      "notifications": {
+        "body": {
+          "noNotifications": "Il n’y pas pas de notifications",
+          "markAllAsRead": "Il n'y a pas de notifications",
+          "recent": "Récent",
+          "viewAll": "Voir tous les"
         },
-        "settings": {
-          "service": "Service",
-          "user": "Utilisateur",
-          "password": "Mot de passe",
-          "host": "Hôte",
-          "port": "Connexion",
-          "passwordShow": "Afficher",
-          "passwordHide": "Masquer",
-          "fieldNotSet": "Non défini",
-          "selectService": "Sélectionner un service...",
-          "custom": "douane"
-        },
-        "logs": {
-          "headers": {
-            "emailLogs": "Registres de messagerie",
-            "email": "E-mail",
-            "subject": "Sujet",
-            "sent": "Envoyé",
-            "status": "Statut"
-          },
-          "noEmails": "Aucun e-mail d'envoyé jusqu'à présent",
-          "limit": "Quantité",
-          "retry": "Retenter",
-          "noneAvailble": "Aucun de disponible"
-        },
-        "alerts": {
-          "error": "Erreur : {{error}}",
-          "resendSuccess": "Tentative de nouvel envoi de l'e-mail à {{email}}",
-          "missingService": "Veuillez sélectionner un service de fournisseur de messagerie",
-          "userPassRequired": "Utilisateur SMTP et mot de passe requis pour {{service}}",
-          "allFieldsRequired": "Tous les champs sont requis pour assurer un service personnalisé !",
-          "portNaN": "Le port doit être un chiffre !",
-          "connectionFailed": "La connexion a échoué !",
-          "saveAnyway": "Voulez-vous enregistrer les paramètres de toute façon ?",
-          "saveSuccess": "Paramètres de messagerie enregistrés.",
-          "saveFailed": "Impossible de sauvegarder les paramètres de messagerie. {{error}}"
+        "messages": {
+          "orderCanceled": "Votre commande a été annulée.",
+          "newOrder": "Votre commande est en cours de traitement.",
+          "forAdmin": "Vous avez un nouvel ordre.",
+          "orderDelivered": "Votre commande a été livrée.",
+          "orderProcessing": "Votre commande est en traitement.",
+          "orderShipped": "Votre commande a été expédiée."
         }
-      },
-      "taxSettings": {
-        "noCustomTaxRatesFound": "Aucun taux de taxe douanière identifié.",
-        "shopCustomTaxRatesSaved": "Taux des taxes douanières enregistrés.",
-        "shopCustomTaxRatesFailed": "Erreur lors de l'enregistrement du taux de taxation.",
-        "shopTaxMethodsSaved": "Enregistrer la méthode d'application de la taxe.",
-        "shopTaxMethodsFailed": "Echec de l'enregistrement de la méthode d'application de la taxe.",
-        "customRatesDescription": "Frais de douane",
-        "taxCode": "Code fiscal",
-        "taxShipping": "Inclure la livraison",
-        "taxRate": "Taux",
-        "discountsIncluded": "Inclure des réductions",
-        "taxable": "Taxable",
-        "nottaxable": "Non taxable",
-        "confirmRateDelete": "Confirmer la suppression du taux de taxation"
       },
       "header": {
         "tagsAdd": "Ajouter une balise",
@@ -272,7 +155,6 @@
         "whenYouAreDone": "lorsque vous aurez fini l'édition.",
         "tags": "Balises",
         "tagsAdd": "Ajouter une balise",
-        "tagsEdit": "Editer les balises",
         "tagExists": "La balise est vide ou existe déjà.",
         "tagInUse": "Le tag est utilisé et ne peut pas être supprimé.",
         "dropFiles": "Déposer des fichiers à télécharger.",
@@ -289,9 +171,8 @@
         "addToCart": "Ajouter au panier",
         "chooseOptions": "Veuillez sélectionner les options avant d'ajouter au panier",
         "outOfStock": "Désolé, cet article est en rupture de stock !",
-        "productDeleteError": "Une erreur s'est produite lors de la suppression de {{product}}.",
-        "deleteErrorTheProduct": "le produit",
-        "deleteErrorTheSelectedProducts": "les produits sélectionnés",
+        "productArchiveError": "Il y avait une erreur lors de l'envoi {{product}} aux archives.",
+        "archiveErrorTheProduct": "le produit",
         "publishFirst": "Publier le produit avant d'ajouter au panier.",
         "quantityAbbreviation": "QTE",
         "selectOption": "Sélectionner une option avant d'ajouter au panier",
@@ -304,8 +185,6 @@
         "publishProductHidden": "{{product}} est désormais masqué",
         "clonedAlert": "{{product}} cloné",
         "clonedAlert_plural": "{{product}} cloné",
-        "deletedAlert": "{{product}} supprimé",
-        "deletedAlert_plural": "Supprimer {{product}}",
         "archivedAlert": "{{product}} archivé",
         "archivedAlert_plural": "{{product}} archivé",
         "theProduct": "le produit",
@@ -337,6 +216,7 @@
         "pageTitle": "Sous-titre",
         "vendor": "Vendeur",
         "description": "Description",
+        "originCountry": "Pays d'origine",
         "facebookMsg": "Message Facebook",
         "twitterMsg": "Message Twitter",
         "pinterestMsg": "Message Pinterest",
@@ -346,18 +226,20 @@
         "variantDetails": "Informations sur la variante",
         "duplicateVariant": "Doublon",
         "addVariantOption": "Ajouter des options",
+        "addVariantFail": "Impossible de créer variante pour {{title}}.",
+        "cloneVariantFail": "Impossible de cloner variante pour {{title}}.",
         "removeVariant": "Supprimer",
         "removeVariantConfirm": "Êtes-vous certain de vouloir supprimer {{title}}",
         "restoreVariantConfirm": "Etes-vous certain de vouloir restaurer {{title}} depuis la corbeille ?",
+        "restoreVariantFail": "Impossible de restaurer {{title}}.",
         "archiveVariantConfirm": "Êtes-vous sûr de vouloir archiver {{title}}",
         "thisVariant": "cette variante",
         "thisOption": "cette option",
         "duplicateProduct": "Dupliquer un produit",
         "pinProduct": "Epingler le produit",
         "toggleSize": "Modification de la taille",
-        "deleteProduct": "Supprimer le produit",
+        "archiveProduct": "produit Archive",
         "restoreProduct": "Restaurer les produits de la corbeille",
-        "deleteSelectedProducts": "Supprimer les produits sélectionnés ?",
         "archiveThisProduct": "Archiver ce produit ?",
         "archiveSelectedProducts": "Archiver les produits sélectionnés ?",
         "publish": "Publier",
@@ -371,6 +253,7 @@
         "productIsNotVisible": "Le produit n'est pas visible"
       },
       "productVariant": {
+        "addVariantOptions": "Ajout d'options pour permettre 'Ajouter au panier' butto",
         "inventoryQuantity": "Quantité",
         "title": "Balise",
         "price": "Prix",
@@ -379,13 +262,20 @@
         "compareAtPrice": "Prix (PVC)",
         "fulfillmentService": "Service d'exécution",
         "weight": "Poids",
+        "length": "Longueur",
+        "width": "Largeur",
+        "height": "Hauteur",
         "taxable": "Taxable",
+        "taxCode": "Codes de taxes",
+        "taxDescription": "description de l'impôt",
         "inventoryManagement": "Suivi de l'inventaire",
         "inventoryManagementLabel": "Enregistrer le produit dans le système d'inventaire et suivre son statut",
         "inventoryPolicy": "Refuser lors d'une rupture de stock",
         "inventoryPolicyLabel": "Ne pas vendre la variante du produit lorsqu'elle n'est pas en stock",
         "lowInventoryWarningThreshold": "Avertir @",
-        "lowInventoryWarningThresholdLabel": "Avertir les clients que le produit est en quasi rupture de stock lorsque les quantités atteindront le seuil suivant"
+        "lowInventoryWarningThresholdLabel": "Avertir les clients que le produit est en quasi rupture de stock lorsque les quantités atteindront le seuil suivant",
+        "originCountry": "Pays d'origine",
+        "selectTaxCode": "Sélectionnez Code fiscal"
       },
       "variantList": {
         "moreOptions": "Aucune option de disponible pour cette sélection.",
@@ -401,10 +291,23 @@
         "pkgEnabled": "{{app}} est désormais activé",
         "pkgDisabled": "{{app}} est désormais désactivé"
       },
+      "gridSettingsPanel": {
+        "title": "Paramètres de la grille",
+        "selected": "Choisi"
+      },
       "cartDrawer": {
         "empty": "Nous sommes désolés. Votre panier est vide.",
         "keepShopping": "Poursuivre les achats",
-        "checkout": "Payer maintenant"
+        "checkout": "Payer maintenant",
+        "new": "Nouveau",
+        "coreOrderWorkflow/created": "Créé",
+        "coreOrderWorkflow/processing": "Traitement",
+        "coreOrderWorkflow/completed": "Complété",
+        "coreOrderWorkflow/canceled": "Annulé",
+        "coreOrderWorkflow/picked": "Choisi",
+        "coreOrderWorkflow/packed": "Emballé",
+        "coreOrderWorkflow/labeled": "Étiqueté",
+        "coreOrderWorkflow/shipped": "Expédié"
       },
       "cartSubTotals": {
         "discount": "Réduction",
@@ -421,16 +324,24 @@
       "order": {
         "created": "Créé",
         "reference": "Référence",
+        "cancelInvoice": "Annuler",
         "invoice": "Facture",
         "ordersNotFound": "Aucune commande trouvée",
         "approveInvoice": "Approuver",
+        "cancelOrderLabel": "annuler la commande",
         "makeAdjustments": "Faire les ajustements",
         "capturePayment": "Paiement saisi",
         "paymentCaptured": "Paiement saisi",
         "capturedTotal": "Total saisi",
+        "canceledLabel": "Annulé",
         "refundAmount": "Montant du remboursement",
+        "cancelOrder": "Voulez-vous annuler cette commande?",
         "applyRefundToThisOrder": "Appliquer la réduction de {{currencySymbol}}{{refund}} à cette commande ?",
+        "applyRefundDuringCancelOrder": "Cela remboursera le total de la commande de {{currencySymbol}}{{invoiceTotal}}",
+        "cancelOrderThenRestock": "Oui, et réapprovisionnez",
+        "cancelOrderNoRestock": "Oui, mais pas de réapprovisionnement",
         "applyRefund": "Procéder au remboursement",
+        "refunding": "remboursant",
         "applyDiscount": "Appliquer la réduction",
         "adjustedTotal": "Total ajusté",
         "invalidDiscount": "La réduction ne peut être supérieure au prix total initial",
@@ -447,38 +358,61 @@
         "payment": "Paiement",
         "itemsFrom": "article(s) de",
         "filter": {
+          "processing": "Traitement",
+          "status": "Statut",
+          "dateRange": "Période",
+          "shippingStatus": "Statut d'envoi",
           "new": "Nouveau",
           "captured": "Paiement saisi",
-          "processing": "Traitement",
           "shipped": "Expédié",
           "completed": "Complété",
           "canceled": "Annulé",
           "refunded": "Remboursé"
         },
-        "paymentProvider": {
-          "braintree": {
-            "braintreeSettlementDelay": "Braintree n'autorise aucun remboursement tant que la transaction n'a pas été réglée. Cela peut prendre jusqu'à 24 heures. Veuillez essayer de nouveau ultérieurement."
-          }
-        }
+        "capture": "Capture",
+        "capturing": "Capturer",
+        "bulkActions": "Actions en vrac",
+        "selected": "Choisi",
+        "picked": "Choisi",
+        "packed": "Emballé",
+        "labeled": "Étiqueté",
+        "shipped": "Expédié",
+        "printInvoiceAndPickSheet": "Imprimer la facture et la feuille de sélection",
+        "generateLabel": "Générer l'étiquette",
+        "approveBulkOrderAction": "Oui, définissez tous Sélectionnez toutes les commandes",
+        "approveBulkOrderActionRegression": "Oui, réglez tous les bons sélectionnés",
+        "cancelBulkOrderAction": "Non, Annuler",
+        "orderAlreadyInState": "{{orderText}} a déjà été {{status}}",
+        "orderSetToState": "{{orderNumber}} {{orderText}} réglé sur {{status}}",
+        "skippedBulkOrdersAlert": "Vous avez demandé que {{selectedOrders}} {{orderText}} soit réglé sur le statut '{{status}}', mais {{numberOfSkippedOrders}} de ces ordres {{skippedOrdersText}} pas dans l'état '{{skippedState}}' et saute toutes les étapes menant à l'état '{{status}}'. Es-tu sûr de vouloir faire ça?",
+        "bulkOrdersRegressionAlert": "Vous êtes sur le point de régresser {{ordersToRegress}} {{orderText}} à l'état '{{status}}'. Êtes-vous sûr de vouloir poursuivre cette opération?",
+        "paymentCaptureSuccess": "Paiements capturés avec succès",
+        "showMore": "Montre plus"
       },
       "orderShipping": {
         "shipTo": "Envoyer à",
         "notShipped": "Pas encore expédié",
         "noTracking": "Aucun suivi",
         "tracking": "Suivi",
+        "printLabels": "impression d'étiquettes",
+        "printShippingLabel": "livraison",
+        "printCustomsLabel": "Douane",
+        "generateTracking": "Générer le libellé et le suivi",
+        "labelError": "Erreur de création d'expédition étiquette {{err}}",
+        "carrier": "Transporteur",
         "addTracking": "Ajouter un suivi",
         "itemsHaveBeenShipped": "Les articles ont été expédiés",
         "shipmentEmpty": "Cet envoi ne contient aucun article",
         "shipmentPacked": "Tous les articles sont emballés",
         "shipped": "Expédié",
+        "delivered": "Livré",
         "shippingNotifyCustomer": "Informer le client que ses articles seront expédiés prochainement.",
         "resendNotification": "Envoyer de nouveau la notification d'expédition"
       },
       "orderWorkflow": {
-        "fulfillment": "Exécution",
         "orderDetails": "Détails de la commande",
-        "summary": "Récapitulatif",
         "invoice": "Facture",
+        "lineItems": "Ligne Articles",
         "shipmentTracking": "Suivi de l'expédition"
       },
       "cartCheckout": {
@@ -491,6 +425,8 @@
         "yourOrderIsNow": "Votre commande est  désormais",
         "summaryMessage": "Merci pour votre commande.",
         "submitted": "soumis",
+        "processing": "En traitement",
+        "completed": "terminé",
         "registerGuest": "Bonjour ! Saisir un e-mail pour recevoir les mises à jour de la commande.",
         "trackYourDelivery": "Les mises à jour concernant la commande seront envoyées à",
         "noOrdersFound": "Aucun commande trouvée.",
@@ -502,7 +438,8 @@
         "createOrLogin": "Créer un compte ou s'identifier",
         "guestOrLogin": "Identifiez-vous ou réglez en tant qu'invité",
         "continueAsGuest": "Poursuivre en tant qu'invité",
-        "guestMessage": "Vous pouvez régler sans créer de compte. Vous aurez l'opportunité de créer un compte ultérieurement."
+        "guestMessage": "Vous pouvez régler sans créer de compte. Vous aurez l'opportunité de créer un compte ultérieurement.",
+        "addEmail": "Ajouter un courrier électronique"
       },
       "addressBookGrid": {
         "addAddress": "Ajouter une adresse",
@@ -517,11 +454,16 @@
       "addressBookAdd": {
         "addAddress": "Ajouter une nouvelle adresse",
         "createAddress": "Créer votre adresse par défaut",
-        "failedToAddAddress": "Echec lors de l'ajout de l'adresse : {{err}}"
+        "failedToAddAddress": "Echec lors de l'ajout de l'adresse : {{err}}",
+        "validatedAddress": "Les modifications apportées à votre adresse sur la base lors de la validation. S'il vous plaît assurer cela est correct"
       },
       "addressBookEdit": {
         "editAddress": "Editer cette adresse",
-        "somethingWentWrong": "Quelque chose ne s'est pas passé comme prévu : {{err}}"
+        "addressValidation": "Adresse validation",
+        "reviewAddress": "Pour une meilleure conformité, validez votre adresse",
+        "somethingWentWrong": "Quelque chose ne s'est pas passé comme prévu : {{err}}",
+        "enteredAddress": "Adresse saisie",
+        "validatedAddress": "Valider l'adresse"
       },
       "corePackageConfig": {
         "settings": {
@@ -551,12 +493,6 @@
         "keywords": "Mots clés",
         "keywordsPlaceholder": "Mots-clés méta",
         "language": "Langue de référence",
-        "languageTooltip": "Cette langue sera utilisée en cas d'échec de la détection automatique de la langue.",
-        "timezone": "Fuseau horaire",
-        "timezoneOptions": "Sélectionner un fuseau horaire",
-        "currency": "Devise de référence",
-        "currencyTooltip": "Devise par défaut du magasin.",
-        "baseUOM": "Unité de mesure de base",
         "addressBook": {
           "company": "Entreprise",
           "companyPlaceholder": "Nom de l'entreprise",
@@ -579,6 +515,7 @@
       },
       "revisions": {
         "isDisabled": "La gestion de version est désactivée. Toute modification sera immédiatement publiée.",
+        "isEnabled": "le contrôle de révision est activée pour les produits. Toute modification sera doivent être publiés avant d'être visible pour les clients.",
         "unpublishedChanges": "Modifications non publiées",
         "publishChanges": "Publier les modifications",
         "showChanges": "Afficher les modifications",
@@ -613,78 +550,8 @@
         "reviewPayment": "Réviser",
         "complete": "Complète"
       },
-      "checkoutPayment": {
-        "addPaymentToCompleteOrder": "Ajouter un mode de paiement pour compléter la commande",
-        "processingError": "Votre paiement a rencontré un problème.",
-        "completeYourOrder": "Compléter votre commande",
-        "noPaymentMethods": "Aucun mode de paiement configuré.",
-        "configureNow": "Configurer maintenant.",
-        "failedToPlaceOrder": "La commande n'a pu être passée."
-      },
       "checkoutReview": {
         "review": "Réviser"
-      },
-      "checkoutShipping": {
-        "selectShippingOption": "Sélectionner un mode de livraison",
-        "noShippingMethods": "Aucun mode de livraison configuré.",
-        "configureNow": "Configurer maintenant.",
-        "shipping": "Expédition"
-      },
-      "shipping": {
-        "addShippingProvider": "Ajouter un prestataire de transport",
-        "editShippingProvider": "Editer le prestataire de livraison",
-        "addShippingMethod": "Ajouter un mode de livraison",
-        "editShippingMethod": "Editer le mode de livraison",
-        "deleteShippingMethod": "Supprimer le mode d'expédition",
-        "noSettingsForThisView": "Aucun paramètre pour cette vue",
-        "noShippingMethods": "Aucun mode de livraison configuré.",
-        "removeShippingMethodConfirm": "Êtes-vous certain de vouloir supprimer {{method}} ?",
-        "removeShippingMethodTitle": "Supprimer le mode de livraison.",
-        "shippingMethodDeleted": "Ce mode de livraison a été supprimé.",
-        "removeShippingProvider": "Supprimer le prestataire de transport",
-        "removeShippingProviderConfirm": "Êtes-vous certain de vouloir supprimer {{provider}} ?",
-        "shippingProviderSaved": "Prestataire de transport enregistré.",
-        "shippingProviderUpdated": "Données du prestataire de transport mises à jour.",
-        "shippingMethodRateAdded": "Tarif du mode de livraison ajouté.",
-        "shippingMethodRateUpdated": "Tarif du mode de livraison mis à jour.",
-        "name": "Nom",
-        "label": "Balise",
-        "group": "Groupe",
-        "cost": "Coût",
-        "handling": "Traitement",
-        "rate": "Taux",
-        "enabled": "Activé",
-        "disabled": "Désactivé",
-        "addRate": "Ajouter un tarif",
-        "updateRate": "Mettre à jour le tarif {{name}}",
-        "addNewCondition": "Ajouter une nouvelle condition",
-        "deleteCondition": "Supprimer les conditions",
-        "provider": {
-          "name": "Code de service",
-          "label": "Balise publique",
-          "enabled": "Activé"
-        }
-      },
-      "shippingMethod": {
-        "name": "Nom de la méthode",
-        "label": "Balise publique",
-        "group": "Groupe",
-        "cost": "Coût",
-        "handling": "Traitement",
-        "rate": "Taux",
-        "enabled": "Activé",
-        "matchingCartRanges": "Catégories de paniers correspondants",
-        "validRanges": {
-          "begin": "Commencer",
-          "end": "Fin"
-        },
-        "matchingLocales": "Emplacements correspondants",
-        "validLocales": {
-          "origination": "De",
-          "destination": "A",
-          "deliveryBegin": "Estimation du transport",
-          "deliveryEnd": "Estimation de la livraison"
-        }
       },
       "uom": {
         "OZ": "Onces",
@@ -705,6 +572,7 @@
         "facebook": "Facebook",
         "google": "Google",
         "github": "GitHub",
+        "instagram": "Instagram",
         "meetup": "Meetup",
         "ok": "Ok",
         "twitter": "Twitter",
@@ -713,9 +581,6 @@
       },
       "search": {
         "clearSearch": "Effacer",
-        "noProductsFound": "Aucun produit trouvé",
-        "noOrdersFound": "Aucune commande trouvée.",
-        "noAccountsFound": "Aucun compte trouvé.",
         "searchInputLabel": "Rechercher une réaction ",
         "suggestedTags": "Balises suggérées",
         "searchTypeProducts": "Produits",
@@ -728,29 +593,12 @@
           "lastName": "Nom de famille",
           "phone": "Téléphone",
           "emails": "E-mail"
-        },
-        "orderSearchResults": {
-          "orderId": "ID commande",
-          "shopId": "ID boutique",
-          "shippingAddress": "Adresse",
-          "shippingCity": "Ville",
-          "shippingRegion": "Région",
-          "shippingCountry": "Pays",
-          "shippingPhone": "Téléphone",
-          "shippingName": "Nom",
-          "shippingStatus": "Statut",
-          "billingAddress": "Adresse",
-          "billingCity": "Ville",
-          "billingRegion": "Région",
-          "billingCountry": "Pays",
-          "billingPhone": "Téléphone",
-          "billingStatus": "Statut",
-          "userEmails": "E-mail",
-          "orderDate": "Date",
-          "orderTotal": "Total"
         }
       },
       "accountsUI": {
+        "usersOrders": "Commandes de l'utilisateur",
+        "oops": "Oups !",
+        "nonExistentAccount": "L'utilisateur que vous recherchez n'existe pas.",
         "members": "Membres",
         "manage": "Gérer",
         "guest": "Invité",
@@ -813,16 +661,6 @@
           "invitationSent": "Invitation envoyée",
           "sendInvitation": "Envoyer l'invitation"
         },
-        "reactionUI": {
-          "editTheme": "Editer le thème",
-          "duplicateTheme": "Dupliquer le thème",
-          "duplicateThemeError": "Impossible de dupliquer le thème",
-          "publishThemeError": "Impossible de publier le thème {{themeName}}",
-          "components": {
-            "navbar": "Barre de navigation",
-            "button": "Bouton"
-          }
-        },
         "error": {
           "emailRequired": "L'email est requis.",
           "passwordRequired": "Le mot de passe est requis.",
@@ -842,6 +680,7 @@
           "emailDoesntMatchTheCriteria": "L'e-mail ne remplit pas les critères.",
           "errorSendingEmail": "Erreur lors de l'envoi de l'e-mail, possible problème de configuration.",
           "unableToSendInvitationEmail": "Impossible d'envoyer l'e-mail d'invitation.",
+          "userWithEmailAlreadyExists": "Un utilisateur avec cette adresse email existe déjà",
           "failedToLogout": "Echec de la déconnexion.",
           "invalidLoginToken": "Jeton d'identification invalide",
           "loginForbidden": "Connexion impossible",
@@ -871,6 +710,12 @@
           "matchFailed": "Echec de la correspondance",
           "unknownError": "Erreur inconnue"
         }
+      },
+      "loginServices": {
+        "appId": "ID de l'application",
+        "secret": "Secret",
+        "clientId": "identité du client",
+        "consumerKey": "Clé API"
       },
       "error": {
         "nameRequired": "Le nom est requis.",

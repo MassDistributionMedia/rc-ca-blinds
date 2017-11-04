@@ -1,10 +1,9 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import classnames from "classnames/dedupe";
-import Icon from "../icon/icon.jsx";
-import { Translation } from "../";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 
 class MenuItem extends Component {
-
   handleClick = (event) => {
     event.preventDefault();
     if (this.props.onClick && this.props.disabled === false) {
@@ -15,7 +14,7 @@ class MenuItem extends Component {
   renderIcon() {
     if (this.props.icon) {
       return (
-        <Icon icon={this.props.icon} />
+        <Components.Icon icon={this.props.icon} style={this.props.iconStyle}/>
       );
     }
     return null;
@@ -24,7 +23,7 @@ class MenuItem extends Component {
   renderLabel() {
     if (this.props.label) {
       return (
-        <Translation
+        <Components.Translation
           defaultValue={this.props.label}
           i18nKey={this.props.i18nKeyLabel}
         />
@@ -38,14 +37,13 @@ class MenuItem extends Component {
     const baseClassName = classnames({
       "rui": true,
       "menu-item": true,
-      "active": this.props.active,
       "disabled": this.props.disabled === true
     }, this.props.className);
 
     return (
       <a
         className={baseClassName}
-        href="#"
+        href= "#"
         data-event-action={this.props.eventAction}
         onClick={this.handleClick}
         role="button"
@@ -66,6 +64,7 @@ MenuItem.propTypes = {
   i18nKeyLabel: PropTypes.string,
   i18nKeySelectedLabel: PropTypes.string,
   icon: PropTypes.string,
+  iconStyle: PropTypes.object,
   label: PropTypes.string,
   onClick: PropTypes.func,
   selectionLabel: PropTypes.string,
@@ -73,8 +72,9 @@ MenuItem.propTypes = {
 };
 
 MenuItem.defaultProps = {
-  active: false,
   disabled: false
 };
+
+registerComponent("MenuItem", MenuItem);
 
 export default MenuItem;

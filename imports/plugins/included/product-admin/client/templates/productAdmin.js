@@ -1,16 +1,13 @@
-import { ProductAdminContainer } from "../containers";
+import { Components } from "@reactioncommerce/reaction-components";
+import { Template } from "meteor/templating";
 
 Template.ProductAdmin.helpers({
   component() {
-    const currentData = Template.currentData();
-    let data;
+    const currentData = Template.currentData() || {};
 
-    if (currentData && currentData.data) {
-      data = currentData.data;
-    }
-
-    return Object.assign({}, data, {
-      component: ProductAdminContainer
-    });
+    return {
+      ...currentData,
+      component: Components.ProductAdmin
+    };
   }
 });

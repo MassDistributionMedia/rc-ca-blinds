@@ -1,5 +1,6 @@
-import React, { Component, PropTypes } from "react";
-import { composeWithTracker } from "react-komposer";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import SettingsComponent from "../components/settings";
 import { Packages } from "/lib/collections";
 import { Meteor } from "meteor/meteor";
@@ -33,11 +34,9 @@ class RevisionSettingsContainer extends Component {
 
   /**
    * Publish container is a stateless container component connected to Meteor data source.
-   * @param  {Object} props Component props
    * @return {PropTypes.node} react node
    */
   render() {
-    // console.log(this.props.packageInfo);
     return (
       <div>
         <TranslationProvider>

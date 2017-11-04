@@ -1,8 +1,5 @@
-import "./components/tagGroup/tagGroup.html";
-import "./components/tagGroup/tagGroup.js";
-
-import "./components/tagNav/tagNav.html";
-import "./components/tagNav/tagNav.js";
-
-import "./components/tagTree/tagTree.html";
-import "./components/tagTree/tagTree.js";
+export { default as TagGroup } from "./components/tagGroup";
+export { default as TagGroupBody } from "./components/tagGroupBody";
+export { default as TagGroupHeader } from "./components/tagGroupHeader";
+export { default as TagNav } from "./components/tagNav";
+export { default as TagNavContainer } from "./containers/tagNavContainer";

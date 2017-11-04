@@ -11,7 +11,7 @@ import Sortable from "sortablejs";
  * productImageGallery helpers
  */
 
-/**
+/*
  * uploadHandler method
  */
 function uploadHandler(event) {
@@ -37,11 +37,10 @@ function uploadHandler(event) {
   // But how do we know that this is the first, not second or other variant?
   // Question is open. For now if product has more than 1 top variant, everyone
   // will have a chance to be displayed
-  const toGrid = variant.ancestors.length === 1;
+  const toGrid = variant.ancestors.length >= 1;
 
   return FS.Utility.eachFile(event, function (file) {
-    let fileObj;
-    fileObj = new FS.File(file);
+    const fileObj = new FS.File(file);
     fileObj.metadata = {
       ownerId: userId,
       productId: productId,
@@ -55,7 +54,7 @@ function uploadHandler(event) {
   });
 }
 
-/**
+/*
  * updateImagePriorities method
  */
 function updateImagePriorities() {
@@ -118,7 +117,7 @@ Template.productImageGallery.onRendered(function () {
   });
 });
 
-/**
+/*
  * productImageGallery events
  */
 
@@ -131,7 +130,7 @@ Template.productImageGallery.events({
     }
     if (!Reaction.hasPermission("createProduct")) {
       const first = $(".gallery li:nth-child(1)");
-      const target = $(event.currentTarget);
+      const target = Template.instance().$(event.currentTarget);
       if ($(target).data("index") !== first.data("index")) {
         return $(".gallery li:nth-child(1)").fadeOut(400, function () {
           $(this).replaceWith(target);
@@ -147,9 +146,9 @@ Template.productImageGallery.events({
   "click .remove-image": function () {
     const imageUrl =
       $(event.target)
-      .closest(".gallery-image")
-      .find("img")
-      .attr("src");
+        .closest(".gallery-image")
+        .find("img")
+        .attr("src");
 
     Alerts.alert({
       title: "Remove Media?",
@@ -176,7 +175,7 @@ Template.productImageGallery.events({
   "dropped #galleryDropPane": uploadHandler
 });
 
-/**
+/*
  * imageUploader events
  */
 
@@ -188,7 +187,7 @@ Template.imageUploader.events({
   "dropped #dropzone": uploadHandler
 });
 
-/**
+/*
  * productImageGallery events
  */
 

@@ -1,3 +1,8 @@
+import { Meteor } from "meteor/meteor";
+import { Template } from "meteor/templating";
+import { $ } from "meteor/jquery";
+import Alerts from "./inlineAlerts";
+
 /**
  * inlineAlert helpers
  */

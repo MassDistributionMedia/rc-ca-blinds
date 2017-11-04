@@ -1,5 +1,7 @@
 /* eslint dot-notation: 0 */
 import { Meteor } from "meteor/meteor";
+import { Random } from "meteor/random";
+import { Factory } from "meteor/dburles:factory";
 import { expect } from "meteor/practicalmeteor:chai";
 import { sinon } from "meteor/practicalmeteor:sinon";
 import { getShop } from "/server/imports/fixtures/shops";
@@ -45,6 +47,7 @@ describe("Cart Publication", function () {
         return account.userId;
       });
       sandbox.stub(Reaction, "getShopId", () => shop._id);
+      sandbox.stub(Reaction, "getPrimaryShopId", () => shop._id);
       Collections.Cart.insert({
         sessionId: sessionId,
         userId: userId,
@@ -58,6 +61,7 @@ describe("Cart Publication", function () {
 
     it("should return only one cart in cursor", function () {
       sandbox.stub(Reaction, "getShopId", () => shop._id);
+      sandbox.stub(Reaction, "getPrimaryShopId", () => shop._id);
       sandbox.stub(Meteor, "userId", () => user._id);
       const user2 = Factory.create("registeredUser");
       Collections.Cart.insert({
@@ -81,5 +85,3 @@ describe("Cart Publication", function () {
     });
   });
 });
-
-

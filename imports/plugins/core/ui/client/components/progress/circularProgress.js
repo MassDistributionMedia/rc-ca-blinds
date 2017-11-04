@@ -1,27 +1,19 @@
-import React, { Component, PropTypes } from "react";
+import React from "react";
+import PropTypes from "prop-types";
+import { registerComponent } from "@reactioncommerce/reaction-components";
 
-class CircularProgress extends Component {
-  renderInderterminateProgress() {
-    return (
-      <div className="spinner" />
-    );
-  }
-
-  render() {
-    if (this.props.indetermate === true) {
-      return this.renderInderterminateProgress();
-    }
-
-    return null;
-  }
-}
+const CircularProgress = ({ indeterminate }) => (
+  !!indeterminate && <div className="spinner" />
+);
 
 CircularProgress.propTypes = {
-  indetermate: PropTypes.bool
+  indeterminate: PropTypes.bool
 };
 
 CircularProgress.defaultProps = {
-  indetermate: true
+  indeterminate: true
 };
+
+registerComponent("CircularProgress", CircularProgress);
 
 export default CircularProgress;

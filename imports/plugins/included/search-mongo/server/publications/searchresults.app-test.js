@@ -1,4 +1,5 @@
 import faker from "faker";
+import { Factory } from "meteor/dburles:factory";
 import { expect } from "meteor/practicalmeteor:chai";
 import { sinon } from "meteor/practicalmeteor:sinon";
 import { Reaction } from "/server/api";
@@ -114,31 +115,35 @@ describe("Search results", function () {
 
 describe("Account Search results", function () {
   let account;
+  let sandbox;
 
   before(function () {
     buildAccountSearch();
   });
 
   beforeEach(function () {
+    sandbox = sinon.sandbox.create();
     account = createAccount();
     buildAccountSearchRecord(account._id);
   });
 
+  afterEach(function () {
+    sandbox.restore();
+  });
+
   describe("account search", function () {
     it("should match accounts when searching by email", function () {
-      const roleStub = sinon.stub(Reaction, "hasPermission", () => true);
+      sandbox.stub(Reaction, "hasPermission", () => true);
       const email = account.emails[0].address;
       const results = getResults.accounts(email);
       expect(results.count()).to.equal(1);
-      roleStub.restore();
     });
 
     it("should not return results if not an admin", function () {
-      const roleStub = sinon.stub(Reaction, "hasPermission", () => false);
+      sandbox.stub(Reaction, "hasPermission", () => false);
       const email = account.emails[0].address;
       const results = getResults.accounts(email);
       expect(results).to.be.undefined;
-      roleStub.restore();
     });
   });
 });

@@ -1,21 +1,32 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import classnames from "classnames";
-import { TextField } from "/imports/plugins/core/ui/client/components/";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
+import Velocity from "velocity-animate";
+import "velocity-animate/velocity.ui";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
+
+import { Reaction } from "client/api";
 
 class ProductField extends Component {
-  static state = {}
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      value: this.value
-    };
+  state = {
+    value: this.value
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.product.pageTitle !== this.state.value) {
+    if (nextProps.product[this.fieldName] !== this.props.product[this.fieldName]) {
+      this.setState({
+        value: nextProps.product[this.fieldName]
+      }, () => {
+        if (this._input && this._input.refs.input) {
+          const input = this._input.refs.input;
+
+          Velocity.RunSequence([
+            { e: input, p: { backgroundColor: "#e2f2e2" }, o: { duration: 200 } },
+            { e: input, p: { backgroundColor: "#fff" }, o: { duration: 100 } }
+          ]);
+        }
+      });
+    } else {
       this.setState({
         value: nextProps.product[this.fieldName]
       });
@@ -34,6 +45,22 @@ class ProductField extends Component {
     }
   }
 
+  handleFocus = () => {
+    // Open actionView, if not already open
+    if (!Reaction.isActionViewOpen()) {
+      Reaction.showActionView();
+    }
+
+    // Open actionView to productDetails panel
+    Reaction.state.set("edit/focus", "productDetails");
+
+    Reaction.setActionView({
+      i18nKeyLabel: "productDetailEdit.productSettings",
+      label: "Product Settings",
+      template: "ProductAdmin"
+    });
+  }
+
   get fieldName() {
     return this.props.fieldName;
   }
@@ -50,7 +77,7 @@ class ProductField extends Component {
     if (this.showEditControls) {
       return (
         <span className="edit-controls">
-          <EditContainer
+          <Components.EditContainer
             autoHideEditButton={true}
             data={this.props.product}
             editView="ProductAdmin"
@@ -82,11 +109,14 @@ class ProductField extends Component {
 
     return (
       <div className={baseClassName}>
-        <TextField
+        <Components.TextField
+          ref={(ref) => { this._input = ref;}}
           className={textFieldClassName}
           multiline={this.props.multiline}
           onBlur={this.handleBlur}
           onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onReturnKeyDown={this.handleBlur}
           value={this.state.value}
           {...this.props.textFieldProps}
         />
@@ -101,7 +131,7 @@ class ProductField extends Component {
     }
 
     if (this.props.element) {
-      return React.cloneElement(this.props.element, {
+      return React.createElement(this.props.element, {
         className: "pdp field",
         itemProp: this.props.itemProp,
         children: this.value
@@ -128,5 +158,7 @@ ProductField.propTypes = {
   product: PropTypes.object,
   textFieldProps: PropTypes.object
 };
+
+registerComponent("ProductField", ProductField);
 
 export default ProductField;

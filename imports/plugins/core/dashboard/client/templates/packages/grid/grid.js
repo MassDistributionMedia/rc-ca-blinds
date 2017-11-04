@@ -1,4 +1,6 @@
 import _ from "lodash";
+import { Template } from "meteor/templating";
+import { ReactiveDict } from "meteor/reactive-dict";
 import { Meteor } from "meteor/meteor";
 import { Reaction, i18next } from "/client/api";
 
@@ -89,7 +91,7 @@ Template.packagesGrid.onCreated(function () {
   });
 
   this.autorun(() => {
-    const apps = Reaction.Apps({provides: "dashboard"});
+    const apps = Reaction.Apps({ provides: "dashboard", enabled: true });
     const groupedApps = _.groupBy(apps, (app) => {
       return app.container || "misc";
     });

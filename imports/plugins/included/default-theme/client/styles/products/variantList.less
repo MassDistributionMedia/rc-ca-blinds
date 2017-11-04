@@ -6,6 +6,16 @@
   margin: 10px 0;
   line-height: 28px;
   cursor: pointer;
+  position: relative;
+}
+
+.variant-list-item .alerts {
+  line-height: 20px;
+  display: flex;
+  position: absolute;
+  .right(-10px);
+  top: -10px;
+  align-items: center;
 }
 
 .variant-select-option {
@@ -15,12 +25,11 @@
 .variant-select-option .variant-controls {
   position: absolute;
   top: 0;
-  right: 0;
+  .right(0px);
   border: none;
   font-size: 10px;
   padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: 5px;
 }
