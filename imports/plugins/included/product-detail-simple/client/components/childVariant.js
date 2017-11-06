@@ -23,7 +23,6 @@ class ChildVariant extends Component {
 
 
   handleClick = (event) => {
-
     if (this.props.onClick) {
       this.props.onClick(event, this.props.variant);
     }

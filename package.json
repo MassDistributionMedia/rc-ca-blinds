@@ -100,7 +100,6 @@
     "react-select": "^1.0.0-rc.5",
     "react-table": "^6.5.1",
     "react-taco-table": "^0.5.1",
-    "react-tap-event-plugin": "^3.0.2",
     "react-tether": "^0.5.7",
     "react-textarea-autosize": "^5.0.7",
     "recompose": "^0.24.0",

@@ -7,6 +7,7 @@ import {
 
 
 export function registerComponent(componentInfo) {
+  debugger;
   console.warn("DEPRECATED registerComponent(). Use new implementation. see: https://docs.reactioncommerce.com/reaction-docs/master/components-api");
 
   newRegisterComponent(componentInfo.name, componentInfo.component);

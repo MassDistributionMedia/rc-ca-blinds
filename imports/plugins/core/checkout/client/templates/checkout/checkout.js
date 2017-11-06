@@ -6,7 +6,7 @@ import { Cart } from "/lib/collections";
 import { Media } from "/lib/collections";
 import { Session } from "meteor/session";
 import { Template } from "meteor/templating";
-import CartSubTotals from "../../container/cartSubTotalContainer";
+import CartSubTotals from "/imports/plugins/core/checkout/client/containers/cartSubTotalContainer"; // "../../container/cartSubTotalContainer"; 
 
 //
 // cartCheckout is a wrapper template

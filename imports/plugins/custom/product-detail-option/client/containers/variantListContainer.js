@@ -4,7 +4,7 @@ import { VariantList } from "../components";
 import { Reaction, i18next } from "/client/api";
 import { Products, Media } from "/lib/collections";
 import React, { Component, PropTypes } from "react";
-import { composeWithTracker } from "/lib/api/compose";
+import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import { getVariantIds } from "/lib/selectors/variants";
 import { getChildVariants } from "../selectors/variants";
 import * as SelectedVariants from "../stores/selected-variants";

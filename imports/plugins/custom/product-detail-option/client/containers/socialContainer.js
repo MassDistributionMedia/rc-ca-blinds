@@ -1,7 +1,7 @@
 import { Media } from "/lib/collections";
 import { ReactionProduct } from "/lib/api";
 import React, { Component, PropTypes } from "react";
-import { composeWithTracker } from "/lib/api/compose";
+import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { createSocialSettings } from "/imports/plugins/included/social/lib/helpers";
 import SocialButtons from "/imports/plugins/included/social/client/components/socialButtons";

@@ -4,7 +4,7 @@ import { Meteor } from "meteor/meteor";
 import { ReactionProduct } from "/lib/api";
 import { Tags, Media } from "/lib/collections";
 import React, { Component, PropTypes } from "react";
-import { composeWithTracker } from "/lib/api/compose";
+import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import { Reaction, i18next, Logger } from "/client/api";
 import { SocialContainer, VariantListContainer } from "./";
 import { ProductDetail, ProductNotFound } from "../components";

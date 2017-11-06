@@ -2,7 +2,7 @@ import { Router } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Tags, Media } from "/lib/collections";
 import React, { Component, PropTypes } from "react";
-import { composeWithTracker } from "/lib/api/compose";
+import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import PublishContainer from "/imports/plugins/core/revisions/client/containers/publishContainer";
 
 class ProductPublishContainer extends Component {
