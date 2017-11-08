@@ -1,17 +1,10 @@
 <template name="productDetailOption">
-  {{#if isEnabled}}
-    {{!-- Use new product detail page --}}
-    <div>
-      {{> React component=PDC}}
-    </div>
-  {{else}}
-    {{!-- Use old product detail page --}}
-    {{> productDetail }}
-  {{/if}}
+  <div>
+    {{> React component=PDC}}
+  </div>
 </template>
 
 <template name="productDetailOptionToolbar">
-  <h1> It's a me, Product Option!</h1>
   <div>
     {{> React PublishContainerComponent}}
   </div>

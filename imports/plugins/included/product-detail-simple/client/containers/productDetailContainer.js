@@ -17,7 +17,6 @@ import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'; // http://www.material-ui.com/#/get-started/usage
 
 
-
 import OptionProductDetailContainer from "/imports/plugins/custom/product-detail-option/client/containers/productDetailContainer";
 
 export default OptionProductDetailContainer;

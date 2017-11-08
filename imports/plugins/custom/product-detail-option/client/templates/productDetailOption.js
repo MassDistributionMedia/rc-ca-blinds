@@ -1,19 +1,16 @@
-import { isRevisionControlEnabled } from "/imports/plugins/core/revisions/lib/api";
-import { ProductOptionContainer, PublishContainer } from "../containers";
+import { Components } from "@reactioncommerce/reaction-components";
+import { Template } from "meteor/templating";
 
 Template.productDetailOption.helpers({
-  isEnabled() {
-    return isRevisionControlEnabled();
-  },
   PDC() {
-    return ProductOptionContainer;
+    return Components.ProductDetail;
   }
 });
 
 Template.productDetailOptionToolbar.helpers({
   PublishContainerComponent() {
     return {
-      component: PublishContainer
+      component: Components.ProductPublish
     };
   }
 });

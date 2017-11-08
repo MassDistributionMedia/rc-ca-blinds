@@ -1,13 +1,13 @@
 import { Reaction } from "/server/api";
 
 Reaction.registerPackage({
-  label: "Blind Detail Option",
+  label: "Product Detail Option",
   name: "product-detail-option",
   icon: "fa fa-cubes",
   autoEnable: false,
   registry: [{
-    route: "/not-product/:handle/:variantId?",
-    name: "not-product",
+    route: "/product/:handle/:variantId?",
+    name: "product",
     template: "productDetailOption",
     workflow: "coreProductWorkflow"
   }],
@@ -22,34 +22,10 @@ Reaction.registerPackage({
       layoutHeader: "layoutHeader",
       layoutFooter: "",
       notFound: "productNotFound",
-      dashboardHeader: "productDetailOptionToolbar",  // productDetailSimpleToolbar
+      dashboardHeader: "productDetailOptionToolbar",
       dashboardControls: "productDetailDashboardControls",
       dashboardHeaderControls: "",
       adminControlsFooter: "adminControlsFooter"
     }
   }]
-});
-
-import { Products } from "/lib/collections";
-import { Meteor } from "meteor/meteor";
-
-
-Meteor.startup(function () {
-
-  Meteor.methods({
-    'product-detail-option.insertVariant'(assembledVariant) {
-      check(assembledVariant,Match.Any);
-      return new Promise(function(resolve, reject){
-      var id = Products.insert(assembledVariant,
-        (error, result) => {
-          if(error) {
-            reject(error);
-          } else {
-            resolve(id);
-          }
-        }
-      );
-      })
-    },
-  })
 });
