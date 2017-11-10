@@ -1,11 +1,13 @@
 Main Customized files:
-- /imports/plugins/custom/**
- - /imports/plugins/custom/width-height-variant  <-- majority of logic is here
-- /imports/plugins/included/product-detail-simple/**
-- /imports/plugins/included/product-variant/**
- - /imports/plugins/included/product-variant/containers/variantFormContainer.js 
+- `/imports/plugins/custom/**`
+ - `/imports/plugins/custom/width-height-variant`  <-- majority of logic is here
+- `/imports/plugins/included/product-detail-simple/**`
+- `/imports/plugins/included/product-variant/**`
+ - `/imports/plugins/included/product-variant/containers/variantFormContainer.js `
 
  * These files need to be updated for RC 1.5.7 *
+ - Compare these listed files above (in the `custom-cart_rc1.5.7-0` branch or later) to the `custom-cart_rc1.3.0` branch:
+  - https://github.com/MassDistributionMedia/rc-ca-blinds/blob/custom-cart_rc1.3.0/imports/plugins/included/product-detail-simple/client/containers/variantListContainer.js
 
 
 To look up all non-template .json files:
