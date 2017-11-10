@@ -10,6 +10,9 @@ Main Customized files:
   - https://github.com/MassDistributionMedia/rc-ca-blinds/blob/custom-cart_rc1.3.0/imports/plugins/included/product-detail-simple/client/containers/variantListContainer.js
 
 
+_ _ _
+
+
 To look up all non-template .json files:
 *.json, -package.json, -ar.json, -bg.json, -cd.json, -de.json, -en.json,-es.json, -cs.json, -el.json,-fr.json, -he.json, -hr.json, -hu.json, -it.json, -.my.json, -nb.json, -nl.json, -pl.json, -my.json, -pt.json, -ro.json, -ru.json, -sl.json, -sv.jon, -sv.json, -tr.json, -vi.json, -vi.json, -zh.json, -bower.json, -typings.json, -/node_modules/**/*.json
 
