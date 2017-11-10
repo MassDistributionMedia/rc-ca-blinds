@@ -1,7 +1,17 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { Components } from "@reactioncommerce/reaction-components";
+import React, { Component, PropTypes } from "react";
+import Variant from "./variant";
+import { EditContainer } from "/imports/plugins/core/ui/client/containers";
+import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
+import { ChildVariant } from "./";
+import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
+import { Products } from "/lib/collections";
+
+import RenderWidthHeightList, {
+  WIDTH_HEIGHT_VARIANT_TYPE,
+  width_heightVariantUploadForm,
+} from "/imports/plugins/custom/width-height-variant/client/render-list";
+
 
 class VariantList extends Component {
   handleVariantEditClick = (event, editButtonProps) => {
@@ -18,7 +28,7 @@ class VariantList extends Component {
     }
   }
 
-  handleChildVariantClick = (event, variant) => {
+  handleChildleVariantClick = (event, variant) => {
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
     }
@@ -47,7 +57,7 @@ class VariantList extends Component {
       addButton = (
         <div className="rui items flex">
           <div className="rui item full justify center">
-            <Components.IconButton
+            <IconButton
               i18nKeyTooltip="variantList.createVariant"
               icon="fa fa-plus"
               primary={true}
@@ -64,7 +74,7 @@ class VariantList extends Component {
         const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
 
         return (
-          <Components.EditContainer
+          <EditContainer
             data={variant}
             disabled={this.props.editable === false}
             editView="variantForm"
@@ -76,7 +86,7 @@ class VariantList extends Component {
             permissions={["createProduct"]}
             showsVisibilityButton={true}
           >
-            <Components.Variant
+            <Variant
               displayPrice={displayPrice}
               editable={this.props.editable}
               index={index}
@@ -86,7 +96,7 @@ class VariantList extends Component {
               soldOut={this.isSoldOut(variant)}
               variant={variant}
             />
-          </Components.EditContainer>
+          </EditContainer>
         );
       });
     }
@@ -102,7 +112,7 @@ class VariantList extends Component {
       return variantList;
     } else if (variants.length > 1 || variants.length === 0) {
       return [
-        <Components.Divider
+        <Divider
           i18nKeyLabel="productDetail.options"
           key="dividerWithLabel"
           label="Options"
@@ -111,7 +121,7 @@ class VariantList extends Component {
       ];
     } else if (variants.length === 1) {
       return [
-        <Components.Divider key="divider" />,
+        <Divider key="divider" />,
         variantList
       ];
     }
@@ -120,60 +130,30 @@ class VariantList extends Component {
   }
 
   renderChildVariants() {
-    let childVariants = [];
-
-    if (this.props.childVariants) {
-      childVariants = this.props.childVariants.map((childVariant, index) => {
-        const media = this.props.childVariantMedia.filter((mediaItem) => {
-          if (mediaItem.metadata.variantId === childVariant._id) {
-            return true;
-          }
-          return false;
-        });
-
-        return (
-          <Components.EditContainer
-            data={childVariant}
-            disabled={this.props.editable === false}
-            editView="variantForm"
-            i18nKeyLabel="productDetailEdit.editVariant"
-            key={index}
-            label="Edit Variant"
-            onEditButtonClick={this.handleChildVariantEditClick}
-            onVisibilityButtonClick={this.handleVariantVisibilityClick}
-            permissions={["createProduct"]}
-            showsVisibilityButton={true}
-          >
-            <Components.ChildVariant
-              isSelected={this.props.variantIsSelected(childVariant._id)}
-              media={media}
-              onClick={this.handleChildVariantClick}
-              variant={childVariant}
-            />
-          </Components.EditContainer>
-        );
-      });
+    /**
+     * This `if` is to handle error:
+     *  Exception from Tracker recompute function
+     *  Which happens on one of Meteor's cycles
+     *  see: http://stackoverflow.com/a/42896843/1762493
+     */
+    if (ReactionProduct.selectedVariant() === null) {
+      return; // or return null;
     }
-    // const currentVariant = ReactionProduct.selectedVariant();
+    const currentVariant = ReactionProduct.selectedVariant();
 
-    // const type = currentVariant.variantType || "variant";
-    // const methods = this;
-    // const props = this.props;
-    if (childVariants.length) {
-      return [
-        <Components.Divider
-          key="availableOptionsDivider"
-          i18nKeyLabel="availableOptions"
-          label="Available Options"
-        />,
-        <div className="row variant-product-options" key="childVariantList">
-          {childVariants}
-        </div>
-      ];
-    }
+    const type = currentVariant.variantType || "variant";
+    const methods = this;
+    const props = this.props;
 
-    return null;
-  }
+    return (
+      <RenderList
+        renderType={type}
+        renderList={props.childVariants}
+        parentProps={props}
+        parentMethods={methods}
+      />
+    );
+  } // end renderChildVariants()
 
   render() {
     return (
@@ -235,7 +215,7 @@ function RenderVariantList({ renderList, parentProps, methods }) {
 
   return (
     <span>
-      <Components.Divider
+      <Divider
           key="availableOptionsDivider"
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"
@@ -251,29 +231,28 @@ function RenderVariantList({ renderList, parentProps, methods }) {
             });
 
             return (
-              <Components.EditContainer
-            data={childVariant}
-            disabled={this.props.editable === false}
-            editView="variantForm"
-            i18nKeyLabel="productDetailEdit.editVariant"
-            key={index}
-            label="Edit Variant"
-            onEditButtonClick={this.handleChildVariantEditClick}
-            onVisibilityButtonClick={this.handleVariantVisibilityClick}
-            permissions={["createProduct"]}
-            showsVisibilityButton={true}
-          >
-            <Components.ChildVariant
-              isSelected={this.props.variantIsSelected(childVariant._id)}
-              media={media}
-              onClick={this.handleChildVariantClick}
-              variant={childVariant}
-            />
-          </Components.EditContainer>
+              <EditContainer
+                data={childVariant}
+                disabled={parentProps.editable === false}
+                editView="variantForm"
+                i18nKeyLabel="productDetailEdit.editVariant"
+                key={index}
+                label="Edit Variant"
+                onEditButtonClick={methods.handleChildVariantEditClick}
+                onVisibilityButtonClick={methods.handleVariantVisibilityClick}
+                permissions={["createProduct"]}
+                showsVisibilityButton={true}
+              >
+                <ChildVariant
+                  isSelected={parentProps.variantIsSelected(childVariant._id)}
+                  media={media}
+                  onClick={methods.handleChildleVariantClick}
+                  variant={childVariant}
+                />
+              </EditContainer>
             );
           })
         }</div>
       </div>
     </span>);
 }  // end RenderVariantList()
-

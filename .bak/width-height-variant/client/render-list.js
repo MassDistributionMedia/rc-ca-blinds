@@ -5,8 +5,7 @@ import React, { Component, PropTypes} from "react";
 import softwoodProducts from "../data/product-prices";
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
-import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
-
+import { Components } from "@reactioncommerce/reaction-components";
 // import { emptyOldVariants } from "/imports/plugins/custom/width-height-variant/server/startup";
 
 const WIDTH_HEIGHT_OPTIONS = selectOptions();
@@ -87,7 +86,7 @@ export default class RenderWidthHeightList extends Component {
     console.log(this.state);
 
     return (<span>
-      {[<Divider
+      {[<Components.Divider
           key="availableOptionsDivider"
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"

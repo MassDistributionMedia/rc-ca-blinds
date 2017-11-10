@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Components } from "@reactioncommerce/reaction-components";
-import { ReactionProduct } from "/lib/api";
 
 class VariantList extends Component {
   handleVariantEditClick = (event, editButtonProps) => {
@@ -154,11 +153,7 @@ class VariantList extends Component {
         );
       });
     }
-    // const currentVariant = ReactionProduct.selectedVariant();
 
-    // const type = currentVariant.variantType || "variant";
-    // const methods = this;
-    // const props = this.props;
     if (childVariants.length) {
       return [
         <Components.Divider
@@ -197,83 +192,7 @@ VariantList.propTypes = {
   onVariantClick: PropTypes.func,
   onVariantVisibiltyToggle: PropTypes.func,
   variantIsSelected: PropTypes.func,
-  variants: PropTypes.arrayOf(PropTypes.object),
+  variants: PropTypes.arrayOf(PropTypes.object)
 };
 
 export default VariantList;
-
-function RenderList(props) {
-  const {
-    renderType,
-    renderList,
-    parentProps,
-    parentMethods,
-  } = props;
-
-  switch(renderType) {
-    case "variant" : {
-      return ( <RenderVariantList
-        renderList={renderList}
-        parentProps={parentProps}
-        methods={parentMethods}
-      />
-      );
-    }
-    case WIDTH_HEIGHT_VARIANT_TYPE : {
-      return (<RenderWidthHeightList
-        renderList={renderList}
-        methods={parentMethods}
-      />);
-    }
-  }
-}
-
-function RenderVariantList({ renderList, parentProps, methods }) {
-    if (!renderList) {
-    return null;
-  }
-
-  return (
-    <span>
-      <Components.Divider
-          key="availableOptionsDivider"
-          i18nKeyLabel="productDetail.availableOptions"
-          label="Available Options"
-      />
-      <div className="row variant-product-options" key="childVariantList">
-        <div>{
-          renderList.map((childVariant, index) => {
-            const media = parentProps.childVariantMedia.filter((mediaItem) => {
-              if (mediaItem.metadata.variantId === childVariant._id) {
-                return true;
-              }
-              return false;
-            });
-
-            return (
-              <Components.EditContainer
-            data={childVariant}
-            disabled={this.props.editable === false}
-            editView="variantForm"
-            i18nKeyLabel="productDetailEdit.editVariant"
-            key={index}
-            label="Edit Variant"
-            onEditButtonClick={this.handleChildVariantEditClick}
-            onVisibilityButtonClick={this.handleVariantVisibilityClick}
-            permissions={["createProduct"]}
-            showsVisibilityButton={true}
-          >
-            <Components.ChildVariant
-              isSelected={this.props.variantIsSelected(childVariant._id)}
-              media={media}
-              onClick={this.handleChildVariantClick}
-              variant={childVariant}
-            />
-          </Components.EditContainer>
-            );
-          })
-        }</div>
-      </div>
-    </span>);
-}  // end RenderVariantList()
-
