@@ -6,7 +6,6 @@ import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
 import { ReactionProduct } from "/lib/api";
 import { Packages } from "/lib/collections";
-import { Countries } from "/client/collections";
 import { Reaction, i18next } from "/client/api";
 import { TaxCodes } from "/imports/plugins/core/taxes/lib/collections";
 import VariantForm from "../components/variantForm";
@@ -276,41 +275,3 @@ registerComponent("VariantForm", VariantForm, wrapComponent);
 export default compose(
   wrapComponent
 )(VariantForm);
-
-// function composer(props, onData) {
-//   Meteor.subscribe("TaxCodes");
-
-//   const productHandle = Reaction.Router.getParam("handle");
-//   if (!productHandle) {
-//     Reaction.clearActionView();
-//   }
-
-//   const variantTypes = [
-//     { label: 'default variant',
-//       value: 'default',
-//     },
-//     {
-//       label: 'Height & Width',
-//       value: 'blindsHeightWidth',
-//     },
-//   ];
-//   const countries = Countries.find({}).fetch();
-//   const variant = ReactionProduct.selectedTopVariant();
-
-//   if (variant) {
-//     onData(null, {
-//       variantTypes,
-//       countries,
-//       variant: ReactionProduct.selectedTopVariant(),
-//       editFocus: Reaction.state.get("edit/focus"),
-//     });
-//   } else {
-//     onData(null, { variantTypes, countries });
-//   }
-// }
-
-// VariantFormContainer.propTypes = {
-//   variant: PropTypes.object,
-// };
-
-// export default composeWithTracker(composer)(VariantFormContainer);
