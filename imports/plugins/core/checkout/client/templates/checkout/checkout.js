@@ -1,8 +1,12 @@
+import "./checkout.html";
+import Swiper from "swiper";
+import { Meteor } from "meteor/meteor";
 import { Reaction } from "/client/api";
 import { Cart } from "/lib/collections";
-import { Meteor } from "meteor/meteor";
+import { Media } from "/lib/collections";
+import { Session } from "meteor/session";
 import { Template } from "meteor/templating";
-import "./checkout.html";
+import CartSubTotals from "/imports/plugins/core/checkout/client/containers/cartSubTotalContainer"; // "../../container/cartSubTotalContainer"; 
 
 //
 // cartCheckout is a wrapper template
@@ -18,6 +22,11 @@ Template.cartCheckout.helpers({
   }
 });
 
+Template.cartCheckout.helpers({
+  CartSubTotals() {
+    return CartSubTotals;
+  }
+});
 
 Template.cartCheckout.onCreated(function () {
   if (Reaction.Subscriptions.Cart.ready()) {
@@ -61,5 +70,58 @@ Template.checkoutStepBadge.helpers({
       return "active";
     }
     return "";
+  }
+});
+
+Template.checkoutCartDrawer.helpers({
+  cartItems: function () {
+    return Cart.findOne().items;
+  }
+});
+
+/**
+ * openCartDrawer events
+ *
+ */
+Template.checkoutCartDrawer.events({
+  "click #btn-checkout": function () {
+    $("#cart-drawer-container").fadeOut();
+    Session.set("displayCart", false);
+    return Reaction.Router.go("cart/checkout");
+  },
+  "click .remove-cart-item": function (event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const currentCartItemId = this._id;
+
+    return Template.instance().$(event.currentTarget).fadeOut(300, function () {
+      return Meteor.call("cart/removeFromCart", currentCartItemId);
+    });
+  }
+});
+
+Template.checkoutCartDrawerItems.helpers({
+  product: function () {
+    return this;
+  },
+  media: function () {
+    const product = this;
+    let defaultImage = Media.findOne({
+      "metadata.productId": this.variants.ancestors[0],
+      "metadata.toGrid": 1
+    });
+
+    if (defaultImage) {
+      return defaultImage;
+    } else if (product) {
+      _.some(product.variants, function (variant) {
+        defaultImage = Media.findOne({
+          "metadata.variantId": variant._id
+        });
+        return !!defaultImage;
+      });
+    }
+
+    return defaultImage;
   }
 });

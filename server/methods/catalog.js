@@ -362,14 +362,9 @@ Meteor.methods({
         _id: variantId,
       }, {
         ancestors: {
-<<<<<<< HEAD
-          $in: [variantId],
-        }
-=======
           $in: [variantId]
         },
         isDeleted: false
->>>>>>> upstream/master
       }],
       type: "variant",
     }).fetch();
@@ -393,9 +388,6 @@ Meteor.methods({
         type = "parent";
         Object.assign(clone, sortedVariant, {
           _id: variantNewId,
-<<<<<<< HEAD
-          title: "",
-=======
           title: `${sortedVariant.title} - copy`,
           optionTitle: `${sortedVariant.optionTitle} - copy`,
           price: `${sortedVariant.price}` ?
@@ -404,7 +396,6 @@ Meteor.methods({
           compareAtPrice: `${sortedVariant.compareAtPrice}` ?
             `${sortedVariant.compareAtPrice}` :
             `${variant.compareAtPrice}`
->>>>>>> upstream/master
         });
       } else {
         const parentIndex = sortedVariant.ancestors.indexOf(variantId);
@@ -414,10 +405,6 @@ Meteor.methods({
         Object.assign(clone, variant, {
           _id: Random.id(),
           ancestors: ancestorsClone,
-<<<<<<< HEAD
-          optionTitle: "",
-          title: "",
-=======
           title: `${sortedVariant.title}`,
           optionTitle: `${sortedVariant.optionTitle}`,
           price: `${sortedVariant.price}` ?
@@ -430,7 +417,6 @@ Meteor.methods({
           width: `${sortedVariant.width}`,
           weight: `${sortedVariant.weight}`,
           length: `${sortedVariant.length}`
->>>>>>> upstream/master
         });
       }
       delete clone.updatedAt;
@@ -488,11 +474,6 @@ Meteor.methods({
 
     const newVariantId = Random.id();
     // get parent ancestors to build new ancestors array
-<<<<<<< HEAD
-    const {
-      ancestors,
-    } = Products.findOne(parentId);
-=======
     const { ancestors } = product;
 
     // Verify that the parent variant and any ancestors are not deleted.
@@ -502,7 +483,6 @@ Meteor.methods({
       throw new Meteor.Error("Unable to create product variant");
     }
 
->>>>>>> upstream/master
     Array.isArray(ancestors) && ancestors.push(parentId);
     const assembledVariant = Object.assign(newVariant || {}, {
       _id: newVariantId,
@@ -512,13 +492,8 @@ Meteor.methods({
 
     if (!newVariant) {
       Object.assign(assembledVariant, {
-<<<<<<< HEAD
-        title: "",
-        price: 0.00,
-=======
         title: product.title + " - Untitled option",
         price: 0.00
->>>>>>> upstream/master
       });
     }
 

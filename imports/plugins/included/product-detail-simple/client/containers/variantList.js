@@ -103,7 +103,22 @@ class VariantListContainer extends Component {
   }
 
   handleVariantClick = (event, variant, ancestors = -1) => {
-    this.handleEditVariant(event, variant, ancestors);
+    if (Reaction.isActionViewOpen()) {
+      this.handleEditVariant(event, variant, ancestors);
+    } else {
+      console.log(variant);
+
+
+      ReactionProduct.setCurrentVariant(variant._id);
+      Session.set("variant-form-" + variant._id, true);
+      Reaction.Router.go("product", {
+        handle: this.productHandle,
+        variantId: variant._id
+      }, {
+        as: Reaction.Router.getQueryParam("as")
+      });
+    }
+    // this.handleEditVariant(event, variant, ancestors);
   }
 
   handleEditVariant = (event, variant, ancestors = -1) => {

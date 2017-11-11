@@ -6,12 +6,12 @@
 
 ![Reaction v.1.0.0](https://raw.githubusercontent.com/reactioncommerce/reaction-docs/master/assets/rc-desktop.png)
 
-Cloud9 IDE Workspace: 
+Cloud9 IDE Workspace:
 - https://ide.c9.io/mikeumus/ca-blinds
 - https://ca-blinds-mikeumus.c9users.io
+![product-screens-2](https://cloud.githubusercontent.com/assets/439959/21865023/276a4bbe-d7f9-11e6-9525-3131ec43655b.png)
 
-## Installation
-
+## Features
 Reaction’s out-of-the-box core features include:
 
 - Drag-and-drop merchandising

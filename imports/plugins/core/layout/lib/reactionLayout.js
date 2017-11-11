@@ -123,7 +123,8 @@ function composer(props, onData) {
 
     if (templateInfo) {
       const templateData = templateInfo.template;
-
+      debugger;
+      
       onData(null, {
         defaultPermissions: ["admin"],
         defaultAudience: ["guest", "anonymous"],

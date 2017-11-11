@@ -1,14 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classnames from "classnames";
-<<<<<<< HEAD
-import { Translation } from "/imports/plugins/core/ui/client/components";
-import { MediaItem } from "/imports/plugins/core/ui/client/components";
-import MenuItem from 'material-ui/MenuItem';
-
-class ChildVariant extends Component {
-  handleClick = (event, index) => {
-=======
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 import { Validation } from "@reactioncommerce/reaction-collections";
 import { ProductVariant } from "/lib/collections/schemas/products";
@@ -31,7 +23,6 @@ class ChildVariant extends Component {
 
 
   handleClick = (event) => {
->>>>>>> upstream/master
     if (this.props.onClick) {
       this.props.onClick(event, this.props.variant);
     }
@@ -98,9 +89,6 @@ class ChildVariant extends Component {
 
     return null;
   }
-  
-  // http://stackoverflow.com/questions/26176519/reactjs-call-parent-function
-  // http://stackoverflow.com/questions/30580638/pass-parent-prop-to-children-reactjs?rq=1
 
   renderValidationButton = () => {
     if (this.state.invalidVariant === true) {
@@ -135,13 +123,7 @@ class ChildVariant extends Component {
       "variant-deleted": this.props.variant.isDeleted,
       "variant-notVisible": !this.props.variant.isVisible
     });
-    
-    if ( this.props.isHeightWidth ) {
-      return (
-        <MenuItem onClick={this.handleClick} value={variant.height} primaryText={variant.height + "\""} />
-      );  
-    }
-    
+
     return (
       <div className="variant-select-option">
         <button
@@ -152,12 +134,8 @@ class ChildVariant extends Component {
           {this.renderMedia()}
           <span className="title">{variant.optionTitle}</span>
         </button>
-<<<<<<< HEAD
-        <div className="variant-controls">
-=======
 
         <div className="variant-controls custom-variant-control">
->>>>>>> upstream/master
           {this.renderDeletionStatus()}
           {this.renderInventoryStatus()}
           {this.renderValidationButton()}
@@ -166,26 +144,19 @@ class ChildVariant extends Component {
       </div>
     );
   }
-};
+}
 
 ChildVariant.propTypes = {
   editButton: PropTypes.node,
   isSelected: PropTypes.bool,
   media: PropTypes.arrayOf(PropTypes.object),
-<<<<<<< HEAD
-  onClick: PropTypes.func,
-  onChange: PropTypes.func,
-=======
   onClick: PropTypes.func.isRequired,
+  onChange: PropTypes.func,
   soldOut: PropTypes.bool,
->>>>>>> upstream/master
   variant: PropTypes.object,
-  visibilityButton: PropTypes.node
+  visibilityButton: PropTypes.node,
 };
 
-<<<<<<< HEAD
-=======
 registerComponent("ChildVariant", ChildVariant);
 
->>>>>>> upstream/master
 export default ChildVariant;
