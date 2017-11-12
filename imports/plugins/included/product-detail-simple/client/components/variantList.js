@@ -5,7 +5,6 @@ import { ReactionProduct } from "/lib/api";
 
 import RenderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
-  width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
 
@@ -185,77 +184,79 @@ function RenderList(props) {
     parentProps,
     parentMethods,
   } = props;
+  debugger;
 
   switch(renderType) {
-    case "variant" : {
-      return ( <RenderVariantList
-        renderList={renderList}
-        parentProps={parentProps}
-        methods={parentMethods}
-      />
-      );
-    }
-    case WIDTH_HEIGHT_VARIANT_TYPE : {
+    case WIDTH_HEIGHT_VARIANT_TYPE: {
       return (<RenderWidthHeightList
         renderList={renderList}
+        methods={parentMethods}
+      />);
+    }
+    default: {
+      return (<RenderVariantList
+        renderList={renderList}
+        parentProps={parentProps}
         methods={parentMethods}
       />);
     }
   }
 }
 
-function RenderVariantList({ renderList }) {
-    if (!renderList) {
+function RenderVariantList(props) {
+  const {
+    renderList,
+    parentProps,
+    methods,
+  } = props;
+  
+  
+  if (!renderList) {
     return null;
   }
 
-  let childVariants = [];
-
-  if (this.props.childVariants) {
-    childVariants = this.props.childVariants.map((childVariant, index) => {
-      const media = this.props.childVariantMedia.filter((mediaItem) => {
-        if (mediaItem.metadata.variantId === childVariant._id) {
-          return true;
-        }
-        return false;
-      });
-
-      return (
-        <Components.EditContainer
-          data={childVariant}
-          disabled={this.props.editable === false}
-          editView="variantForm"
-          i18nKeyLabel="productDetailEdit.editVariant"
-          key={index}
-          label="Edit Variant"
-          onEditButtonClick={this.handleChildVariantEditClick}
-          onVisibilityButtonClick={this.handleVariantVisibilityClick}
-          permissions={["createProduct"]}
-          showsVisibilityButton={true}
-        >
-          <Components.ChildVariant
-            isSelected={this.props.variantIsSelected(childVariant._id)}
-            media={media}
-            onClick={this.handleChildVariantClick}
-            variant={childVariant}
-          />
-        </Components.EditContainer>
-      );
-    });
-  }
-
-  if (childVariants.length) {
-    return [
+  debugger;
+  return (
+    <span>
       <Components.Divider
-        key="availableOptionsDivider"
-        i18nKeyLabel="availableOptions"
-        label="Available Options"
-      />,
+          key="availableOptionsDivider"
+          i18nKeyLabel="productDetail.availableOptions"
+          label="Available Options"
+      />
       <div className="row variant-product-options" key="childVariantList">
-        {childVariants}
-      </div>
-    ];
-  }
+        <div>{
+          renderList.map((childVariant, index) => {
+            const media = parentProps.childVariantMedia.filter((mediaItem) => {
+              if (mediaItem.metadata.variantId === childVariant._id) {
+                return true;
+              }
+              return false;
+            });
 
-  return null;
+            return (
+              <Components.EditContainer
+                data={childVariant}
+                disabled={parentProps.editable === false}
+                editView="variantForm"
+                i18nKeyLabel="productDetailEdit.editVariant"
+                key={index}
+                label="Edit Variant"
+                onEditButtonClick={methods.handleChildVariantEditClick}
+                onVisibilityButtonClick={methods.handleVariantVisibilityClick}
+                permissions={["createProduct"]}
+                showsVisibilityButton={true}
+              >
+                <Components.ChildVariant
+                  isSelected={parentProps.variantIsSelected(childVariant._id)}
+                  media={media}
+                  onClick={methods.handleChildVariantClick}
+                  variant={childVariant}
+                />
+              </Components.EditContainer>
+            );
+          })
+        }</div>
+      </div>
+    </span>
+  );
 }

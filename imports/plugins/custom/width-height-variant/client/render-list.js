@@ -30,8 +30,12 @@ export default class RenderWidthHeightList extends Component {
   constructor(props) {
     super(props);
     var curProduct = ReactionProduct.selectedVariant();
-    console.log(curProduct);
+    console.info('RenderWidthHeightList current product: \n\n', curProduct);
 
+    this.initHeightWidthValues(curProduct);
+  }
+  
+  initHeightWidthValues(curProduct) {
     if (!curProduct || !curProduct.width && !curProduct.height && !curProduct.blindType) {
       this.state = {
         widthHeightValues: {
@@ -42,7 +46,6 @@ export default class RenderWidthHeightList extends Component {
           blindType: "none",
         }
       };
-
     } else {
       this.state = {
         widthHeightValues: {
@@ -76,14 +79,14 @@ export default class RenderWidthHeightList extends Component {
     }
 
     const newVariant = Products.findOne(addNewVariantIfNotExist(parent, productData));
-    console.log('newVariant', addNewVariantIfNotExist(parent, productData), newVariant);
+    console.info('RenderWidthHeightList - newVariant', addNewVariantIfNotExist(parent, productData), newVariant);
     this.props.methods.handleChildVariantClick(null, newVariant);
   }
 
   render() {
     let product = ReactionProduct.selectedProduct();
     const { widthHeightValues } = this.state;
-    console.log(this.state);
+    console.info('RenderWidthHeightList - this.state: \n\n', this.state);
 
     return (<span>
       {[<Components.Divider
@@ -95,25 +98,23 @@ export default class RenderWidthHeightList extends Component {
       <div className="row variant-product-options" key="childVariantList">
         <div> {[
         dimensionSelect.call(this, "width", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
-
           const productData = {
             width: val,
             widthEighth: eighth,
             height: this.state.widthHeightValues.height,
             heightEighth: this.state.widthHeightValues.heightEighth,
-            blindType: this.state.widthHeightValues.blindType
+            blindType: this.state.widthHeightValues.blindType,
           };
           productData.price = softwoodProducts.find(findPrice, productData).price;
           this.update(productData);
         }),
         dimensionSelect.call(this, "height", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
-
           const productData = {
             width: this.state.widthHeightValues.width,
             widthEighth: this.state.widthHeightValues.widthEighth,
             height: val,
             heightEighth: eighth,
-            blindType: this.state.widthHeightValues.blindType
+            blindType: this.state.widthHeightValues.blindType,
           };
           productData.price = softwoodProducts.find(findPrice, productData).price;
           this.update(productData);
@@ -127,7 +128,6 @@ export default class RenderWidthHeightList extends Component {
   } // end RenderWidthHeightList.render()
 }  // end RenderWidthHeightList()
 
-let i = 1;
 /**
  * priceSlotCheck()
  * @summary check if the selected width/height is divisible by 6,
@@ -137,9 +137,9 @@ let i = 1;
  * @dimension {String} width/height to validate
  * @return {Number} Returns the found/valid price from product-prices.js
  */
+let i = 1;
 function priceSlotCheck(dimension, eighth) {
   i += 1;
-  console.log(i);
   let dimensionOutput = dimension;
 
   if (dimension % 6 !== 0) {

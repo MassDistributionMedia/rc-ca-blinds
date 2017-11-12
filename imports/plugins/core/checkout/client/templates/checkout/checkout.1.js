@@ -1,13 +1,8 @@
-import "./checkout.html";
-import Swiper from "swiper";
-import { Meteor } from "meteor/meteor";
 import { Reaction } from "/client/api";
 import { Cart } from "/lib/collections";
-import { Media } from "/lib/collections";
-import { Session } from "meteor/session";
+import { Meteor } from "meteor/meteor";
 import { Template } from "meteor/templating";
-import CartSubTotals from "/imports/plugins/core/checkout/client/containers/cartSubTotalContainer"; // "../../container/cartSubTotalContainer"; 
-import CartDrawer from "/imports/plugins/core/checkout/client/components/cartDrawer.js";
+import "./checkout.html";
 
 //
 // cartCheckout is a wrapper template
@@ -20,11 +15,9 @@ Template.cartCheckout.helpers({
       return Cart.findOne();
     }
     return {};
-  },
-  CartSubTotals() {
-    return CartSubTotals;
-  },
+  }
 });
+
 
 Template.cartCheckout.onCreated(function () {
   if (Reaction.Subscriptions.Cart.ready()) {

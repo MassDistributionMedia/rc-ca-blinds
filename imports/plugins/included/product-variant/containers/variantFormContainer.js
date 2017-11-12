@@ -21,9 +21,7 @@ const wrapComponent = (Comp) => (
 
     constructor(props) {
       super(props);
-
       this.validation = new Validation(ProductVariant);
-
       this.state = {
         validationStatus: this.validation.validationStatus,
         isDeleted: props.variant && props.variant.isDeleted
