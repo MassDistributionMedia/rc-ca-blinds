@@ -39,7 +39,7 @@ export default class RenderWidthHeightList extends Component {
           widthEighth: "0",
           height: 36,
           heightEighth: "0",
-          blindType: "none"
+          blindType: "none",
         }
       };
 
@@ -77,7 +77,7 @@ export default class RenderWidthHeightList extends Component {
 
     const newVariant = Products.findOne(addNewVariantIfNotExist(parent, productData));
     console.log('newVariant', addNewVariantIfNotExist(parent, productData), newVariant);
-    this.props.methods.handleChildleVariantClick(null, newVariant);
+    this.props.methods.handleChildVariantClick(null, newVariant);
   }
 
   render() {

@@ -10,6 +10,7 @@ Main Customized files:
  - Compare these listed files above (in the `custom-cart_rc1.5.7-0` branch or later) to the `custom-cart_rc1.3.0` branch:
   - https://github.com/MassDistributionMedia/rc-ca-blinds/blob/custom-cart_rc1.3.0/imports/plugins/included/product-detail-simple/client/containers/variantListContainer.js
 
+ * `/imports/plugins/core/layout/lib/reactionLayout.js` uses `onData`
 
 _ _ _
 

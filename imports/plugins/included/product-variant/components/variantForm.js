@@ -151,8 +151,7 @@ class VariantForm extends Component {
       }
     });
   }
-
-  handleSelectHeightWidth = (value) => {
+  selectHeightWidth = (value) => {
     if ( value === "blindsHeightWidth" ) {
       this.setState(({ variant }) => ({
         variant: {
@@ -168,6 +167,10 @@ class VariantForm extends Component {
         }
       }));
     }
+  }
+  handleSelectHeightWidth = ( value, field ) => {
+    this.handleSelectChange( value, field );
+    this.selectHeightWidth( value );
   }
 
   handleCheckboxChange = (event, value, field) => {
@@ -424,15 +427,10 @@ class VariantForm extends Component {
               name="variantType"
               ref="variantTypeSelect"
               options={this.props.variantTypes}
-              onChange={
-                (event) => {
-                  this.handleSelectHeightWidth( event, "variantType");
-                  this.handleSelectChange( event, "variantType" );
-                }
-              }
+              onChange={this.handleSelectHeightWidth}
               value={this.variant.variantType}
             />
-            <Select
+            <Components.Select
               clearable={false}
               i18nKeyLabel="productVariant.originCountry"
               i18nKeyPlaceholder="productVariant.originCountry"

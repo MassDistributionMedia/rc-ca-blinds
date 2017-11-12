@@ -1,15 +1,51 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import React, { Component, PropTypes } from "react";
+import Variant from "./variant";
 import { Components } from "@reactioncommerce/reaction-components";
+import { EditContainer } from "/imports/plugins/core/ui/client/containers";
+import { Divider, Translation } from "/imports/plugins/core/ui/client/components";
+import { ChildVariant } from "./";
+import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 
-import RenderWidthHeightList, {
+import renderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
   width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
+function emptyOldVariants(productId) {
+    const variants = ReactionProduct.getVariants(productId, WIDTH_HEIGHT_VARIANT_TYPE);
+    variants.forEach(function(item) {
+      Meteor.call("products/deleteVariant", item._id);
+    })
+}
+
+function addNewVariants(productId, varientConfigs) {
+  varientConfigs.forEach((element, index) => {
+      Meteor.call("products/createVariant", productId, formatElement(index));
+  })
+}
+
+function formatElement(element) {
+    var width = element.width, height = element.height;
+    var unique_key = width + "x" + height;
+    return {
+        inventoryQuantity: 9,
+        type: WIDTH_HEIGHT_VARIANT_TYPE,
+        title: "Softwood Option " + unique_key,
+        optionTitle: "Softwood Option " + unique_key,
+        price: element.value,
+        height: height,
+        width: width,
+    }
+}
 
 class VariantList extends Component {
+  componentDidMount() {
+    // var productId = ReactionProduct.selectedVariantId();
+    // emptyOldVariants(productId);
+    // addNewVariants(productId, ProdPrices);
+  }
+
   handleVariantEditClick = (event, editButtonProps) => {
     if (this.props.onEditVariant) {
       return this.props.onEditVariant(event, editButtonProps.data);
@@ -136,11 +172,9 @@ class VariantList extends Component {
       return; // or return null;
     }
     const currentVariant = ReactionProduct.selectedVariant();
-
     const type = currentVariant.variantType || "variant";
     const methods = this;
     const props = this.props;
-    
     let childVariants = [];
 
     if (this.props.childVariants) {
@@ -214,62 +248,49 @@ VariantList.propTypes = {
   onVariantClick: PropTypes.func,
   onVariantVisibiltyToggle: PropTypes.func,
   variantIsSelected: PropTypes.func,
-  variants: PropTypes.arrayOf(PropTypes.object),
+  variants: PropTypes.arrayOf(PropTypes.object)
 };
 
 export default VariantList;
 
-function RenderList(props) {
-  const {
-    renderType,
-    renderList,
-    parentProps,
-    parentMethods,
-  } = props;
-
-  switch(renderType) {
-    case "variant" : {
-      return ( <RenderVariantList
-        renderList={renderList}
-        parentProps={parentProps}
-        methods={parentMethods}
-      />
-      );
-    }
-    case WIDTH_HEIGHT_VARIANT_TYPE : {
-      return (<RenderWidthHeightList
-        renderList={renderList}
-        methods={parentMethods}
-      />);
-    }
+function renderList(type, list, props, methods) {
+  switch(type) {
+    case "variant" : return renderVariantList(list, props, methods);
+    case WIDTH_HEIGHT_VARIANT_TYPE : return renderWidthHeightList(list, props, methods);
   }
 }
 
-function RenderVariantList({ renderList }) {
-    if (!renderList) {
-    return null;
-  }
+function renderVariantList(list, props, methods) {
+  return list.map((childVariant, index) => {
+    const media = props.childVariantMedia.filter((mediaItem) => {
+      if (mediaItem.metadata.variantId === childVariant._id) {
+        return true;
+      }
+      return false;
+    });
+    
 
-  return (
-    <Components.EditContainer
-      data={childVariant}
-      disabled={this.props.editable === false}
-      editView="variantForm"
-      i18nKeyLabel="productDetailEdit.editVariant"
-      key={index}
-      label="Edit Variant"
-      onEditButtonClick={this.handleChildVariantEditClick}
-      onVisibilityButtonClick={this.handleVariantVisibilityClick}
-      permissions={["createProduct"]}
-      showsVisibilityButton={true}
-    >
-      <Components.ChildVariant
-        isSelected={this.props.variantIsSelected(childVariant._id)}
-        media={media}
-        onClick={this.handleChildVariantClick}
-        variant={childVariant}
-      />
-    </Components.EditContainer>
-  );
-}  // end RenderVariantList()
+    return (
+      <EditContainer
+        data={childVariant}
+        disabled={props.editable === false}
+        editView="variantForm"
+        i18nKeyLabel="productDetailEdit.editVariant"
+        key={index}
+        label="Edit Variant"
+        onEditButtonClick={methods.handleChildVariantEditClick}
+        onVisibilityButtonClick={methods.handleVariantVisibilityClick}
+        permissions={["createProduct"]}
+        showsVisibilityButton={true}
+      >
+        <ChildVariant
+          isSelected={props.variantIsSelected(childVariant._id)}
+          media={media}
+          onClick={methods.handleChildleVariantClick}
+          variant={childVariant}
+        />
+      </EditContainer>
+    );
+  });
+}
 

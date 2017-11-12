@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { compose } from "recompose";
-import { registerComponent } from "@reactioncommerce/reaction-components";
+import { registerComponent, composeWithTracker } from "@reactioncommerce/reaction-components";
 import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
 import { ReactionProduct } from "/lib/api";
@@ -271,43 +271,44 @@ const wrapComponent = (Comp) => (
   }
 );
 
-registerComponent("VariantForm", VariantForm, wrapComponent);
+registerComponent("VariantForm", VariantForm, [
+  composeWithTracker(composer, false),
+  wrapComponent
+] );
 
 export default compose(
+  composeWithTracker(composer, false),
   wrapComponent
 )(VariantForm);
 
-// function composer(props, onData) {
-//   Meteor.subscribe("TaxCodes");
+function composer(props, onData) {
+  // Meteor.subscribe("TaxCodes");
 
-//   const productHandle = Reaction.Router.getParam("handle");
-//   if (!productHandle) {
-//     Reaction.clearActionView();
-//   }
+  const productHandle = Reaction.Router.getParam("handle");
+  if (!productHandle) {
+    Reaction.clearActionView();
+  }
 
-//   const variantTypes = [
-//     { label: 'default variant',
-//       value: 'default',
-//     },
-//     {
-//       label: 'Height & Width',
-//       value: 'blindsHeightWidth',
-//     },
-//   ];
-//   const countries = Countries.find({}).fetch();
-//   const variant = ReactionProduct.selectedTopVariant();
+  const variantTypes = [
+    { label: 'default variant',
+      value: 'default' },
+    { label: 'Height & Width',
+      value: 'blindsHeightWidth' },
+  ];
+  // const countries = Countries.find({}).fetch();
+  const variant = ReactionProduct.selectedTopVariant();
 
-//   if (variant) {
-//     onData(null, {
-//       variantTypes,
-//       countries,
-//       variant: ReactionProduct.selectedTopVariant(),
-//       editFocus: Reaction.state.get("edit/focus"),
-//     });
-//   } else {
-//     onData(null, { variantTypes, countries });
-//   }
-// }
+  if (variant) {
+    onData(null, {
+      variantTypes,
+      // countries,
+      variant: ReactionProduct.selectedTopVariant(),
+      editFocus: Reaction.state.get("edit/focus"),
+    });
+  } else {
+    onData(null, { variantTypes, /*countries*/ });
+  }
+}
 
 // VariantFormContainer.propTypes = {
 //   variant: PropTypes.object,
