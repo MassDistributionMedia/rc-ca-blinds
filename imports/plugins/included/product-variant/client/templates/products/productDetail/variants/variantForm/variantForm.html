@@ -4,6 +4,7 @@
     <div class="panel panel-default variant-form">
       <div class="panel-heading panel-heading-flex">
         <div class="panel-title">
+          <div class="variant-edit-form-{{_id}}"> variant-edit-form-{{_id}} </div>
           {{#if inventoryManagement}}
             {{#unless isSoldOut }}
               <span class="variant-qty badge">{{displayQuantity}}</span>
@@ -50,7 +51,7 @@
           {{/if}}
         </div>
       </div>
-      <div class="panel-body">
+      <div class="panel-body variantFormId-{{variantFormId}}">
         {{#autoForm
           schema=Schemas.ProductVariant
           doc=.

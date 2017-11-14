@@ -7,7 +7,6 @@ import "velocity-animate/velocity.ui";
 import { Components } from "@reactioncommerce/reaction-components";
 import { formatPriceString } from "/client/api";
 
-
 const fieldNames = [
   "title",
   "variantType",
@@ -22,7 +21,7 @@ const fieldNames = [
   "taxDescription",
   "inventoryQuantity",
   "inventoryPolicy",
-  "lowInventoryWarningThreshold"
+  "lowInventoryWarningThreshold",
 ];
 
 const fieldGroups = {
@@ -39,7 +38,7 @@ const fieldGroups = {
   taxDescription: { group: "taxable" },
   inventoryQuantity: { group: "inventoryManagement" },
   inventoryPolicy: { group: "inventoryManagement" },
-  lowInventoryWarningThreshold: { group: "inventoryManagement" }
+  lowInventoryWarningThreshold: { group: "inventoryManagement" },
 };
 
 class VariantForm extends Component {
@@ -51,7 +50,7 @@ class VariantForm extends Component {
       variant: props.variant,
       inventoryPolicy: props.variant.inventoryPolicy,
       taxable: props.variant.taxable,
-      inventoryManagement: props.variant.inventoryManagement
+      inventoryManagement: props.variant.inventoryManagement,
     };
   }
 

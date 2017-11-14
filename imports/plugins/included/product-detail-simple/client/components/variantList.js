@@ -184,7 +184,6 @@ function RenderList(props) {
     parentProps,
     parentMethods,
   } = props;
-  debugger;
 
   switch(renderType) {
     case WIDTH_HEIGHT_VARIANT_TYPE: {
@@ -215,7 +214,6 @@ function RenderVariantList(props) {
     return null;
   }
 
-  debugger;
   return (
     <span>
       <Components.Divider

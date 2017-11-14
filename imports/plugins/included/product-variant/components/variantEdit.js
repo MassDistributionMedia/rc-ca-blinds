@@ -8,7 +8,7 @@ class VariantEdit extends Component {
     countries: PropTypes.arrayOf(PropTypes.object),
     editFocus: PropTypes.string,
     handleCreateNewChildVariant: PropTypes.func,
-    variant: PropTypes.object
+    variant: PropTypes.object,
   };
 
   handleCreateNewChildVariant = () => {
@@ -59,6 +59,8 @@ class VariantEdit extends Component {
 
     if (Array.isArray(childVariants)) {
       return childVariants.map((childVariant, index) => {
+        console.info('props \n', this.props);
+        console.info('variant \n', childVariant);
         return (
           <Components.VariantForm
             key={index}
