@@ -23,8 +23,8 @@ import "./templates/products/productSettings/productSettings.js";
 import "./templates/products/products.html";
 import "./templates/products/products.js";
 
-import "./templates/products/productDetail/variants/variantList/heightWidth.html";
-import "./templates/products/productDetail/variants/variantList/heightWidth.js";
+// import "./templates/products/productDetail/variants/variantList/heightWidth.html";
+// import "./templates/products/productDetail/variants/variantList/heightWidth.js";
 import "./templates/products/variantForm.html";
 import "./templates/products/variantForm.js";
 

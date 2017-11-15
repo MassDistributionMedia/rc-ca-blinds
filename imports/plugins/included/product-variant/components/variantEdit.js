@@ -59,8 +59,8 @@ class VariantEdit extends Component {
 
     if (Array.isArray(childVariants)) {
       return childVariants.map((childVariant, index) => {
-        console.info('props \n', this.props);
-        console.info('variant \n', childVariant);
+        console.info('VariantEdit renderChildVariants props \n', this.props);
+        console.info('VariantEdit renderChildVariants childVariant \n', childVariant);
         return (
           <Components.VariantForm
             key={index}
