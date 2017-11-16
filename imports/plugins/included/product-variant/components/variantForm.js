@@ -52,6 +52,7 @@ class VariantForm extends Component {
       taxable: props.variant.taxable,
       inventoryManagement: props.variant.inventoryManagement,
     };
+    debugger;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -72,12 +73,12 @@ class VariantForm extends Component {
         inventoryManagement: nextProps.variant.inventoryManagement,
         inventoryPolicy: nextProps.variant.inventoryPolicy,
         taxable: nextProps.variant.taxable,
-        variant: nextProps.variant
+        variant: nextProps.variant,
       });
     }
 
     this.setState({
-      expandedCard: nextProps.editFocus
+      expandedCard: nextProps.editFocus,
     });
   }
 
@@ -127,8 +128,8 @@ class VariantForm extends Component {
     this.setState(({ variant }) => ({
       variant: {
         ...variant,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   }
 
@@ -142,8 +143,8 @@ class VariantForm extends Component {
     this.setState(({ variant }) => ({
       variant: {
         ...variant,
-        [field]: value
-      }
+        [field]: value,
+      },
     }), () => {
       if (this.props.onVariantFieldSave) {
         this.props.onVariantFieldSave(this.variant._id, field, value, this.state.variant);
@@ -156,14 +157,14 @@ class VariantForm extends Component {
         variant: {
           ...variant,
           variantType: "blindsHeightWidth",
-        }
+        },
       }));
-    } else if ( value !== "blindsHeightWidth" ) {
+    } else {
       this.setState(({ variant }) => ({
         variant: {
           ...variant,
           variantType: "default",
-        }
+        },
       }));
     }
   }
@@ -176,8 +177,8 @@ class VariantForm extends Component {
     this.setState(({ variant }) => ({
       variant: {
         ...variant,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
 
     this.handleFieldBlur(event, value, field);
@@ -198,8 +199,8 @@ class VariantForm extends Component {
     this.setState(({ variant }) => ({
       variant: {
         ...variant,
-        [field]: inverseValue
-      }
+        [field]: inverseValue,
+      },
     }));
 
 
@@ -613,7 +614,7 @@ class VariantForm extends Component {
 
     const classNames = classnames({
       "variant-option-card": true,
-      "active": this.isExpanded(cardName)
+      "active": this.isExpanded(cardName),
     });
 
     return (
@@ -792,6 +793,7 @@ class VariantForm extends Component {
 
   render() {
     if (this.props.type === "option") {
+      // debugger;
       return (
         <div>
           {this.renderOptionFields()}

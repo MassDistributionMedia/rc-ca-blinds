@@ -74,12 +74,19 @@ function composer(props, onData) {
 
     const revisedVariant = applyProductRevision(variant);
     const childVariants = ReactionProduct.getVariants(revisedVariant._id);
+    const variantTypes = [
+      { label: 'default variant',
+        value: 'default' },
+      { label: 'Height & Width',
+        value: 'blindsHeightWidth' },
+    ];
 
     onData(null, {
+      variantTypes,
       countries: Countries.find({}).fetch(),
       editFocus: Reaction.state.get("edit/focus"),
       childVariants: childVariants,
-      variant: revisedVariant
+      variant: revisedVariant,
     });
   } else {
     onData(null, {

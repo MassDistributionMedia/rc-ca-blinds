@@ -272,7 +272,7 @@ const wrapComponent = (Comp) => (
 registerComponent("VariantForm", VariantForm, [
   composeWithTracker(composer, false),
   wrapComponent
-] );
+]);
 
 export default compose(
   composeWithTracker(composer, false),
@@ -280,36 +280,11 @@ export default compose(
 )(VariantForm);
 
 function composer(props, onData) {
-  // Meteor.subscribe("TaxCodes");
-
-  const productHandle = Reaction.Router.getParam("handle");
-  if (!productHandle) {
-    Reaction.clearActionView();
-  }
-
   const variantTypes = [
     { label: 'default variant',
       value: 'default' },
     { label: 'Height & Width',
       value: 'blindsHeightWidth' },
   ];
-  // const countries = Countries.find({}).fetch();
-  const variant = ReactionProduct.selectedTopVariant();
-
-  if (variant) {
-    onData(null, {
-      variantTypes,
-      // countries,
-      variant: ReactionProduct.selectedTopVariant(),
-      editFocus: Reaction.state.get("edit/focus"),
-    });
-  } else {
-    onData(null, { variantTypes, /*countries*/ });
-  }
+  onData(null, { variantTypes, /*countries*/ });
 }
-
-// VariantFormContainer.propTypes = {
-//   variant: PropTypes.object,
-// };
-
-// export default composeWithTracker(composer)(VariantFormContainer);
