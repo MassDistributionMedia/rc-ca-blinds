@@ -52,7 +52,6 @@ class VariantForm extends Component {
       taxable: props.variant.taxable,
       inventoryManagement: props.variant.inventoryManagement,
     };
-    debugger;
   }
 
   componentWillReceiveProps(nextProps) {

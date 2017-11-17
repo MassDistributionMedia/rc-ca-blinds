@@ -4,19 +4,19 @@ Reaction.registerPackage({
   label: "Product Detail Option",
   name: "product-detail-option",
   icon: "fa fa-cubes",
-  autoEnable: false,
+  autoEnable: true,
   registry: [{
     route: "/product/:handle/:variantId?",
     name: "product",
     template: "productDetailOption",
-    workflow: "coreProductWorkflow"
+    workflow: "coreProductWorkflow",
   }],
   layout: [{
     layout: "coreLayout",
     workflow: "coreProductWorkflow",
     collection: "Products",
     theme: "default",
-    enabled: false,
+    enabled: true,
     structure: {
       template: "productDetailOption",
       layoutHeader: "layoutHeader",
@@ -25,7 +25,7 @@ Reaction.registerPackage({
       dashboardHeader: "productDetailOptionToolbar",
       dashboardControls: "productDetailDashboardControls",
       dashboardHeaderControls: "",
-      adminControlsFooter: "adminControlsFooter"
-    }
-  }]
+      adminControlsFooter: "adminControlsFooter",
+    },
+  }],
 });

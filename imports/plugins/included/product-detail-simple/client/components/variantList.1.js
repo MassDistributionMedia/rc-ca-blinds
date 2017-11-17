@@ -1,20 +1,14 @@
-import Variant from "./variant";
-import { ChildVariant } from "./";
-import { Reaction } from "/client/api";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { Components } from "@reactioncommerce/reaction-components";
 import { ReactionProduct } from "/lib/api";
-import { Products } from "/lib/collections";
-import React, { Component, PropTypes } from "react";
-import { getChildVariant } from "../selectors/variants";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 
 import RenderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
-  width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
-class VariantList extends Component {
 
+class VariantList extends Component {
   handleVariantEditClick = (event, editButtonProps) => {
     if (this.props.onEditVariant) {
       return this.props.onEditVariant(event, editButtonProps.data);
@@ -29,7 +23,7 @@ class VariantList extends Component {
     }
   }
 
-  handleChildleVariantClick = (event, variant) => {
+  handleChildVariantClick = (event, variant) => {
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
     }
@@ -58,7 +52,7 @@ class VariantList extends Component {
       addButton = (
         <div className="rui items flex">
           <div className="rui item full justify center">
-            <IconButton
+            <Components.IconButton
               i18nKeyTooltip="variantList.createVariant"
               icon="fa fa-plus"
               primary={true}
@@ -72,31 +66,10 @@ class VariantList extends Component {
 
     if (this.props.variants) {
       variants = this.props.variants.map((variant, index) => {
-        if (variant.hasOwnProperty('isProductBundle') && variant.isProductBundle) {
-          return null;
-        }
-
-        const childVariants = getChildVariant(variant.title);
         const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
-        const currentVariant = variant;
-        const type = currentVariant.variantType || "variant";
-        const methods = this;
-        const props = this.props;
-        const divStyle = {
-          display: "none",
-        };
-        const childVariantContainer = <div className="variant-accordion" id={variant._id} style={divStyle}>
-                                        {<RenderList
-                                          renderType={type}
-                                          renderList={props.childVariants}
-                                          parentProps={props}
-                                          childVariants={childVariants}
-                                          parentMethods={methods}
-                                        />}
-                                      </div>;
 
         return (
-          [<EditContainer
+          <Components.EditContainer
             data={variant}
             disabled={this.props.editable === false}
             editView="variantForm"
@@ -108,7 +81,7 @@ class VariantList extends Component {
             permissions={["createProduct"]}
             showsVisibilityButton={true}
           >
-            <Variant
+            <Components.Variant
               displayPrice={displayPrice}
               editable={this.props.editable}
               index={index}
@@ -117,12 +90,8 @@ class VariantList extends Component {
               onMove={this.props.onMoveVariant}
               soldOut={this.isSoldOut(variant)}
               variant={variant}
-              renderChildVariants={this.renderChildVariants}
-              {...this.props}
             />
-          </EditContainer>,
-          childVariantContainer,
-         ]
+          </Components.EditContainer>
         );
       });
     }
@@ -137,46 +106,73 @@ class VariantList extends Component {
     if (variants.length === 0 && this.props.editable === false) {
       return variantList;
     } else if (variants.length > 1 || variants.length === 0) {
-      return ([
-        <Divider
+      return [
+        <Components.Divider
           i18nKeyLabel="productDetail.options"
           key="dividerWithLabel"
           label="Options"
         />,
-        variantList,
-      ]);
+        variantList
+      ];
     } else if (variants.length === 1) {
-      return ([
-        <Divider key="divider" />,
-        variantList,
-      ]);
+      return [
+        <Components.Divider key="divider" />,
+        variantList
+      ];
     }
 
     return variantList;
+  }
+
+  renderChildVariants() {
+    /**
+     * This `if` is to handle error:
+     *  Exception from Tracker recompute function
+     *  Which happens on one of Meteor's cycles
+     *  see: http://stackoverflow.com/a/42896843/1762493
+     */
+    if (ReactionProduct.selectedVariant() === null) {
+      return; // or return null;
+    }
+    const currentVariant = ReactionProduct.selectedVariant();
+
+    const type = currentVariant.variantType || "variant";
+    const methods = this;
+    const props = this.props;
+    
+    return (
+      <RenderList
+        renderType={type}
+        renderList={props.childVariants}
+        parentProps={props}
+        parentMethods={methods}
+      />
+    );
   }
 
   render() {
     return (
       <div className="product-variants">
         {this.renderVariants()}
+        {this.renderChildVariants()}
       </div>
     );
   }
 }
 
 VariantList.propTypes = {
+  childVariantMedia: PropTypes.arrayOf(PropTypes.any),
+  childVariants: PropTypes.arrayOf(PropTypes.object),
+  displayPrice: PropTypes.func,
   editable: PropTypes.bool,
   isSoldOut: PropTypes.func,
-  displayPrice: PropTypes.func,
+  onCreateVariant: PropTypes.func,
   onEditVariant: PropTypes.func,
   onMoveVariant: PropTypes.func,
   onVariantClick: PropTypes.func,
-  onCreateVariant: PropTypes.func,
-  variantIsSelected: PropTypes.func,
   onVariantVisibiltyToggle: PropTypes.func,
+  variantIsSelected: PropTypes.func,
   variants: PropTypes.arrayOf(PropTypes.object),
-  childVariants: PropTypes.arrayOf(PropTypes.object),
-  childVariantMedia: PropTypes.arrayOf(PropTypes.any)
 };
 
 export default VariantList;
@@ -186,36 +182,41 @@ function RenderList(props) {
     renderType,
     renderList,
     parentProps,
-    childVariants,
-    parentMethods
+    parentMethods,
   } = props;
 
-  console.log('renderType', renderType);
   switch(renderType) {
-    case WIDTH_HEIGHT_VARIANT_TYPE : {
+    case WIDTH_HEIGHT_VARIANT_TYPE: {
       return (<RenderWidthHeightList
         renderList={renderList}
         methods={parentMethods}
-        type={renderType}
       />);
     }
-    default:
+    default: {
       return (<RenderVariantList
-        renderList={childVariants}
+        renderList={renderList}
         parentProps={parentProps}
         methods={parentMethods}
       />);
+    }
   }
 }
 
-function RenderVariantList({ renderList, parentProps, methods }) {
+function RenderVariantList(props) {
+  const {
+    renderList,
+    parentProps,
+    methods,
+  } = props;
+  
+  
   if (!renderList) {
     return null;
   }
 
   return (
     <span>
-      <Divider
+      <Components.Divider
           key="availableOptionsDivider"
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"
@@ -231,7 +232,7 @@ function RenderVariantList({ renderList, parentProps, methods }) {
             });
 
             return (
-              <EditContainer
+              <Components.EditContainer
                 data={childVariant}
                 disabled={parentProps.editable === false}
                 editView="variantForm"
@@ -243,17 +244,17 @@ function RenderVariantList({ renderList, parentProps, methods }) {
                 permissions={["createProduct"]}
                 showsVisibilityButton={true}
               >
-                <ChildVariant
+                <Components.ChildVariant
                   isSelected={parentProps.variantIsSelected(childVariant._id)}
                   media={media}
-                  onClick={methods.handleChildleVariantClick}
+                  onClick={methods.handleChildVariantClick}
                   variant={childVariant}
                 />
-              </EditContainer>
+              </Components.EditContainer>
             );
           })
         }</div>
       </div>
-    </span>);
-}  // end RenderVariantList()
-
+    </span>
+  );
+}
