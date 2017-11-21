@@ -82,24 +82,3 @@ Template.emptyCartDrawer.helpers({
     return Components.EmptyCartDrawer;
   }
 });
-
-/**
- * openCartDrawer events
- *
- */
-// Template.cartDrawer.events({
-//   "click #btn-checkout": function () {
-//     $("#cart-drawer-container").fadeOut();
-//     Session.set("displayCart", false);
-//     return Reaction.Router.go("cart/checkout");
-//   },
-//   "click .remove-cart-item": function (event) {
-//     event.stopPropagation();
-//     event.preventDefault();
-//     const currentCartItemId = this._id;
-
-//     return Template.instance().$(event.currentTarget).fadeOut(300, function () {
-//       return Meteor.call("cart/removeFromCart", currentCartItemId);
-//     });
-//   }
-// });

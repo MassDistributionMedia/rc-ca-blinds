@@ -241,7 +241,6 @@ function addNewVariant(parentId, newVariant){
   // Products.insert(assembledVariant,
   //   (error, result) => {
   //     if(error) {
-  //       debugger;
   //       console.error(error);
   //     }
   //     if (result) {

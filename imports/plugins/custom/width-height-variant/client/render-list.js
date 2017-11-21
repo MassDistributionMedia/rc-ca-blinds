@@ -80,7 +80,6 @@ export default class RenderWidthHeightList extends Component {
 
     const newVariant = Products.findOne(addNewVariantIfNotExist(parent, productData));
     console.info('RenderWidthHeightList - newVariant', addNewVariantIfNotExist(parent, productData), newVariant);
-    debugger;
     this.props.methods.handleChildVariantClick(null, newVariant);
   }
 

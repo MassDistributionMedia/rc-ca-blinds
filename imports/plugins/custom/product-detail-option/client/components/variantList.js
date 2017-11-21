@@ -5,7 +5,6 @@ import { ReactionProduct } from "/lib/api";
 
 import RenderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
-  // width_heightVariantUploadForm,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
 
@@ -189,7 +188,6 @@ function RenderList(props) {
     parentProps,
     parentMethods,
   } = props;
-  debugger;
 
   switch(renderType) {
     case WIDTH_HEIGHT_VARIANT_TYPE : {
@@ -213,7 +211,6 @@ function RenderVariantList(props) {
     parentProps,
     methods,
   } = props;
-  debugger;
   
   if (!renderList) {
     return null;

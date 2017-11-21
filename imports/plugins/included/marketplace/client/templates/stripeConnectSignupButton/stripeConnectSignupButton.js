@@ -14,7 +14,6 @@ Template.stripeConnectSignupButton.events({
     });
 
     // eslint-disable-next-line
-    // debugger;
     let clientId;
 
     if (primaryStripePackage &&

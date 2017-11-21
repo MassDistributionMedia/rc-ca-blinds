@@ -112,7 +112,6 @@ function updateVariant(width, wfrac, height, hfrac, indexes, methods) {
     var key = constructKey(width, wfrac, height, hfrac);
     var variantIndex = indexes.variantIndex;
     if(!(key in variantIndex)){
-      debugger;
       throw new Error("invalid key combination");
     }
     var variant = variantIndex[key];

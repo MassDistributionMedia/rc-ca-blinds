@@ -26,7 +26,6 @@
 // Template.onCreated(function () {
 
 //   // if(ReactionProduct.get("productId"))
-//     // debugger;
 
   // function heightWidthOptions(){
   //   var oldVariants = ReactionProduct.getTopVariants();

@@ -792,7 +792,6 @@ class VariantForm extends Component {
 
   render() {
     if (this.props.type === "option") {
-      // debugger;
       return (
         <div>
           {this.renderOptionFields()}

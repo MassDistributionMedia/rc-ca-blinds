@@ -59,7 +59,6 @@ class VariantEdit extends Component {
 
     if (Array.isArray(childVariants)) {
       return childVariants.map(function(childVariant, index) {
-        // debugger;
         return (
           <Components.VariantForm
             key={index}

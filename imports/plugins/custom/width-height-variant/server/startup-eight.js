@@ -140,7 +140,6 @@ Meteor.startup(function () {
      * heightWidth onRendered
      */
   // if(ReactionProduct.get("productId"))
-    // debugger;
 
 //   return this.autorun(() => {
 //   });

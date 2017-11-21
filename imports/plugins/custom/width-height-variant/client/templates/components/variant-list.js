@@ -48,7 +48,6 @@
 //     var key = this.createKey(height, width);
 //     var indexes = this.indexedVariants.indexes;
 //     if(!(key in indexes)){
-//       debugger;
 //       throw new Error("invalid key combination");
 //     }
 //     var variant = indexes[key];
