@@ -203,6 +203,7 @@ Variant.propTypes = {
   editButton: PropTypes.node,
   editable: PropTypes.bool,
   isSelected: PropTypes.bool,
+  isHeightWidth: PropTypes.bool,
   onClick: PropTypes.func,
   soldOut: PropTypes.bool,
   variant: PropTypes.object,

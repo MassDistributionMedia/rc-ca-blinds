@@ -221,25 +221,25 @@ function denormalize(id, field) {
       Object.assign(update, {
         isSoldOut: isSoldOut(variants),
         isLowQuantity: isLowQuantity(variants),
-        isBackorder: isBackorder(variants)
+        isBackorder: isBackorder(variants),
       });
       break;
     case "lowInventoryWarningThreshold":
       Object.assign(update, {
-        isLowQuantity: isLowQuantity(variants)
+        isLowQuantity: isLowQuantity(variants),
       });
       break;
     default: // "price" is object with range, min, max
       const priceObject = Catalog.getProductPriceRange(id);
       Object.assign(update, {
-        price: priceObject
+        price: priceObject,
       });
   }
   Products.update(id, {
-    $set: update
+    $set: update,
   }, {
     selector: {
-      type: "simple"
+      type: "simple",
     }
   });
 }
@@ -312,14 +312,14 @@ function flushQuantity(id) {
   }
 
   return Products.update({
-    _id: id
+    _id: id,
   }, {
     $set: {
-      inventoryQuantity: 0
+      inventoryQuantity: 0,
     }
   }, {
     selector: {
-      type: "variant"
+      type: "variant",
     }
   });
 }
@@ -359,14 +359,19 @@ Meteor.methods({
 
     const variants = Products.find({
       $or: [{
-        _id: variantId
+        _id: variantId,
       }, {
         ancestors: {
+<<<<<<< HEAD
+          $in: [variantId],
+        }
+=======
           $in: [variantId]
         },
         isDeleted: false
+>>>>>>> upstream/master
       }],
-      type: "variant"
+      type: "variant",
     }).fetch();
     // exit if we're trying to clone a ghost
     if (variants.length === 0) {
@@ -388,6 +393,9 @@ Meteor.methods({
         type = "parent";
         Object.assign(clone, sortedVariant, {
           _id: variantNewId,
+<<<<<<< HEAD
+          title: "",
+=======
           title: `${sortedVariant.title} - copy`,
           optionTitle: `${sortedVariant.optionTitle} - copy`,
           price: `${sortedVariant.price}` ?
@@ -396,6 +404,7 @@ Meteor.methods({
           compareAtPrice: `${sortedVariant.compareAtPrice}` ?
             `${sortedVariant.compareAtPrice}` :
             `${variant.compareAtPrice}`
+>>>>>>> upstream/master
         });
       } else {
         const parentIndex = sortedVariant.ancestors.indexOf(variantId);
@@ -405,6 +414,10 @@ Meteor.methods({
         Object.assign(clone, variant, {
           _id: Random.id(),
           ancestors: ancestorsClone,
+<<<<<<< HEAD
+          optionTitle: "",
+          title: "",
+=======
           title: `${sortedVariant.title}`,
           optionTitle: `${sortedVariant.optionTitle}`,
           price: `${sortedVariant.price}` ?
@@ -417,6 +430,7 @@ Meteor.methods({
           width: `${sortedVariant.width}`,
           weight: `${sortedVariant.weight}`,
           length: `${sortedVariant.length}`
+>>>>>>> upstream/master
         });
       }
       delete clone.updatedAt;
@@ -426,7 +440,7 @@ Meteor.methods({
 
       copyMedia(productId, oldId, clone._id);
       return Products.insert(clone, {
-        validate: false
+        validate: false,
       }, (error, result) => {
         if (result) {
           if (type === "child") {
@@ -474,6 +488,11 @@ Meteor.methods({
 
     const newVariantId = Random.id();
     // get parent ancestors to build new ancestors array
+<<<<<<< HEAD
+    const {
+      ancestors,
+    } = Products.findOne(parentId);
+=======
     const { ancestors } = product;
 
     // Verify that the parent variant and any ancestors are not deleted.
@@ -483,17 +502,23 @@ Meteor.methods({
       throw new Meteor.Error("server-error", "Unable to create product variant");
     }
 
+>>>>>>> upstream/master
     Array.isArray(ancestors) && ancestors.push(parentId);
     const assembledVariant = Object.assign(newVariant || {}, {
       _id: newVariantId,
       ancestors: ancestors,
-      type: "variant"
+      type: "variant",
     });
 
     if (!newVariant) {
       Object.assign(assembledVariant, {
+<<<<<<< HEAD
+        title: "",
+        price: 0.00,
+=======
         title: product.title + " - Untitled option",
         price: 0.00
+>>>>>>> upstream/master
       });
     }
 
@@ -546,7 +571,7 @@ Meteor.methods({
       const newVariant = Object.assign({}, currentVariant, variant);
 
       return Products.update({
-        _id: variant._id
+        _id: variant._id,
       }, {
         $set: newVariant // newVariant already contain `type` property, so we
         // do not need to pass it explicitly
@@ -595,10 +620,10 @@ Meteor.methods({
         $in: [false, undefined]
       },
       $or: [{
-        _id: variantId
+        _id: variantId,
       }, {
         ancestors: {
-          $in: [variantId]
+          $in: [variantId],
         }
       }]
     };
