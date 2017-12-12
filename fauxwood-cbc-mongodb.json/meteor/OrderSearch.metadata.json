@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":1,"key":{"_id":1},"name":"_id_","ns":"meteor.OrderSearch"},{"v":1,"key":{"shopId":1,"shippingName":1,"billingName":1,"userEmails":1},"name":"shopId_1_shippingName_1_billingName_1_userEmails_1","ns":"meteor.OrderSearch"}]}

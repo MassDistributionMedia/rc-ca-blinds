@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":1,"key":{"_id":1},"name":"_id_","ns":"meteor.TaxCodes"},{"v":1,"unique":true,"key":{"id":1},"name":"c2_id","ns":"meteor.TaxCodes","background":true,"sparse":false}]}

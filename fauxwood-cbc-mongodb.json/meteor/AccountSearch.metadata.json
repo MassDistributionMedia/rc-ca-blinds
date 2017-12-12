@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":1,"key":{"_id":1},"name":"_id_","ns":"meteor.AccountSearch"},{"v":1,"key":{"shopId":1,"emails":1},"name":"shopId_1_emails_1","ns":"meteor.AccountSearch"}]}

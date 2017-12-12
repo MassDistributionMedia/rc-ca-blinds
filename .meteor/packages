@@ -32,8 +32,8 @@ ejson@1.1.0
 less@2.7.11
 service-configuration@1.0.11
 mdg:validated-method
-shell-server
-dynamic-import
+shell-server@0.3.0
+dynamic-import@0.2.0
 
 # Meteor Auth Packages
 accounts-base@1.4.0
@@ -42,9 +42,9 @@ accounts-facebook@1.3.0
 accounts-google@1.3.0
 accounts-twitter@1.4.0
 oauth-encryption@1.3.0
-facebook-config-ui
-google-config-ui
-twitter-config-ui
+facebook-config-ui@1.0.0
+google-config-ui@1.0.0
+twitter-config-ui@1.0.0
 
 
 # Community Packages
@@ -93,7 +93,3 @@ johanbrook:publication-collector
 # meteorhacks:kadira-profiler               # cpu profiling
 # spiderable                                # adds phantomjs SEO rendering, use ongoworks:spiderable with Docker
 # meteorhacks:sikka                         # additional ddp, login security
-
-# Custom Packages
-standard-minifier-css
-standard-minifier-js
