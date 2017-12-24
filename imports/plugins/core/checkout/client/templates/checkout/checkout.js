@@ -6,7 +6,7 @@ import { Cart } from "/lib/collections";
 import { Media } from "/lib/collections";
 import { Session } from "meteor/session";
 import { Template } from "meteor/templating";
-import CartSubTotals from "/imports/plugins/core/checkout/client/containers/cartSubTotalContainer"; // "../../container/cartSubTotalContainer"; 
+import CartSubTotals from "/imports/plugins/core/checkout/client/containers/cartSubTotalContainer"; // "../../container/cartSubTotalContainer";
 import CartDrawer from "/imports/plugins/core/checkout/client/components/cartDrawer.js";
 
 //
@@ -24,6 +24,13 @@ Template.cartCheckout.helpers({
   CartSubTotals() {
     return CartSubTotals;
   },
+  cartCount() {
+    const cart = Cart.findOne();
+    if (cart.items && cart.items.length > 0) {
+      return true;
+    }
+    return false;
+  }
 });
 
 Template.cartCheckout.onCreated(function () {

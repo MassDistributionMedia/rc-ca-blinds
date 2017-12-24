@@ -1,14 +1,52 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { Components } from "@reactioncommerce/reaction-components";
+import Variant from "./variant";
+import { EditContainer } from "/imports/plugins/core/ui/client/containers";
+import { Divider, Translation } from "/imports/plugins/core/ui/client/components";
+import { ChildVariant } from "./";
+import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
+import { Components } from "@reactioncommerce/reaction-components";
 
 import RenderWidthHeightList, {
   WIDTH_HEIGHT_VARIANT_TYPE,
 } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
+function emptyOldVariants(productId) {
+  const variants = ReactionProduct.getVariants(productId, WIDTH_HEIGHT_VARIANT_TYPE);
+  variants.forEach(function (item) {
+    Meteor.call("products/deleteVariant", item._id);
+  });
+}
+
+function addNewVariants(productId, varientConfigs) {
+  varientConfigs.forEach((element, index) => {
+    Meteor.call("products/createVariant", productId, formatElement(index));
+  });
+}
+
+function formatElement(element) {
+  const width = element.width;
+  const height = element.height;
+  const uniqueKey = width + "x" + height;
+  return {
+    inventoryQuantity: 9,
+    type: WIDTH_HEIGHT_VARIANT_TYPE,
+    title: "Softwood Option " + uniqueKey,
+    optionTitle: "Softwood Option " + uniqueKey,
+    price: element.value,
+    height: height,
+    width: width,
+  };
+}
 
 class VariantList extends Component {
+  componentDidMount() {
+    // var productId = ReactionProduct.selectedVariantId();
+    // emptyOldVariants(productId);
+    // addNewVariants(productId, ProdPrices);
+  }
+
   handleVariantEditClick = (event, editButtonProps) => {
     if (this.props.onEditVariant) {
       return this.props.onEditVariant(event, editButtonProps.data);
@@ -125,29 +163,28 @@ class VariantList extends Component {
   }
 
   renderChildVariants() {
-    /**
-     * This `if` is to handle error:
-     *  Exception from Tracker recompute function
-     *  Which happens on one of Meteor's cycles
-     *  see: http://stackoverflow.com/a/42896843/1762493
-     */
-    if (ReactionProduct.selectedVariant() === null) {
-      return; // or return null;
+    if (!this.props.childVariants) {
+      return null;
     }
-    const currentVariant = ReactionProduct.selectedVariant();
+    // const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
+    //   const type = childVariant.type;
+    //   if(!(type in variants)) {
+    //     variants[type] = [];
+    //   }
+    //   variants[type].push(childVariant);
 
-    const type = currentVariant.variantType || "variant";
-    const methods = this;
-    const props = this.props;
-    
-    return (
-      <RenderList
-        renderType={type}
-        renderList={props.childVariants}
-        parentProps={props}
-        parentMethods={methods}
-      />
-    );
+    //   return variants;
+    // }, {});
+    // var methods = this;
+    // var props = this.props;
+    // return Object.keys(lists).map(function(type){
+    //   const list = lists[type];
+    //   return renderList(type, list, props, methods)
+    // });
+    const list = this.props.childVariants.filter(function (variant) {
+      return !!variant.width && !!variant.height;
+    });
+    return renderWidthHeightList(list, this.props, this.methods);
   }
 
   render() {
@@ -177,28 +214,10 @@ VariantList.propTypes = {
 
 export default VariantList;
 
-function RenderList(props) {
-  const {
-    renderType,
-    renderList,
-    parentProps,
-    parentMethods,
-  } = props;
-
-  switch(renderType) {
-    case WIDTH_HEIGHT_VARIANT_TYPE: {
-      return (<RenderWidthHeightList
-        renderList={renderList}
-        methods={parentMethods}
-      />);
-    }
-    default: {
-      return (<RenderVariantList
-        renderList={renderList}
-        parentProps={parentProps}
-        methods={parentMethods}
-      />);
-    }
+function renderList(type, list, props, methods) {
+  switch (type) {
+    case "variant" : return renderVariantList(list, props, methods);
+    case WIDTH_HEIGHT_VARIANT_TYPE : return renderWidthHeightList(list, props, methods);
   }
 }
 

@@ -90,6 +90,9 @@ class ChildVariant extends Component {
     return null;
   }
 
+  // http://stackoverflow.com/questions/26176519/reactjs-call-parent-function
+  // http://stackoverflow.com/questions/30580638/pass-parent-prop-to-children-reactjs?rq=1
+
   renderValidationButton = () => {
     if (this.state.invalidVariant === true) {
       return (
@@ -123,6 +126,12 @@ class ChildVariant extends Component {
       "variant-deleted": this.props.variant.isDeleted,
       "variant-notVisible": !this.props.variant.isVisible
     });
+
+    if (this.props.isHeightWidth) {
+      return (
+        <MenuItem onClick={this.handleClick} value={variant.height} primaryText={variant.height + "\""} />
+      );
+    }
 
     return (
       <div className="variant-select-option">

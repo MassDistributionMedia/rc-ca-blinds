@@ -1,7 +1,7 @@
 {
   "name": "reaction",
   "description": "Reaction is a modern reactive, real-time event driven ecommerce platform.",
-  "version": "1.6.0",
+  "version": "1.6.3",
   "main": "main.js",
   "directories": {
     "test": "tests"
@@ -92,6 +92,7 @@
     "react-dom": "^15.6.2",
     "react-dropzone": "^4.2.3",
     "react-helmet": "^5.2.0",
+    "react-image-magnify": "^2.3.2",
     "react-measure": "^2.0.2",
     "react-nouislider": "^2.0.1",
     "react-onclickoutside": "^6.7.0",
@@ -100,6 +101,7 @@
     "react-select": "^1.1.0",
     "react-table": "^6.7.4",
     "react-taco-table": "^0.5.1",
+    "react-tap-event-plugin": "^3.0.2",
     "react-tether": "^0.6.0",
     "react-textarea-autosize": "^5.2.1",
     "recompose": "^0.26.0",
