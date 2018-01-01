@@ -13,6 +13,8 @@ jobs:
       - METEOR_ALLOW_SUPERUSER: true
       - TOOL_NODE_FLAGS: "--max-old-space-size=4096"
 
+    parallelism: 4
+
     steps:
       - setup_remote_docker
       - checkout

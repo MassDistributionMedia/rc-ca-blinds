@@ -1,7 +1,8 @@
 import { Router } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Tags, Media } from "/lib/collections";
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import PublishContainer from "/imports/plugins/core/revisions/client/containers/publishContainer";
 
