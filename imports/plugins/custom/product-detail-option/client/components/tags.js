@@ -1,5 +1,6 @@
 import classnames from "classnames";
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { Translation } from "/imports/plugins/core/ui/client/components/";
 import { TagListContainer, EditContainer } from "/imports/plugins/core/ui/client/containers";
 

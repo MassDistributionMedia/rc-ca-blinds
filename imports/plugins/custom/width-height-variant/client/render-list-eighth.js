@@ -3,7 +3,8 @@ export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 import constructKey, { formatDim } from "../shared/construct-key";
 import width_heightVariantUploadForm from "./upload-template";
 
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 

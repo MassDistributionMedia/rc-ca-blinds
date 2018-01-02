@@ -1,7 +1,8 @@
 import classnames from "classnames";
 import "velocity-animate/velocity.ui";
 import Velocity from "velocity-animate";
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { TextField } from "/imports/plugins/core/ui/client/components/";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 

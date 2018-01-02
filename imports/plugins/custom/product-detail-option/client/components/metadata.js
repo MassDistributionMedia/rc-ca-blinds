@@ -1,6 +1,7 @@
 import classnames from "classnames";
 import { ReactionProduct } from "/lib/api";
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import * as SelectedVariants from "../stores/selected-variants";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
 import { Metadata, Translation } from "/imports/plugins/core/ui/client/components/";

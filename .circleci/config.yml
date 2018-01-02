@@ -12,6 +12,8 @@ jobs:
       - DOCKER_COMPOSE_VERSION: 1.15.0
       - METEOR_ALLOW_SUPERUSER: true
       - TOOL_NODE_FLAGS: "--max-old-space-size=4096"
+      
+    parallelism: 4
 
     steps:
       - setup_remote_docker
@@ -32,7 +34,9 @@ jobs:
 
       # install app dependencies
 
-      - run: meteor npm install
+      - run: |
+          rm ./package-lock.json
+          meteor npm install
 
       # run tests
       - restore_cache:
@@ -58,19 +62,19 @@ jobs:
 
       # deploy the build (if on a deployment branch)
 
-      - deploy:
-          name: Deploy to S3 if tests pass and branch is Master
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              if [[ "${API_DOC_BUCKET}" && "${API_DOC_BUCKET_REGION}" ]]; then
-                aws s3 sync /tmp/reaction-docs ${API_DOC_BUCKET} --delete --region ${API_DOC_BUCKET_REGION}
-              else
-                echo "S3 bucket configuration not found for jsdocs"
-                echo "Set API_DOC_BUCKET and API_DOC_BUCKET_REGION to build and deploy jsdocs to S3"
-              fi
-            else
-              echo "Not master branch so not deploying"
-            fi
-      - deploy:
-          name: Docker Image Deploment
-          command: .circleci/deploy.sh
+      # - deploy:
+      #     name: Deploy to S3 if tests pass and branch is Master
+      #     command: |
+      #       if [ "${CIRCLE_BRANCH}" == "master" ]; then
+      #         if [[ "${API_DOC_BUCKET}" && "${API_DOC_BUCKET_REGION}" ]]; then
+      #           aws s3 sync /tmp/reaction-docs ${API_DOC_BUCKET} --delete --region ${API_DOC_BUCKET_REGION}
+      #         else
+      #           echo "S3 bucket configuration not found for jsdocs"
+      #           echo "Set API_DOC_BUCKET and API_DOC_BUCKET_REGION to build and deploy jsdocs to S3"
+      #         fi
+      #       else
+      #         echo "Not master branch so not deploying"
+      #       fi
+      # - deploy:
+      #     name: Docker Image Deploment
+      #     command: .circleci/deploy.sh

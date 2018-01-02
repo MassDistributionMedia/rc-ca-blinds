@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { Reaction } from "/client/api";
 import { Components } from "@reactioncommerce/reaction-components";
 import { ReactionProduct } from "/lib/api";
