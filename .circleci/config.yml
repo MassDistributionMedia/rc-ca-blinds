@@ -32,7 +32,9 @@ jobs:
 
       # install app dependencies
 
-      - run: meteor npm install
+      - run: |
+          rm ./package-lock.json
+          meteor npm install
 
       # run tests
       - restore_cache:
