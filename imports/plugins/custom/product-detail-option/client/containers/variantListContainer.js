@@ -3,7 +3,10 @@ import { ReactionProduct } from "/lib/api";
 import { VariantList } from "../components";
 import { Reaction, i18next } from "/client/api";
 import { Products, Media } from "/lib/collections";
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { Session } from "meteor/session";
+import { Meteor } from "meteor/meteor";
 import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import { getVariantIds } from "/lib/selectors/variants";
 import { getChildVariants } from "../selectors/variants";
@@ -12,7 +15,6 @@ import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
 function variantIsSelected(variantId) {
   const current = ReactionProduct.selectedVariant();
-
   if (current && typeof current === "object" && (variantId === current._id || ~current.ancestors.indexOf(variantId))) {
     return true;
   }
@@ -110,9 +112,6 @@ class VariantListContainer extends Component {
     if (Reaction.isActionViewOpen()) {
       this.handleEditVariant(event, variant, ancestors);
     } else {
-
-      SelectedVariants.setProduct(ReactionProduct.selectedVariant());
-
       ReactionProduct.setCurrentVariant(variant._id);
       Session.set("variant-form-" + variant._id, true);
       SelectedVariants.setVariant(variant);

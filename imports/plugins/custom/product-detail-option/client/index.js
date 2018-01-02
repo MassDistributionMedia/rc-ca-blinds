@@ -9,7 +9,7 @@ import {
   PriceRange,
   AddToCartButton,
   ProductNotFound,
-  ProductDetail
+  ProductOptionComponent
 } from "./components";
 
 import {
@@ -28,7 +28,7 @@ import {
 
 
 // Register PDP components and some others
-registerComponent("productDetail", ProductDetail);
+registerComponent("productOptionComponent", ProductOptionComponent);
 registerComponent("ProductField", ProductField);
 registerComponent("ProductTags", ProductTags);
 registerComponent("ProductMetadata", ProductMetadata);

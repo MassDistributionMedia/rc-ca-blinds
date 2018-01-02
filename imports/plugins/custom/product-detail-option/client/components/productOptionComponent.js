@@ -1,8 +1,9 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { ReactionLayout } from "/imports/plugins/core/layout/lib";
-import { AlertContainer } from "/imports/plugins/core/ui/client/containers";
+import { Components } from "@reactioncommerce/reaction-components";
 
-class ProductDetail extends Component {
+class ProductOptionComponent extends Component {
   get tags() {
     return this.props.tags || [];
   }
@@ -20,7 +21,7 @@ class ProductDetail extends Component {
       <div className="pdp" style={{ position: "relative" }}>
         <div className="container container-main pdp-container" itemScope itemType="http://schema.org/Product">
           <div className="row">
-            <AlertContainer placement="productManagement" />
+            <Components.Alerts placement="productManagement" />
             <ReactionLayout
               context={this}
               layoutName={this.props.layout}
@@ -33,25 +34,25 @@ class ProductDetail extends Component {
   }
 }
 
-ProductDetail.propTypes = {
-  editable: PropTypes.bool,
-  layout: PropTypes.string,
-  viewAs: PropTypes.string,
-  product: PropTypes.object,
-  onAddToCart: PropTypes.func,
-  layoutName: PropTypes.string,
+ProductOptionComponent.propTypes = {
   cartQuantity: PropTypes.number,
-  onDeleteProduct: PropTypes.func,
-  socialComponent: PropTypes.node,
-  hasAdminPermission: PropTypes.bool,
+  editable: PropTypes.bool,
   handleVariantChoice: PropTypes.func,
-  topVariantComponent: PropTypes.node,
-  onViewContextChange: PropTypes.func,
-  onCartQuantityChange: PropTypes.func,
-  onProductFieldChange: PropTypes.func,
+  hasAdminPermission: PropTypes.bool,
+  layout: PropTypes.string,
+  layoutName: PropTypes.string,
   mediaGalleryComponent: PropTypes.node,
+  onAddToCart: PropTypes.func,
+  onCartQuantityChange: PropTypes.func,
+  onDeleteProduct: PropTypes.func,
+  onProductFieldChange: PropTypes.func,
+  onViewContextChange: PropTypes.func,
+  priceRange: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  product: PropTypes.object,
+  socialComponent: PropTypes.node,
   tags: PropTypes.arrayOf(PropTypes.object),
-  priceRange: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  topVariantComponent: PropTypes.node,
+  viewAs: PropTypes.string
 };
 
-export default ProductDetail;
+export default ProductOptionComponent;
