@@ -483,8 +483,8 @@ function formatID(element) {
   const height = element.height;
   const widthEighth = element.widthEighth;
   const heightEighth = element.heightEighth;
-  // const blindType = element.blindType;
-  const uniqueKey = width + "-" + widthEighth + "x" + height + "-" + heightEighth;
+  const blindType = element.blindType;
+  const uniqueKey = width + "-" + widthEighth + "x" + height + "-" + heightEighth + "-" + blindType;
   return "Softwood" + uniqueKey + "-" + "Price" + element.price;
 }
 
