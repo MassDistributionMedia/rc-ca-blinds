@@ -94,7 +94,7 @@ export function retrieveCurrentPrice() {
     return 0;
   }
   return Object.keys(variantMap).reduce(function (price, parentID) {
-    let setVariant = Products.findOne(variantMap[parentID]);
+    const setVariant = Products.findOne(variantMap[parentID]);
     if (!setVariant) {
       throw new Error("This variant does not exist");
     }
@@ -109,7 +109,7 @@ export function retrieveMetaValues() {
 
   return Object.keys(variantMap).reduce(function (netArray, parentID) {
     const reqVariant = Products.findOne(parentID);
-    let setVariant = Products.findOne(variantMap[parentID]);
+    const setVariant = Products.findOne(variantMap[parentID]);
     if (!setVariant) {
       throw new Error("This variant does not exist");
     }
@@ -140,7 +140,7 @@ export function composeNewVariant() {
 
   for (let reqVariant in variantMap) {
     const parentVariant = Products.findOne(reqVariant);
-    let setVariant = Products.findOne(variantMap[reqVariant]);
+    const setVariant = Products.findOne(variantMap[reqVariant]);
 
     if (!setVariant) {
       throw new Error("This variant does not exist");
@@ -197,7 +197,6 @@ function valuesToMetaFields(values) {
 }
 
 function addNewVariant(parentId, newVariant) {
-
   const newVariantId = newVariant._id;
   const { ancestors } = Products.findOne(parentId);
 

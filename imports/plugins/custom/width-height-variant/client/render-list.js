@@ -12,29 +12,29 @@ const WIDTH_HEIGHT_OPTIONS = selectOptions();
 const SPLIT_OPTIONS = ["none", "2in1", "3in1"];
 
 function selectOptions() {
-  let diameterOptions = [];
-  for(let i = 9; i < 97; i++){
+  const diameterOptions = [];
+  for (let i = 9; i < 97; i++) {
     diameterOptions.push(i);
   }
 
   return diameterOptions;
-};
+}
 
 const EIGHTHS = [
-  0, 1, 2, 3, 4, 5, 6, 7,
-].map(function(num) {
+  "0", "1/8", "1/4", "3/8", "1/2", "5/8", "3/4", "7/8",
+].map(function (num) {
   return num.toString();
 });
 
 export default class RenderWidthHeightList extends Component {
   constructor(props) {
+    const curProduct = ReactionProduct.selectedVariant();
     super(props);
-    var curProduct = ReactionProduct.selectedVariant();
     console.info('RenderWidthHeightList current product: \n\n', curProduct);
 
     this.initHeightWidthValues(curProduct);
   }
-  
+
   initHeightWidthValues(curProduct) {
     if (!curProduct || !curProduct.width && !curProduct.height && !curProduct.blindType) {
       this.state = {
@@ -68,11 +68,11 @@ export default class RenderWidthHeightList extends Component {
   }
 
   commit(productData) {
-    var product = ReactionProduct.selectedProduct();
-    var variant = ReactionProduct.selectedVariant();
-    var parent;
+    const product = ReactionProduct.selectedProduct();
+    const variant = ReactionProduct.selectedVariant();
+    let parent;
 
-    if(variant.ancestors[variant.ancestors.length - 1] === product._id){
+    if (variant.ancestors[variant.ancestors.length - 1] === product._id) {
       parent = variant._id;
     } else {
       parent = variant.ancestors[variant.ancestors.length - 1];
@@ -84,45 +84,47 @@ export default class RenderWidthHeightList extends Component {
   }
 
   render() {
-    let product = ReactionProduct.selectedProduct();
+    const product = ReactionProduct.selectedProduct();
     const { widthHeightValues } = this.state;
     console.info('RenderWidthHeightList - this.state: \n\n', this.state);
 
     return (<span>
-      {[<Components.Divider
+      {[
+        <Components.Divider
           key="availableOptionsDivider"
           i18nKeyLabel="productDetail.availableOptions"
           label="Available Options"
-      />,
-      <WidthHeightOptionDescription key="width-height"/>,
-      <div className="row variant-product-options" key="childVariantList">
-        <div> {[
-        dimensionSelect.call(this, "width", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
-          const productData = {
-            width: val,
-            widthEighth: eighth,
-            height: this.state.widthHeightValues.height,
-            heightEighth: this.state.widthHeightValues.heightEighth,
-            blindType: this.state.widthHeightValues.blindType,
-          };
-          productData.price = softwoodProducts.find(findPrice, productData).price;
-          this.update(productData);
-        }),
-        dimensionSelect.call(this, "height", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
-          const productData = {
-            width: this.state.widthHeightValues.width,
-            widthEighth: this.state.widthHeightValues.widthEighth,
-            height: val,
-            heightEighth: eighth,
-            blindType: this.state.widthHeightValues.blindType,
-          };
-          productData.price = softwoodProducts.find(findPrice, productData).price;
-          this.update(productData);
-        }),
-      ]}</div>
-      </div>,
-      <BlindTypeDescription key="blind-desc" state={this.state}
-        updateProduct={this.update.bind(this)}/>
+        />,
+        <WidthHeightOptionDescription key="width-height"/>,
+        <div className="row variant-product-options" key="childVariantList">
+          <div> {[
+            dimensionSelect.call(this, "width", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
+              const productData = {
+                width: val,
+                widthEighth: eighth,
+                height: this.state.widthHeightValues.height,
+                heightEighth: this.state.widthHeightValues.heightEighth,
+                blindType: this.state.widthHeightValues.blindType,
+              };
+              productData.price = softwoodProducts.find(findPrice, productData).price;
+              this.update(productData);
+            }),
+            dimensionSelect.call(this, "height", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
+              const productData = {
+                width: this.state.widthHeightValues.width,
+                widthEighth: this.state.widthHeightValues.widthEighth,
+                height: val,
+                heightEighth: eighth,
+                blindType: this.state.widthHeightValues.blindType,
+              };
+              productData.price = softwoodProducts.find(findPrice, productData).price;
+              this.update(productData);
+            }),
+          ]}</div>
+        </div>,
+        <BlindTypeDescription key="blind-desc" state={this.state}
+          updateProduct={this.update.bind(this)}
+        />
       ]}
     </span>);
   } // end RenderWidthHeightList.render()
@@ -148,8 +150,7 @@ function priceSlotCheck(dimension, eighth) {
   } // end if (dimension % 6)
 
   if (eighth !== 0) {
-    return dimensionOutput = dimensionOutput + 6;
-  } else {
+    dimensionOutput = dimensionOutput + 6;
     return dimensionOutput;
   }
 }
@@ -162,10 +163,10 @@ function priceSlotCheck(dimension, eighth) {
 function findPrice(element) {
   let originWidth = this.width;
   let originHeight = this.height;
-  let splitType = this.blindType;
+  const splitType = this.blindType;
   let splitValue = 1;
 
-  switch(splitType) {
+  switch (splitType) {
     case "2in1":
       splitValue = 2;
       break;
@@ -178,22 +179,22 @@ function findPrice(element) {
       splitValue = 1;
   }
 
-  if ( originWidth < 24 ) {
+  if (originWidth < 24) {
     originWidth = 24;
   }
-  if ( originHeight < 30 ) {
+  if (originHeight < 30) {
     originHeight = 30;
   }
 
   let newWidth = Math.round(this.width / splitValue);
 
-  if(newWidth < 24) {
+  if (newWidth < 24) {
     newWidth = this.width;
     splitValue = 1;
   }
 
-  let widthPrice = priceSlotCheck(newWidth, this.widthEighth);
-  let heightPrice = priceSlotCheck(originHeight, this.heightEighth);
+  const widthPrice = priceSlotCheck(newWidth, this.widthEighth);
+  const heightPrice = priceSlotCheck(originHeight, this.heightEighth);
 
   if (element.width === widthPrice && element.height === heightPrice) {
     console.log('price', widthPrice, heightPrice);
@@ -216,13 +217,13 @@ function findPrice(element) {
 
 export function WidthHeightOptionDescription() {
   const hrStyle = {
-    width: '100%',
-    background: '#1a99dd',
-    height: '2px',
-  }
+    width: "100%",
+    background: "#1a99dd",
+    height: "2px",
+  };
   return (
     <div key="variant-product-options" className="row variant-product-options">
-      <h2 style={{width: '100%'}}>Select Size</h2>
+      <h2 style={{ width: "100%" }}>Select Size</h2>
       <p>
         If you selected <b>Inside Mount</b>, enter your window size.
         <br/>
@@ -240,16 +241,16 @@ export function BlindTypeDescription(props) {
   } = props;
 
   const hrStyle = {
-    width: '100%',
-    background: '#1a99dd',
-    height: '2px',
-  }
+    width: "100%",
+    background: "#1a99dd",
+    height: "2px",
+  };
 
   return (
     <div key="variant-product-options" className="row variant-product-options">
       <hr style={hrStyle}/>
-      <h2 style={{width: '100%'}}>Select Blind Split</h2>
-      <span className={"blinds"+"-selects"} key={ "blinds" + "select-span"}>
+      <h2 style={{ width: "100%" }}>Select Blind Split</h2>
+      <span className={"blinds" + "-selects"} key={"blinds" + "select-span"}>
         Split Blind
         <select
           className={"blinds" + "-select"}
@@ -299,10 +300,10 @@ function HeightTitle() {
 }
 
 function dimensionSelect(key, values, list, ethList, onChange) {
-  let optionTitle = (key === "width") ? <WidthTitle/> : <HeightTitle/>;
+  const optionTitle = (key === "width") ? <WidthTitle/> : <HeightTitle/>;
 
   return (
-    <span className={key+"-selects"} key={key+"select-span"}>
+    <span className={key + "-selects"} key={key + "select-span"}>
       {optionTitle}
       <select
         className={"form-control " + key + "-select"}
@@ -310,39 +311,39 @@ function dimensionSelect(key, values, list, ethList, onChange) {
         value={values[key]}
         onChange={(e) => {
           console.log(key, e.target.value);
-          onChange(parseInt(e.target.value), values[key+"Eighth"])
+          onChange(parseInt(e.target.value, 10), values[key + "Eighth"]);
         }}
       >
-      { // loop to creation select options:
-        list.map((opVal, index) => {
-          return (
-            <option
-              className={"form-control"}
-              key={"".concat(key, index.toString(), opVal.toString())}
-              value={opVal}
-            >{opVal}</option>
+        { // loop to creation select options:
+          list.map((opVal, index) => {
+            return (
+              <option
+                className={"form-control"}
+                key={"".concat(key, index.toString(), opVal.toString())}
+                value={opVal}
+              >{opVal}</option>
             );
-        })
-      }
+          })
+        }
       </select>
       <select
         className={"form-control " + key + "-select-8th"}
         key={key + "-select-8th"}
-        value={values[key+"Eighth"]}
+        value={values[key + "Eighth"]}
         onChange={(e) => {
-          console.log(key+"Eighth", e.target.value);
-          onChange(values[key], parseInt(e.target.value))
+          console.log(key + "Eighth", e.target.value);
+          onChange(values[key], parseInt(e.target.value, 10));
         }}
       >
         { // loop to create 8ths options:
           ethList.map((opVal, index) => {
             return (
-            <option
-              className={"form-control" + key + "-select-8th"}
-              key={"".concat(key, index.toString(), opVal.toString())}
-              value={opVal}
-              >{opVal}/8</option>
-              );
+              <option
+                className={"form-control" + key + "-select-8th"}
+                key={"".concat(key, index.toString(), opVal.toString())}
+                value={opVal}
+              >{opVal}</option>
+            );
           })
         }
       </select>
@@ -356,13 +357,13 @@ function formatElement(element) {
   const blindType = element.blindType;
   const widthEighth = element.widthEighth;
   const heightEighth = element.heightEighth;
-  const unique_key = width + " " + widthEighth + "/8 x " + height + " " + heightEighth + "/8" + "-" + blindType;
+  const uniqueKey = width + " " + widthEighth + height + " " + heightEighth + "-" + blindType;
 
   return {
     _id: formatID(element),
     variantType: WIDTH_HEIGHT_VARIANT_TYPE,
-    title: "Softwood " + unique_key,
-    optionTitle: "Softwood " + unique_key,
+    title: "Softwood " + uniqueKey,
+    optionTitle: "Softwood " + uniqueKey,
     price: element.price,
     height: height,
     width: width,
@@ -372,7 +373,7 @@ function formatElement(element) {
     weight: 0,
     inventoryQuantity: 9,
     inventoryPolicy: false,
-    title: "Softwood " + unique_key,
+    title: "Softwood " + uniqueKey,
     metafields: [
       {
         key: "Room",
@@ -388,11 +389,11 @@ function formatElement(element) {
       },
       {
         key: "Height",
-        value: element.height + " " + element.heightEighth + "/8th",
+        value: element.height + " " + element.heightEighth,
       },
       {
         key: "Width",
-        value: element.width + " " + element.widthEighth + "/8th",
+        value: element.width + " " + element.widthEighth,
       },
       {
         key: "Blind Type",
@@ -477,18 +478,17 @@ function addNewVariantIfNotExist(parent, varientConfig) {
 //   Meteor.call("revisions/publish", product._id);
 // }
 
-function formatID(element){
+function formatID(element) {
   const width = element.width;
   const height = element.height;
   const widthEighth = element.widthEighth;
   const heightEighth = element.heightEighth;
-  const blindType = element.blindType;
-  const unique_key = width + "-" + widthEighth + "x" + height + "-" + heightEighth+ "-" + blindType;
-  return "Softwood" + unique_key + "Price" + element.price;
+  // const blindType = element.blindType;
+  const uniqueKey = width + "-" + widthEighth + "x" + height + "-" + heightEighth;
+  return "Softwood" + uniqueKey + "-" + "Price" + element.price;
 }
 
 function addNewVariant(parentId, newVariant) {
-
   if (Products.findOne(newVariant._id)) {
     console.log("Variant already exists: ", newVariant._id);
     return newVariant._id;
@@ -512,7 +512,7 @@ function addNewVariant(parentId, newVariant) {
   Array.isArray(ancestors) && ancestors.push(parentId);
   console.log(
     `addNewVariant(${parentId}, ${newVariant._id}) \n`,
-    `From: /imports/plugins/custom/width-height-variant/client/render-list.js`
+    "From: /imports/plugins/custom/width-height-variant/client/render-list.js"
   );
 
   const assembledVariant = Object.assign(newVariant || {}, {
