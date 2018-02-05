@@ -50,7 +50,7 @@ Template.variantList.onRendered(function () {
               return element.getAttribute("data-id");
             });
 
-          Meteor.defer(function () {
+          Meteor.defer(() => {
             Meteor.call("products/updateVariantsPosition", positions);
           });
 
@@ -66,14 +66,15 @@ Template.variantList.onRendered(function () {
  * variantList helpers
  */
 Template.variantList.helpers({
-  displayVariantOptions: function (type) {
+  displayVariantOptions(type) {
     if (ReactionProduct.selectedVariant().isHeightWidth) {
-      if(type === 1)
-        return "display: none;"
-      else return true;
+      if (type === 1) {
+        return "display: none;";
+      }
+      return true;
     }
   },
-  media: function () {
+  media() {
     const media = Media.findOne({
       "metadata.variantId": this._id
     }, {
@@ -84,7 +85,7 @@ Template.variantList.helpers({
 
     return media instanceof FS.File ? media : false;
   },
-  variants: function () {
+  variants() {
     let inventoryTotal = 0;
     const variants = ReactionProduct.getTopVariants();
     if (variants.length) {
@@ -122,7 +123,7 @@ Template.variantList.helpers({
     }
     return [];
   },
-  childVariants: function () {
+  childVariants() {
     const childVariants = [];
     const variants = ReactionProduct.getVariants();
     if (variants.length > 0) {
@@ -207,10 +208,10 @@ Template.variantList.helpers({
  */
 
 Template.variantList.events({
-  "click #create-variant": function () {
+  "click #create-variant"() {
     return Meteor.call("products/createVariant", this._id);
   },
-  "click .variant-select-option": function (event, templateInstance) {
+  "click .variant-select-option"(event, templateInstance) {
     templateInstance.$(".variant-select-option").removeClass("active");
     $(event.target).addClass("active");
     Alerts.removeSeen();
