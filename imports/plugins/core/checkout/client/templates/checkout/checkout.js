@@ -1,13 +1,13 @@
 import "./checkout.html";
-import Swiper from "swiper";
+// import Swiper from "swiper";
 import { Meteor } from "meteor/meteor";
 import { Reaction } from "/client/api";
 import { Cart } from "/lib/collections";
-import { Media } from "/lib/collections";
-import { Session } from "meteor/session";
+// import { Media } from "/lib/collections";
+// import { Session } from "meteor/session";
 import { Template } from "meteor/templating";
 import CartSubTotals from "/imports/plugins/core/checkout/client/containers/cartSubTotalContainer"; // "../../container/cartSubTotalContainer";
-import CartDrawer from "/imports/plugins/core/checkout/client/components/cartDrawer.js";
+// import CartDrawer from "/imports/plugins/core/checkout/client/components/cartDrawer.js";
 
 //
 // cartCheckout is a wrapper template
@@ -33,7 +33,8 @@ Template.cartCheckout.helpers({
   }
 });
 
-Template.cartCheckout.onCreated(function () {
+
+Template.cartCheckout.onCreated(() => {
   if (Reaction.Subscriptions.Cart.ready()) {
     const cart = Cart.findOne();
     if (cart && cart.workflow && cart.workflow.status === "new") {
@@ -49,14 +50,14 @@ Template.cartCheckout.onCreated(function () {
  * the current step, or has been processed already
  */
 Template.checkoutSteps.helpers({
-  isCompleted: function () {
+  isCompleted() {
     if (this.status === true) {
       return this.status;
     }
     return false;
   },
 
-  isPending: function () {
+  isPending() {
     if (this.status === this.template) {
       return this.status;
     }
@@ -68,7 +69,7 @@ Template.checkoutSteps.helpers({
  * checkoutStepBadge Helpers
  */
 Template.checkoutStepBadge.helpers({
-  checkoutStepBadgeClass: function () {
+  checkoutStepBadgeClass() {
     const workflowStep = Template.instance().data;
     // let currentStatus = Cart.findOne().workflow.status;
     if (workflowStep.status === true || workflowStep.status === this.template) {
