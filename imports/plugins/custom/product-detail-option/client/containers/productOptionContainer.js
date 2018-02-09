@@ -11,9 +11,9 @@ import { Reaction, i18next, Logger } from "/client/api";
 import { Tags, Media, Cart } from "/lib/collections";
 // import { Loading } from "/imports/plugins/core/ui/client/components";
 import { ProductOptionComponent } from "../components";
+import * as SelectedVariants from "../stores/selected-variants";
 import { SocialContainer, VariantListContainer } from "./";
 import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/client/providers";
-import * as SelectedVariants from "../stores/selected-variants";
 
 const wrapComponent = (Comp) => (
   class ProductOptionContainer extends Component {
@@ -159,7 +159,7 @@ const wrapComponent = (Comp) => (
         const oldVariantPicks = this.state.variantPicks;
         oldVariantPicks[variant._id] = variant._id;
         this.setState({
-          variantPicks: oldVariantPicks,
+          variantPicks: oldVariantPicks
         });
         return true;
       });
@@ -231,7 +231,7 @@ function composer(props, onData) {
     if (product) {
       let tags;
       if (_.isArray(product.hashtags)) {
-        tags = _.map(product.hashtags, function (id) {
+        tags = _.map(product.hashtags, (id) => {
           return Tags.findOne(id);
         });
       }

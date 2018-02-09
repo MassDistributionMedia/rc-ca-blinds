@@ -22,7 +22,7 @@ import {
 } from "./containers";
 
 import {
-  Alerts,
+  AlertContainer,
   MediaGalleryContainer
 } from "/imports/plugins/core/ui/client/containers";
 
@@ -33,7 +33,7 @@ registerComponent("ProductField", ProductField);
 registerComponent("ProductTags", ProductTags);
 registerComponent("ProductMetadata", ProductMetadata);
 registerComponent("PriceRange", PriceRange);
-registerComponent("AlertContainer", Alerts);
+registerComponent("AlertContainer", AlertContainer);
 registerComponent("MediaGalleryContainer", MediaGalleryContainer);
 registerComponent("SocialContainer", SocialContainer);
 registerComponent("VariantListContainer", VariantListContainer);
