@@ -4,14 +4,14 @@ import { compose } from "recompose";
 import { registerComponent, composeWithTracker } from "@reactioncommerce/reaction-components";
 import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
+import { Validation } from "@reactioncommerce/reaction-collections";
 import { ReactionProduct } from "/lib/api";
 import { Packages } from "/lib/collections";
 import { Countries } from "/client/collections";
 import { Reaction, i18next } from "/client/api";
 import { TaxCodes } from "/imports/plugins/core/taxes/lib/collections";
-import VariantForm from "../components/variantForm";
 import { ProductVariant } from "/lib/collections/schemas/products";
-import { Validation } from "@reactioncommerce/reaction-collections";
+import VariantForm from "../components/variantForm";
 
 const wrapComponent = (Comp) => (
   class VariantFormContainer extends Component {
@@ -32,6 +32,12 @@ const wrapComponent = (Comp) => (
       this.runVariantValidation(this.props.variant);
     }
 
+    componentWillReceiveProps(nextProps) {
+      this.setState({
+        isDeleted: nextProps.variant && nextProps.variant.isDeleted
+      });
+    }
+
     runVariantValidation(variant) {
       if (variant) {
         const validationStatus = this.validation.validate(variant);
@@ -48,9 +54,9 @@ const wrapComponent = (Comp) => (
       const shopId = Reaction.getShopId();
 
       const provider = Packages.findOne({
-        "shopId": shopId,
+        shopId,
         "registry.provides": "taxCodes",
-        "$where": function () {
+        "$where"() {
           const providerName = this.name.split("-")[1];
           return this.settings[providerName].enabled;
         }
@@ -65,9 +71,9 @@ const wrapComponent = (Comp) => (
     fetchTaxCodes = () => {
       const shopId = Reaction.getShopId();
       const provider = Packages.findOne({
-        "shopId": shopId,
+        shopId,
         "registry.provides": "taxCodes",
-        "$where": function () {
+        "$where"() {
           const providers = this.registry.filter((o) => {
             return o.provides && o.provides.includes("taxCodes");
           });
@@ -79,11 +85,11 @@ const wrapComponent = (Comp) => (
       const taxCodesArray = [];
 
       const codes = TaxCodes.find({
-        shopId: shopId,
+        shopId,
         taxCodeProvider: provider.name
       });
 
-      codes.forEach(function (code) {
+      codes.forEach((code) => {
         taxCodesArray.push({
           value: code.taxCode,
           label: `${code.taxCode} | ${code.label}`
@@ -143,7 +149,7 @@ const wrapComponent = (Comp) => (
             isDeleted: !this.state.isDeleted
           });
           const id = variant._id;
-          Meteor.call("products/deleteVariant", id, function (error, result) {
+          Meteor.call("products/deleteVariant", id, (error, result) => {
             if (result && ReactionProduct.selectedVariantId() === id) {
               return ReactionProduct.setCurrentVariant(null);
             }
@@ -158,20 +164,19 @@ const wrapComponent = (Comp) => (
       if (!productId) {
         return;
       }
-      Meteor.call("products/cloneVariant", productId, variant._id,
-        function (error, result) {
-          if (error) {
-            Alerts.alert({
-              text: i18next.t("productDetailEdit.cloneVariantFail", { title }),
-              confirmButtonText: i18next.t("app.close", { defaultValue: "Close" })
-            });
-          } else if (result) {
-            const variantId = result[0];
+      Meteor.call("products/cloneVariant", productId, variant._id, (error, result) => {
+        if (error) {
+          Alerts.alert({
+            text: i18next.t("productDetailEdit.cloneVariantFail", { title }),
+            confirmButtonText: i18next.t("app.close", { defaultValue: "Close" })
+          });
+        } else if (result) {
+          const variantId = result[0];
 
-            ReactionProduct.setCurrentVariant(variantId);
-            Session.set("variant-form-" + variantId, true);
-          }
-        });
+          ReactionProduct.setCurrentVariant(variantId);
+          Session.set("variant-form-" + variantId, true);
+        }
+      });
     }
 
     handleVariantFieldSave = (variantId, fieldName, value, variant) => {
@@ -281,10 +286,10 @@ export default compose(
 
 function composer(props, onData) {
   const variantTypes = [
-    { label: 'default variant',
-      value: 'default' },
-    { label: 'Height & Width',
-      value: 'blindsHeightWidth' },
+    { label: "default variant",
+      value: "default" },
+    { label: "Height & Width",
+      value: "blindsHeightWidth" }
   ];
-  onData(null, { variantTypes, /*countries*/ });
+  onData(null, { variantTypes /* countries*/ });
 }

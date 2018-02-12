@@ -89,7 +89,7 @@ class ChildVariant extends Component {
 
     return null;
   }
-  
+
   renderValidationButton = () => {
     if (this.state.invalidVariant === true) {
       return (
@@ -103,7 +103,7 @@ class ChildVariant extends Component {
       );
     }
   }
-  
+
   // checks whether the product variant is validated
   variantValidation = () => {
     const invalidVariant = this.validation.validate(this.props.variant);
@@ -154,7 +154,7 @@ ChildVariant.propTypes = {
   onChange: PropTypes.func,
   soldOut: PropTypes.bool,
   variant: PropTypes.object,
-  visibilityButton: PropTypes.node,
+  visibilityButton: PropTypes.node
 };
 
 registerComponent("ChildVariant", ChildVariant);

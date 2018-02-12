@@ -21,7 +21,7 @@ const wrapComponent = (Comp) => (
     };
 
     handleCreateNewChildVariant(variant) {
-      Meteor.call("products/createVariant", variant._id, function (error, result) {
+      Meteor.call("products/createVariant", variant._id, (error, result) => {
         if (error) {
           Alerts.alert({
             text: i18next.t("productDetailEdit.addVariantFail", { title: variant.title }),
@@ -37,7 +37,7 @@ const wrapComponent = (Comp) => (
           Reaction.state.set("edit/focus", cardName);
 
           Reaction.Router.go("product", {
-            handle: handle,
+            handle,
             variantId: newVariantId
           });
         }
@@ -75,18 +75,18 @@ function composer(props, onData) {
     const revisedVariant = applyProductRevision(variant);
     const childVariants = ReactionProduct.getVariants(revisedVariant._id);
     const variantTypes = [
-      { label: 'default variant',
-        value: 'default' },
-      { label: 'Height & Width',
-        value: 'blindsHeightWidth' },
+      { label: "default variant",
+        value: "default" },
+      { label: "Height & Width",
+        value: "blindsHeightWidth" }
     ];
 
     onData(null, {
       variantTypes,
       countries: Countries.find({}).fetch(),
       editFocus: Reaction.state.get("edit/focus"),
-      childVariants: childVariants,
-      variant: revisedVariant,
+      childVariants,
+      variant: revisedVariant
     });
   } else {
     onData(null, {
