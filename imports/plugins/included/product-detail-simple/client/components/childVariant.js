@@ -126,7 +126,7 @@ class ChildVariant extends Component {
   }
 
   render() {
-    const variant = this.props.variant;
+    const { variant } = this.props;
     const classes = classnames({
       "btn": true,
       "btn-default": true,
