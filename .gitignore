@@ -39,10 +39,16 @@ server/plugins.js
 ; public/custom/*
 ; !public/custom/.gitkeep
 
-; private/custom/*
-; !private/custom/.gitkeep
+public/plugins/*
+!public/plugins/.gitkeep
 
-; imports/plugins/custom/*
-; !imports/plugins/custom/.gitkeep
+private/custom/*
+!private/custom/.gitkeep
+
+private/plugins/*
+!private/plugins/.gitkeep
+
+imports/plugins/custom/*
+!imports/plugins/custom/.gitkeep
 
 .reaction/config.json

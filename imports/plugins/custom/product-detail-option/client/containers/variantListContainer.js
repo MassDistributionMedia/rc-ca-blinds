@@ -1,4 +1,4 @@
-import update from "react/lib/update";
+import update from "immutability-helper";
 import { ReactionProduct } from "/lib/api";
 import { VariantList } from "../components";
 import { Reaction, i18next } from "/client/api";
@@ -7,7 +7,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Session } from "meteor/session";
 import { Meteor } from "meteor/meteor";
-import { composeWithTracker } from "@reactioncommerce/reaction-components";
+import { composeWithTracker, Components } from "@reactioncommerce/reaction-components";
 import { getVariantIds } from "/lib/selectors/variants";
 import { getChildVariants } from "../selectors/variants";
 import * as SelectedVariants from "../stores/selected-variants";
@@ -15,7 +15,7 @@ import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
 function variantIsSelected(variantId) {
   const current = ReactionProduct.selectedVariant();
-  if (current && typeof current === "object" && (variantId === current._id || ~current.ancestors.indexOf(variantId))) {
+  if (current && typeof current === "object" && (variantId === current._id || current.ancestors.indexOf(variantId))) {
     return true;
   }
 
@@ -91,12 +91,11 @@ class VariantListContainer extends Component {
 
   get productHandle() {
     const selectedProduct = ReactionProduct.selectedProduct();
-
-    return selectedProduct.__published && selectedProduct.__published.handle || selectedProduct.handle;
+    return (selectedProduct.__published && selectedProduct.__published.handle) || selectedProduct.handle;
   }
 
   handleCreateVariant = () => {
-    const selectedProduct =  ReactionProduct.selectedProduct();
+    const selectedProduct = ReactionProduct.selectedProduct();
 
     Meteor.call("products/createVariant", selectedProduct._id, (error) => {
       if (error) {
@@ -113,7 +112,7 @@ class VariantListContainer extends Component {
       this.handleEditVariant(event, variant, ancestors);
     } else {
       ReactionProduct.setCurrentVariant(variant._id);
-      Session.set("variant-form-" + variant._id, true);
+      Session.set(`variant-form-${variant._id}`, true);
       SelectedVariants.setVariant(variant);
       Reaction.Router.go("product", {
         handle: this.productHandle,
@@ -131,7 +130,7 @@ class VariantListContainer extends Component {
     }
 
     ReactionProduct.setCurrentVariant(variant._id);
-    Session.set("variant-form-" + editVariant._id, true);
+    Session.set(`variant-form-${editVariant._id}`, true);
     Reaction.Router.go("product", {
       handle: this.productHandle,
       variantId: variant._id
@@ -227,7 +226,7 @@ function composer(props, onData) {
     childVariants,
     childVariantMedia,
     // displayPrice: ReactionProduct.getVariantPriceRange,
-    isSoldOut: isSoldOut,
+    isSoldOut,
     editable
   });
 }

@@ -1,29 +1,27 @@
+import { Meteor } from "meteor/meteor";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
 
 let variantMap;
 let variantsToSet;
-let currentProduct;
 let listeners = [];
 const productObject = {};
 const variantOptions = [];
 
 export function setProduct(nextProduct) {
+  let currentProduct = ReactionProduct.selectedProduct();
   if (currentProduct && currentProduct._id === nextProduct._id) {
     return;
   }
   currentProduct = nextProduct;
-  variantsToSet = ReactionProduct.getVariants(nextProduct._id).filter(function (variant) {
-    return variant.variantType !== "make-shift";
-  });
-  variantsToSet = variantsToSet.sort(function (a, b) {
-    return a._id - b._id;
-  });
+  variantsToSet = ReactionProduct.getVariants(nextProduct._id).filter((variant) => variant.variantType !== "make-shift");
+  variantsToSet = variantsToSet.sort((a, b) => a._id - b._id);
   variantMap = {};
   listeners = [];
 }
 
 export function handelingProduct() {
+  const currentProduct = ReactionProduct.selectedProduct();
   return !!currentProduct;
 }
 
@@ -36,20 +34,18 @@ export function offUpdate(fn) {
 }
 
 export function setVariant(childVariant) {
+  const currentProduct = ReactionProduct.selectedProduct();
   const parentVariantId = childVariant.ancestors[childVariant.ancestors.length - 1];
   if (parentVariantId === currentProduct._id) {
     return;
   }
   if (!variantsToSet.some((variant) =>
-    variant._id === parentVariantId
-  )) {
+    variant._id === parentVariantId)) {
     throw new Error("This variant does not have valid ancestry");
   }
   variantMap[parentVariantId] = childVariant._id;
 
-  listeners.forEach(function (fn) {
-    fn();
-  });
+  listeners.forEach((fn) => fn());
 
   setProductObject();
   setChildVariants();
@@ -69,12 +65,14 @@ export function setProductObject() {
 export function setChildVariants() {
   for (const index in variantsToSet) {
     if (variantsToSet[index].ancestors.length >= 2) {
-      const ancestors = variantsToSet[index].ancestors;
+      const { ancestors } = variantsToSet[index];
 
       for (const i in ancestors) {
-        const parentKey = findParentVariant(ancestors[i]);
+        if (ancestors.prototype.call(hasOwnProperty(i))) {
+          const parentKey = findParentVariant(ancestors[i]);
 
-        parentKey ? productObject[parentKey].push(variantsToSet[index]) : null;
+          parentKey ? productObject[parentKey].push(variantsToSet[index]) : null;
+        }
       }
     }
   }
@@ -90,30 +88,32 @@ export function findParentVariant(id) {
 }
 
 export function retrieveCurrentPrice() {
+  const currentProduct = ReactionProduct.selectedProduct();
   if (!currentProduct) {
     return 0;
   }
-  return Object.keys(variantMap).reduce(function (price, parentID) {
-    const setVariant = Products.findOne(variantMap[parentID]);
-    if (!setVariant) {
+  return Object.keys(variantMap).reduce((price, parentID) => {
+    const setThisVariant = Products.findOne(variantMap[parentID]);
+    if (!setThisVariant) {
       throw new Error("This variant does not exist");
     }
-    return p + setVariant.price;
+    return price + setThisVariant.price;
   }, 0);
 }
 
 export function retrieveMetaValues() {
+  const currentProduct = ReactionProduct.selectedProduct();
   if (!currentProduct) {
     return [];
   }
 
-  return Object.keys(variantMap).reduce(function (netArray, parentID) {
+  return Object.keys(variantMap).reduce((netArray, parentID) => {
     const reqVariant = Products.findOne(parentID);
-    const setVariant = Products.findOne(variantMap[parentID]);
+    const setThisVariant = Products.findOne(variantMap[parentID]);
     if (!setVariant) {
       throw new Error("This variant does not exist");
     }
-    const values = extractValuesFromVariant(setVariant, reqVariant);
+    const values = extractValuesFromVariant(setThisVariant, reqVariant);
     const metafields = valuesToMetaFields(values);
     // console.log('values', values);
     // console.log('metafields', metafields);
@@ -129,6 +129,7 @@ export function composeNewVariant() {
   //   throw new Error('A variant option is missing. Please select all the variants');
   // }
 
+  const currentProduct = ReactionProduct.selectedProduct();
   const netVariant = {
     _id: "",
     price: 0,
@@ -138,34 +139,34 @@ export function composeNewVariant() {
     isProductBundle: true
   };
 
-  for (let reqVariant in variantMap) {
-    const parentVariant = Products.findOne(reqVariant);
-    const setVariant = Products.findOne(variantMap[reqVariant]);
+  for (const reqVariant in variantMap) {
+    if (variantMap.property.call(hasOwnProperty(reqVariant))) {
+      const parentVariant = Products.findOne(reqVariant);
+      // const setVariant = Products.findOne(variantMap[reqVariant]);
 
-    if (!setVariant) {
-      throw new Error("This variant does not exist");
+      if (!setVariant) {
+        throw new Error("This variant does not exist");
+      }
+
+      const values = extractValuesFromVariant(setVariant, parentVariant);
+      const metafields = valuesToMetaFields(values);
+
+      netVariant.price += setVariant.price;
+      netVariant.values = netVariant.values.concat(values);
+      netVariant.metafields = netVariant.metafields.concat(metafields);
+      netVariant._id += hash(parentVariant._id).toString(32) + hash(setVariant._id).toString(32);
     }
-
-    const values = extractValuesFromVariant(setVariant, parentVariant);
-    const metafields = valuesToMetaFields(values);
-
-    netVariant.price += setVariant.price;
-    netVariant.values = netVariant.values.concat(values);
-    netVariant.metafields = netVariant.metafields.concat(metafields);
-    netVariant._id += hash(parentVariant._id).toString(32) + hash(setVariant._id).toString(32);
   }
 
   netVariant.type = "variant";
-  netVariant.title = "Custom Bundled " + currentProduct.title;
+  netVariant.title = `Custom Bundled ${currentProduct.title}`;
 
   return addNewVariant(currentProduct._id, netVariant);
 }
 
 const MULTIPLIER = 37;
 function hash(str) {
-  return str.split("").reduce(function (h, char) {
-    return MULTIPLIER * h + char.charCodeAt(0);
-  }, 0);
+  return str.split("").reduce((h, char) => MULTIPLIER * h + char.charCodeAt(0), 0);
 }
 
 function extractValuesFromVariant(variant, parent) {
@@ -176,8 +177,8 @@ function extractValuesFromVariant(variant, parent) {
       };
     case "blindsHeightWidth":
       return {
-        Width: variant.width + " " + variant.widthEighth  + "/8",
-        Height: variant.height + " " + variant.heightEighth  + "/8",
+        Width: `${variant.width} ${variant.widthEighth}/8`,
+        Height: `${variant.height} ${variant.heightEighth}/8`,
         BlindType: variant.blindType
       };
     default:
@@ -188,11 +189,11 @@ function extractValuesFromVariant(variant, parent) {
 }
 
 function valuesToMetaFields(values) {
-  return Object.keys(values).reduce(function (netArray, key) {
+  return Object.keys(values).reduce((netArray, key) => {
     const newObj = {};
     newObj.key = key;
     newObj.value = values[key];
-    return netArray.concat([ newObj ]);
+    return netArray.concat([newObj]);
   }, []);
 }
 
@@ -203,7 +204,7 @@ function addNewVariant(parentId, newVariant) {
   Array.isArray(ancestors) && ancestors.push(parentId);
   const assembledVariant = Object.assign(newVariant || {}, {
     _id: newVariantId,
-    ancestors: ancestors,
+    ancestors,
     type: "variant",
     isVisible: true,
     inventoryQuantity: 111
@@ -216,15 +217,15 @@ function addNewVariant(parentId, newVariant) {
     });
   }
 
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     Meteor.call(
       "product-detail-option.insertVariant", assembledVariant,
-      function (err, result) {
+      (err, result) => {
         if (err) return reject(err);
         resolve(result);
       }
     );
-  }).then(function (variantId) {
+  }).then((variantId) => {
     assembledVariant._id = variantId;
     return newVariant;
   });

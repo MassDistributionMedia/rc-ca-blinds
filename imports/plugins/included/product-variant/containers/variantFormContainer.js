@@ -74,9 +74,7 @@ const wrapComponent = (Comp) => (
         shopId,
         "registry.provides": "taxCodes",
         "$where"() {
-          const providers = this.registry.filter((o) => {
-            return o.provides && o.provides.includes("taxCodes");
-          });
+          const providers = this.registry.filter((o) => o.provides && o.provides.includes("taxCodes"));
           const providerName = providers[0].name.split("/")[2];
 
           return this.settings[providerName].enabled;
@@ -174,7 +172,7 @@ const wrapComponent = (Comp) => (
           const variantId = result[0];
 
           ReactionProduct.setCurrentVariant(variantId);
-          Session.set("variant-form-" + variantId, true);
+          Session.set(`variant-form-${variantId}`, true);
         }
       });
     }
@@ -218,9 +216,7 @@ const wrapComponent = (Comp) => (
       // If this is not a top-level variant, update top-level inventory policy as well
       if (parent && options && options.length) {
         // Check to see if every variant option inventory policy is true
-        const inventoryPolicy = options.every((option) => {
-          return option.inventoryPolicy === true;
-        });
+        const inventoryPolicy = options.every((option) => option.inventoryPolicy === true);
 
         // If all inventory policies on children are true, update parent to be true
         if (inventoryPolicy === true) {
@@ -239,7 +235,7 @@ const wrapComponent = (Comp) => (
       }
     }
 
-    updateQuantityIfChildVariants =  (variant) => {
+    updateQuantityIfChildVariants = (variant) => {
       if (this.hasChildVariants(variant)) {
         const variantQuantity = ReactionProduct.getVariantQuantity(variant);
         return variantQuantity;
