@@ -1,12 +1,10 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { Reaction } from "/client/api";
+// import { Reaction } from "/client/api";
 import { Components } from "@reactioncommerce/reaction-components";
 import { ReactionProduct } from "/lib/api";
 
-import RenderWidthHeightList, {
-  WIDTH_HEIGHT_VARIANT_TYPE,
-} from "/imports/plugins/custom/width-height-variant/client/render-list";
+import RenderWidthHeightList, { WIDTH_HEIGHT_VARIANT_TYPE } from "/imports/plugins/custom/width-height-variant/client/render-list";
 
 
 class VariantList extends Component {
@@ -67,7 +65,7 @@ class VariantList extends Component {
 
     if (this.props.variants) {
       variants = this.props.variants.map((variant, index) => {
-        if (variant.hasOwnProperty('isProductBundle') && variant.isProductBundle) {
+        if (Object.prototype.hasOwnProperty.call(variant, "isProductBundle") && variant.isProductBundle) {
           return null;
         }
 
@@ -117,7 +115,7 @@ class VariantList extends Component {
           key="dividerWithLabel"
           label="Options"
         />,
-        variantList,
+        variantList
       ];
     } else if (variants.length === 1) {
       return [
@@ -128,7 +126,7 @@ class VariantList extends Component {
 
     return variantList;
   }
-  
+
   renderChildVariants() {
     /**
      * This `if` is to handle error:
@@ -143,8 +141,8 @@ class VariantList extends Component {
 
     const type = currentVariant.variantType || "variant";
     const methods = this;
-    const props = this.props;
-    
+    const { props } = this;
+
     return (
       <RenderList
         renderType={type}
@@ -166,18 +164,18 @@ class VariantList extends Component {
 }
 
 VariantList.propTypes = {
+  childVariantMedia: PropTypes.arrayOf(PropTypes.any),
+  childVariants: PropTypes.arrayOf(PropTypes.object),
+  displayPrice: PropTypes.func,
   editable: PropTypes.bool,
   isSoldOut: PropTypes.func,
-  displayPrice: PropTypes.func,
+  onCreateVariant: PropTypes.func,
   onEditVariant: PropTypes.func,
   onMoveVariant: PropTypes.func,
   onVariantClick: PropTypes.func,
-  onCreateVariant: PropTypes.func,
-  variantIsSelected: PropTypes.func,
   onVariantVisibiltyToggle: PropTypes.func,
-  variants: PropTypes.arrayOf(PropTypes.object),
-  childVariants: PropTypes.arrayOf(PropTypes.object),
-  childVariantMedia: PropTypes.arrayOf(PropTypes.any)
+  variantIsSelected: PropTypes.func,
+  variants: PropTypes.arrayOf(PropTypes.object)
 };
 
 export default VariantList;
@@ -187,22 +185,26 @@ function RenderList(props) {
     renderType,
     renderList,
     parentProps,
-    parentMethods,
+    parentMethods
   } = props;
 
-  switch(renderType) {
+  switch (renderType) {
     case WIDTH_HEIGHT_VARIANT_TYPE : {
-      return (<RenderWidthHeightList
-        renderList={renderList}
-        methods={parentMethods}
-      />);
+      return (
+        <RenderWidthHeightList
+          renderList={renderList}
+          methods={parentMethods}
+        />
+      );
     }
     default:
-      return (<RenderVariantList
-        renderList={renderList}
-        parentProps={parentProps}
-        methods={parentMethods}
-      />);
+      return (
+        <RenderVariantList
+          renderList={renderList}
+          parentProps={parentProps}
+          methods={parentMethods}
+        />
+      );
   }
 }
 
@@ -210,9 +212,9 @@ function RenderVariantList(props) {
   const {
     renderList,
     parentProps,
-    methods,
+    methods
   } = props;
-  
+
   if (!renderList) {
     return null;
   }
@@ -220,9 +222,9 @@ function RenderVariantList(props) {
   return (
     <span>
       <Components.Divider
-          key="availableOptionsDivider"
-          i18nKeyLabel="productDetail.availableOptions"
-          label="Available Options"
+        key="availableOptionsDivider"
+        i18nKeyLabel="productDetail.availableOptions"
+        label="Available Options"
       />
       <div className="row variant-product-options" key="childVariantList">
         <div>{

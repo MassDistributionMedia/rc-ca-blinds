@@ -114,7 +114,7 @@ class ChildVariant extends Component {
   }
 
   render() {
-    const variant = this.props.variant;
+    const { variant } = this.props;
     const classes = classnames({
       "btn": true,
       "btn-default": true,
@@ -150,8 +150,8 @@ ChildVariant.propTypes = {
   editButton: PropTypes.node,
   isSelected: PropTypes.bool,
   media: PropTypes.arrayOf(PropTypes.object),
-  onClick: PropTypes.func,
   onChange: PropTypes.func,
+  onClick: PropTypes.func,
   soldOut: PropTypes.bool,
   variant: PropTypes.object,
   visibilityButton: PropTypes.node

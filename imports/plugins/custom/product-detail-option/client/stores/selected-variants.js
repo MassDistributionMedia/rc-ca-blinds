@@ -39,10 +39,10 @@ export function setVariant(childVariant) {
   if (parentVariantId === currentProduct._id) {
     return;
   }
-  if (!variantsToSet.some((variant) =>
-    variant._id === parentVariantId)) {
-    throw new Error("This variant does not have valid ancestry");
-  }
+  // if (!variantsToSet.some((variant) =>
+  //   variant._id === parentVariantId)) {
+  //   throw new Error("This variant does not have valid ancestry");
+  // }
   variantMap[parentVariantId] = childVariant._id;
 
   listeners.forEach((fn) => fn());

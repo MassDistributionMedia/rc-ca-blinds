@@ -1,47 +1,52 @@
-import classnames from "classnames";
-import { ReactionProduct } from "/lib/api";
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import classnames from "classnames";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 import * as SelectedVariants from "../stores/selected-variants";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Metadata, Translation } from "/imports/plugins/core/ui/client/components/";
+
 
 class ProductMetadata extends Component {
   get metafields() {
-    var metafields = [];
+    // let metafields = [];
+    return this.props.metafields || this.props.product.metafields;
+    // metafields = this.props.metafields || this.props.product.metafields;
 
-    if(this.props.metafields){
-      metafields = metafields.concat(this.props.metafields);
-    }
+    // metafields = metafields.concat(SelectedVariants.retrieveMetaValues());
 
-    var product = this.props.product;
-    if(product && product.metafields){
-      metafields = metafields.concat(product.metafields.filter(function(meta){
-        for(var i = 0; i < metafields.length; i++){
-          if(metafields[i].key === meta.key){
-            return false;
-          }
-
-          return true;
-        }
-      }));
-    }
-
-    metafields = metafields.concat(SelectedVariants.retrieveMetaValues());
-
-    return metafields;
+    // return metafields;
   }
+  // get metafields() {
+  //   let metafields = [];
+  //   if (this.props.metafields) {
+  //     metafields = metafields.concat(this.props.metafields);
+  //   }
+  //   const { product } = this.props;
+  //   if (product && product.metafields) {
+  //     metafields = metafields.concat(product.metafields.filter((meta) => {
+  //       for (let i = 0; i < metafields.length; i += 1) {
+  //         if (metafields[i].key === meta.key) {
+  //           return false;
+  //         }
+  //       }
+  //       return true;
+  //     }));
+  //   }
 
-  componentDidMount(){
-    this.updateListener = ()=>{
-      this.setState({ timestamp: Date.now() });
-    };
-    SelectedVariants.onUpdate(this.updateListener);
-  }
+  //   metafields = metafields.concat(SelectedVariants.retrieveMetaValues());
 
-  componentWillUnmount(){
-    SelectedVariants.offUpdate(this.updateListener);
-  }
+  //   return metafields;
+  // }
+
+  // componentDidMount() {
+  //   this.updateListener = () => {
+  //     this.setState({ timestamp: Date.now() });
+  //   };
+  //   SelectedVariants.onUpdate(this.updateListener);
+  // }
+
+  // componentWillUnmount() {
+  //   SelectedVariants.offUpdate(this.updateListener);
+  // }
 
   get showEditControls() {
     return this.props.product && this.props.editable;
@@ -51,7 +56,7 @@ class ProductMetadata extends Component {
     if (this.showEditControls) {
       return (
         <span className="edit-button">
-          <EditContainer
+          <Components.EditContainer
             data={this.props.product}
             disabled={this.props.editable === false}
             editTypes={["edit"]}
@@ -79,10 +84,10 @@ class ProductMetadata extends Component {
       return (
         <div className="pdp product-metadata">
           <h3 className={headerClassName}>
-            <Translation defaultValue="Details" i18nKey="productDetail.details" />
+            <Components.Translation defaultValue="Details" i18nKey="productDetail.details" />
             {this.renderEditButton()}
           </h3>
-          <Metadata editable={false} metafields={this.metafields} />
+          <Components.Metadata editable={false} metafields={this.metafields} />
         </div>
       );
     }
@@ -92,10 +97,12 @@ class ProductMetadata extends Component {
 }
 
 ProductMetadata.propTypes = {
-  editable: PropTypes.bool,
-  product: PropTypes.object,
   editContainerProps: PropTypes.object,
-  metafields: PropTypes.arrayOf(PropTypes.object)
+  editable: PropTypes.bool,
+  metafields: PropTypes.arrayOf(PropTypes.object),
+  product: PropTypes.object
 };
+
+registerComponent("ProductMetadata", ProductMetadata);
 
 export default ProductMetadata;

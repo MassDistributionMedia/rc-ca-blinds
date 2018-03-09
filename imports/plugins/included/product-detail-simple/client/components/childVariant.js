@@ -90,9 +90,6 @@ class ChildVariant extends Component {
     return null;
   }
 
-  // http://stackoverflow.com/questions/26176519/reactjs-call-parent-function
-  // http://stackoverflow.com/questions/30580638/pass-parent-prop-to-children-reactjs?rq=1
-
   renderValidationButton = () => {
     if (this.state.invalidVariant === true) {
       return (
@@ -127,12 +124,6 @@ class ChildVariant extends Component {
       "variant-notVisible": !this.props.variant.isVisible
     });
 
-    if (this.props.isHeightWidth) {
-      return (
-        <MenuItem onClick={this.handleClick} value={variant.height} primaryText={variant.height + "\""} />
-      );
-    }
-
     return (
       <div className="variant-select-option">
         <button
@@ -144,10 +135,10 @@ class ChildVariant extends Component {
           <span className="title">{variant.optionTitle}</span>
         </button>
 
-        <div className="variant-controls custom-variant-control">
+        <div className="variant-controls">
           {this.renderDeletionStatus()}
           {this.renderInventoryStatus()}
-          {this.renderValidationButton()}
+          {this.props.visibilityButton}
           {this.props.editButton}
         </div>
       </div>
@@ -159,11 +150,11 @@ ChildVariant.propTypes = {
   editButton: PropTypes.node,
   isSelected: PropTypes.bool,
   media: PropTypes.arrayOf(PropTypes.object),
-  onClick: PropTypes.func.isRequired,
+  onClick: PropTypes.func,
   onChange: PropTypes.func,
   soldOut: PropTypes.bool,
   variant: PropTypes.object,
-  visibilityButton: PropTypes.node,
+  visibilityButton: PropTypes.node
 };
 
 registerComponent("ChildVariant", ChildVariant);

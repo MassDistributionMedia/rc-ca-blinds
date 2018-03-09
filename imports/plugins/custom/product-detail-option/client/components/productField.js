@@ -1,20 +1,15 @@
-import classnames from "classnames";
-import "velocity-animate/velocity.ui";
-import Velocity from "velocity-animate";
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { TextField } from "/imports/plugins/core/ui/client/components/";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
+import classnames from "classnames";
+import Velocity from "velocity-animate";
+import "velocity-animate/velocity.ui";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
+
+import { Reaction } from "client/api";
 
 class ProductField extends Component {
-  static state = {};
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      value: this.value
-    };
+  state = {
+    value: this.value
   }
 
   componentWillReceiveProps(nextProps) {
@@ -22,12 +17,14 @@ class ProductField extends Component {
       this.setState({
         value: nextProps.product[this.fieldName]
       }, () => {
-        const input = this._input.refs.input;
+        if (this._input && this._input.refs.input) {
+          const { input } = this._input.refs;
 
-        Velocity.RunSequence([
-          { e: input, p: { backgroundColor: "#e2f2e2" }, o: { duration: 200 } },
-          { e: input, p: { backgroundColor: "#fff" }, o: { duration: 100 } }
-        ]);
+          Velocity.RunSequence([
+            { e: input, p: { backgroundColor: "#e2f2e2" }, o: { duration: 200 } },
+            { e: input, p: { backgroundColor: "#fff" }, o: { duration: 100 } }
+          ]);
+        }
       });
     } else {
       this.setState({
@@ -48,6 +45,22 @@ class ProductField extends Component {
     }
   }
 
+  handleFocus = () => {
+    // Open actionView, if not already open
+    if (!Reaction.isActionViewOpen()) {
+      Reaction.showActionView();
+    }
+
+    // Open actionView to productDetails panel
+    Reaction.state.set("edit/focus", "productDetails");
+
+    Reaction.setActionView({
+      i18nKeyLabel: "productDetailEdit.productSettings",
+      label: "Product Settings",
+      template: "ProductAdmin"
+    });
+  }
+
   get fieldName() {
     return this.props.fieldName;
   }
@@ -64,7 +77,7 @@ class ProductField extends Component {
     if (this.showEditControls) {
       return (
         <span className="edit-controls">
-          <EditContainer
+          <Components.EditContainer
             autoHideEditButton={true}
             data={this.props.product}
             editView="ProductAdmin"
@@ -96,8 +109,8 @@ class ProductField extends Component {
 
     return (
       <div className={baseClassName}>
-        <TextField
-          ref={(ref) => { this._input = ref;}}
+        <Components.TextField
+          ref={(ref) => { this._input = ref; }}
           className={textFieldClassName}
           multiline={this.props.multiline}
           onBlur={this.handleBlur}
@@ -116,16 +129,23 @@ class ProductField extends Component {
       return this.renderTextField();
     }
 
+    const classNames = classnames({
+      pdp: true,
+      field: true,
+      [this.fieldName]: !!this.fieldName
+    });
+
     if (this.props.element) {
       return React.createElement(this.props.element, {
-        className: "pdp field",
+        className: classNames,
         itemProp: this.props.itemProp,
         children: this.value
       });
+      
     }
 
     return (
-      <div className="pdp field">
+      <div className={classNames}>
         {this.value}
       </div>
     );
@@ -133,16 +153,18 @@ class ProductField extends Component {
 }
 
 ProductField.propTypes = {
+  editContainerProps: PropTypes.object,
   editable: PropTypes.bool,
   element: PropTypes.node,
-  product: PropTypes.object,
-  multiline: PropTypes.bool,
-  itemProp: PropTypes.string,
   fieldName: PropTypes.string,
   fieldTitle: PropTypes.string,
-  textFieldProps: PropTypes.object,
-  editContainerProps: PropTypes.object,
-  onProductFieldChange: PropTypes.func
+  itemProp: PropTypes.string,
+  multiline: PropTypes.bool,
+  onProductFieldChange: PropTypes.func,
+  product: PropTypes.object,
+  textFieldProps: PropTypes.object
 };
+
+registerComponent("ProductField", ProductField);
 
 export default ProductField;

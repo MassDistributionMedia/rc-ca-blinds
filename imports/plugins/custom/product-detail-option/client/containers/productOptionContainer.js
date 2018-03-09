@@ -13,7 +13,7 @@ import { Tags, Media, Cart } from "/lib/collections";
 import { ProductOptionComponent } from "../components";
 import * as SelectedVariants from "../stores/selected-variants";
 import { SocialContainer, VariantListContainer } from "./";
-import { DragDropProvider, TranslationProvider } from "/imports/plugins/core/ui/client/providers";
+import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
 const wrapComponent = (Comp) => (
   class ProductOptionContainer extends Component {
@@ -56,9 +56,8 @@ const wrapComponent = (Comp) => (
       //   return [];
       // }
 
-      Promise.resolve().then(() => {
-        return SelectedVariants.composeNewVariant();
-      }).then((newVariant) => {
+      Promise.resolve().then(() =>
+        SelectedVariants.composeNewVariant()).then((newVariant) => {
         quantity = parseInt(this.state.cartQuantity, 10);
 
         if (quantity < 1) {
@@ -172,25 +171,23 @@ const wrapComponent = (Comp) => (
         );
       }
       return (
-        <TranslationProvider>
-          <DragDropProvider>
-            <StyleRoot>
-              <Comp
-                cartQuantity={this.state.cartQuantity}
-                mediaGalleryComponent={<Components.MediaGallery media={this.props.media} />}
-                onAddToCart={this.handleAddToCart}
-                onCartQuantityChange={this.handleCartQuantityChange}
-                onViewContextChange={this.handleViewContextChange}
-                socialComponent={<SocialContainer />}
-                topVariantComponent={<VariantListContainer />}
-                onDeleteProduct={this.handleDeleteProduct}
-                handleVariantChoice={this.handleVariantChoice}
-                onProductFieldChange={this.handleProductFieldChange}
-                {...this.props}
-              />
-            </StyleRoot>
-          </DragDropProvider>
-        </TranslationProvider>
+        <DragDropProvider>
+          <StyleRoot>
+            <Comp
+              cartQuantity={this.state.cartQuantity}
+              mediaGalleryComponent={<Components.MediaGallery media={this.props.media} />}
+              onAddToCart={this.handleAddToCart}
+              onCartQuantityChange={this.handleCartQuantityChange}
+              onViewContextChange={this.handleViewContextChange}
+              socialComponent={<SocialContainer />}
+              topVariantComponent={<VariantListContainer />}
+              onDeleteProduct={this.handleDeleteProduct}
+              handleVariantChoice={this.handleVariantChoice}
+              onProductFieldChange={this.handleProductFieldChange}
+              {...this.props}
+            />
+          </StyleRoot>
+        </DragDropProvider>
       );
     }
   }
@@ -231,9 +228,7 @@ function composer(props, onData) {
     if (product) {
       let tags;
       if (_.isArray(product.hashtags)) {
-        tags = _.map(product.hashtags, (id) => {
-          return Tags.findOne(id);
-        });
+        tags = _.map(product.hashtags, (id) => Tags.findOne(id));
       }
 
       let mediaArray = [];
@@ -328,6 +323,3 @@ export default compose(
   composeWithTracker(composer),
   wrapComponent
 )(ProductOptionComponent);
-
-// Decorate component and export
-// export default composeWithTracker(composer, Loading)(ProductOptionContainer);

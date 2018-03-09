@@ -152,7 +152,7 @@ const wrapComponent = (Comp) => (
       }
     }
 
-    handleCheckboxSelect = (list, product) => {
+    handleCheckboxSelect = (list, product, event) => {
       let checkbox = list.querySelector(`input[type=checkbox][value="${product._id}"]`);
       const items = document.querySelectorAll("li.product-grid-item");
       const activeItems = document.querySelectorAll("li.product-grid-item.active");
@@ -223,12 +223,12 @@ const wrapComponent = (Comp) => (
         if (isSelected) {
           // If a product is already selected, and you are single clicking on another product(s)
           // WITH command key, the product(s) are added to the selected products Session array
-          this.handleCheckboxSelect(list, product);
+          this.handleCheckboxSelect(list, product, event);
           if (event.metaKey || event.ctrlKey || event.shiftKey) {
-            this.handleCheckboxSelect(list, product);
+            this.handleCheckboxSelect(list, product, event);
           }
         } else if (event.metaKey || event.ctrlKey || event.shiftKey) {
-          this.handleCheckboxSelect(list, product);
+          this.handleCheckboxSelect(list, product, event);
         } else {
           const checkbox = list.querySelector(`input[type=checkbox][value="${product._id}"]`);
           Session.set("productGrid/selectedProducts", []);

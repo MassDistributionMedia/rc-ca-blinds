@@ -1,16 +1,31 @@
-import { ChildVariant } from "./";
-import classnames from "classnames";
-import { Reaction } from "/client/api";
-import { ReactionProduct } from "/lib/api";
-import { Products } from "/lib/collections";
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import classnames from "classnames";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
+import { Validation } from "@reactioncommerce/reaction-collections";
+import { ChildVariant } from "./";
+// import { Reaction } from "/client/api";
+import { ReactionProduct } from "/lib/api";
+import { ProductVariant } from "/lib/collections/schemas";
+// import { Products } from "/lib/collections";
 import { SortableItem } from "/imports/plugins/core/ui/client/containers";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Divider, IconButton } from "/imports/plugins/core/ui/client/components";
 import { Currency, Translation } from "/imports/plugins/core/ui/client/components";
 
 class Variant extends Component {
+  constructor(props) {
+    super(props);
+
+    this.validation = new Validation(ProductVariant);
+
+    this.state = {
+      invalidVariant: [],
+      selfValidation: []
+    };
+  }
+
+  componentWillMount() {
+    this.variantValidation();
+  }
 
   handleClick = (event) => {
     if (this.props.onClick) {
@@ -18,15 +33,23 @@ class Variant extends Component {
 
       const variantId = ReactionProduct.selectedVariant()._id;
 
-      let selectedAccordion = document.getElementById(variantId);
-      let variantAccordion = document.getElementsByClassName("variant-accordion");
+      const selectedAccordion = document.getElementById(variantId);
+      const variantAccordion = document.getElementsByClassName("variant-accordion");
 
       selectedAccordion.style.display = selectedAccordion.style.display === "block" ? "none" : "block";
-      for(let i=0; i<variantAccordion.length; i++ ) {
+      for (let i = 0; i < variantAccordion.length; i += 1) {
         if (variantAccordion[i].id !== variantId) {
-           variantAccordion[i].style.display = "none";
+          variantAccordion[i].style.display = "none";
         }
       }
+    }
+  }
+
+  handleOnKeyUp = (event) => {
+    // keyCode 32 (spacebar)
+    // keyCode 13 (enter/return)
+    if (event.keyCode === 32 || event.keyCode === 13) {
+      this.handleClick(event);
     }
   }
 
@@ -45,14 +68,14 @@ class Variant extends Component {
       if (inventoryPolicy) {
         return (
           <span className="variant-qty-sold-out badge badge-danger">
-            <Translation defaultValue="Sold Out!" i18nKey="productDetail.soldOut" />
+            <Components.Translation defaultValue="Sold Out!" i18nKey="productDetail.soldOut" />
           </span>
         );
       }
 
       return (
         <span className="variant-qty-sold-out badge badge-info">
-          <Translation defaultValue="Backorder" i18nKey="productDetail.backOrder" />
+          <Components.Translation defaultValue="Backorder" i18nKey="productDetail.backOrder" />
         </span>
       );
     }
@@ -62,14 +85,14 @@ class Variant extends Component {
       if (inventoryPolicy) {
         return (
           <span className="variant-qty-sold-out badge badge-warning">
-            <Translation defaultValue="Limited Supply" i18nKey="productDetail.limitedSupply" />
+            <Components.Translation defaultValue="Limited Supply" i18nKey="productDetail.limitedSupply" />
           </span>
         );
       }
 
       return (
         <span className="variant-qty-sold-out badge badge-info">
-          <Translation defaultValue="Backorder" i18nKey="productDetail.backOrder" />
+          <Components.Translation defaultValue="Backorder" i18nKey="productDetail.backOrder" />
         </span>
       );
     }
@@ -81,7 +104,7 @@ class Variant extends Component {
     if (this.props.variant.isDeleted) {
       return (
         <span className="badge badge-danger">
-          <Translation defaultValue="Archived" i18nKey="app.archived" />
+          <Components.Translation defaultValue="Archived" i18nKey="app.archived" />
         </span>
       );
     }
@@ -89,15 +112,59 @@ class Variant extends Component {
     return null;
   }
 
+  renderValidationButton = () => {
+    if (this.state.selfValidation.isValid === false) {
+      return (
+        <Components.Badge
+          status="danger"
+          indicator={true}
+          tooltip={"Validation error"}
+          i18nKeyTooltip={"admin.tooltip.validationError"}
+        />
+      );
+    }
+    if (this.state.invalidVariant.length) {
+      return (
+        <Components.Badge
+          status="danger"
+          indicator={true}
+          tooltip={"Validation error on variant option"}
+          i18nKeyTooltip={"admin.tooltip.optionValidationError"}
+        />
+      );
+    }
+  }
+
+  variantValidation = () => {
+    const variants = ReactionProduct.getVariants(this.props.variant._id);
+    let validationStatus;
+    let invalidVariant;
+
+    if (variants) {
+      validationStatus = variants.map((variant) => this.validation.validate(variant));
+
+      invalidVariant = validationStatus.filter((status) => status.isValid === false);
+    }
+
+    const selfValidation = this.validation.validate(this.props.variant);
+
+    this.setState({
+      invalidVariant,
+      selfValidation
+    });
+  }
+
   render() {
-    let detailStyle = {
-      display: 'none',
+    const detailStyle = {
+      display: "none"
     };
-    const variant = this.props.variant;
+    const { variant } = this.props;
     const classes = classnames({
       "variant-detail": true,
+      "variant-button": true,
       "variant-detail-selected": this.props.isSelected,
-      "variant-deleted": this.props.variant.isDeleted
+      "variant-deleted": this.props.variant.isDeleted,
+      "variant-notVisible": !this.props.variant.isVisible
     });
 
     let variantTitleElement;
@@ -108,7 +175,7 @@ class Variant extends Component {
       );
     } else {
       variantTitleElement = (
-        <Translation defaultValue="Label" i18nKey="productVariant.title" />
+        <Components.Translation defaultValue="Label" i18nKey="productVariant.title" />
       );
     }
 
@@ -117,17 +184,23 @@ class Variant extends Component {
         className="variant-list-item"
         id="variant-list-item-{variant._id}"
         key={variant._id}
-        onClick={this.handleClick}
       >
-        <div className={classes}>
-          <div className="title">
-            {variantTitleElement}
-          </div>
+        <div
+          onClick={this.handleClick}
+          onKeyUp={this.handleOnKeyUp}
+          role="button"
+          tabIndex={0}
+        >
+          <div className={classes}>
+            <div className="title">
+              {variantTitleElement}
+            </div>
 
-          <div className="actions">
-            <span className="variant-price">
-              <Currency amount={this.price} editable={this.props.editable}/>
-            </span>
+            <div className="actions">
+              <span className="variant-price">
+                <Components.Currency amount={this.price} editable={this.props.editable}/>
+              </span>
+            </div>
           </div>
 
           <div className="alerts">
@@ -141,11 +214,7 @@ class Variant extends Component {
     );
 
     if (this.props.editable) {
-      return this.props.connectDragSource(
-        this.props.connectDropTarget(
-          variantElement
-        )
-      );
+      return this.props.connectDragSource(this.props.connectDropTarget(variantElement));
     }
 
     return variantElement;
@@ -153,18 +222,20 @@ class Variant extends Component {
 }
 
 Variant.propTypes = {
-  onClick: PropTypes.func,
-  soldOut: PropTypes.bool,
-  editable: PropTypes.bool,
-  variant: PropTypes.object,
-  editButton: PropTypes.node,
-  isSelected: PropTypes.bool,
-  visibilityButton: PropTypes.node,
+  childVariants: PropTypes.arrayOf(PropTypes.object),
   connectDragSource: PropTypes.func,
   connectDropTarget: PropTypes.func,
+  displayPrice: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  editButton: PropTypes.node,
+  editable: PropTypes.bool,
+  isSelected: PropTypes.bool,
+  onClick: PropTypes.func,
   renderChildVariants: PropTypes.func,
-  childVariants: PropTypes.arrayOf(PropTypes.object),
-  displayPrice: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+  soldOut: PropTypes.bool,
+  variant: PropTypes.object,
+  visibilityButton: PropTypes.node
 };
+
+registerComponent("Variant", Variant, SortableItem("product-variant"));
 
 export default SortableItem("product-variant", Variant);

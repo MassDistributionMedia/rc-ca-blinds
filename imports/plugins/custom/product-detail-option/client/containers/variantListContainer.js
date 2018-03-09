@@ -7,7 +7,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Session } from "meteor/session";
 import { Meteor } from "meteor/meteor";
-import { composeWithTracker, Components } from "@reactioncommerce/reaction-components";
+import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import { getVariantIds } from "/lib/selectors/variants";
 import { getChildVariants } from "../selectors/variants";
 import * as SelectedVariants from "../stores/selected-variants";
