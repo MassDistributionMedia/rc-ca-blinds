@@ -233,26 +233,26 @@ function denormalize(id, field) {
       Object.assign(update, {
         isSoldOut: isSoldOut(variants),
         isLowQuantity: isLowQuantity(variants),
-        isBackorder: isBackorder(variants),
+        isBackorder: isBackorder(variants)
       });
       break;
     case "lowInventoryWarningThreshold":
       Object.assign(update, {
-        isLowQuantity: isLowQuantity(variants),
+        isLowQuantity: isLowQuantity(variants)
       });
       break;
     default: { // "price" is object with range, min, max
       const priceObject = Catalog.getProductPriceRange(id);
       Object.assign(update, {
-        price: priceObject,
+        price: priceObject
       });
     }
   }
   Products.update(id, {
-    $set: update,
+    $set: update
   }, {
     selector: {
-      type: "simple",
+      type: "simple"
     }
   });
 }
@@ -323,14 +323,14 @@ function flushQuantity(id) {
   }
 
   return Products.update({
-    _id: id,
+    _id: id
   }, {
     $set: {
-      inventoryQuantity: 0,
+      inventoryQuantity: 0
     }
   }, {
     selector: {
-      type: "variant",
+      type: "variant"
     }
   });
 }
@@ -370,14 +370,14 @@ Meteor.methods({
 
     const variants = Products.find({
       $or: [{
-        _id: variantId,
+        _id: variantId
       }, {
         ancestors: {
           $in: [variantId]
         },
         isDeleted: false
       }],
-      type: "variant",
+      type: "variant"
     }).fetch();
     // exit if we're trying to clone a ghost
     if (variants.length === 0) {
