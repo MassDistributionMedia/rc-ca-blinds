@@ -1,16 +1,16 @@
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import update from "immutability-helper";
 import { ReactionProduct } from "/lib/api";
 import { VariantList } from "../components";
 import { Reaction, i18next } from "/client/api";
 import { Products, Media } from "/lib/collections";
-import React, { Component } from "react";
-import PropTypes from "prop-types";
 import { Session } from "meteor/session";
 import { Meteor } from "meteor/meteor";
 import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import { getVariantIds } from "/lib/selectors/variants";
 import { getChildVariants } from "../selectors/variants";
-import * as SelectedVariants from "../stores/selected-variants";
+import SelectedVariants from "../stores/selectedVariants";
 import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
 function variantIsSelected(variantId) {
@@ -108,12 +108,14 @@ class VariantListContainer extends Component {
   }
 
   handleVariantClick = (event, variant, ancestors = -1) => {
+    debugger;
     if (Reaction.isActionViewOpen()) {
       this.handleEditVariant(event, variant, ancestors);
     } else {
+      const SeleVars = new SelectedVariants();
       ReactionProduct.setCurrentVariant(variant._id);
       Session.set(`variant-form-${variant._id}`, true);
-      SelectedVariants.setVariant(variant);
+      SeleVars.setVariant(variant);
       Reaction.Router.go("product", {
         handle: this.productHandle,
         variantId: variant._id

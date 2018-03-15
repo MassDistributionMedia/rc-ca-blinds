@@ -912,4 +912,4 @@ export default [
     "height": 108,
     "width": 96
   }
-]
+];

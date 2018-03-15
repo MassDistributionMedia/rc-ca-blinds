@@ -1,7 +1,7 @@
+import React, { Component } from "react";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
-import React, { Component } from "react";
 import softwoodProducts from "../data/product-prices";
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
@@ -32,32 +32,44 @@ export default class RenderWidthHeightList extends Component {
     super(props);
     console.info('RenderWidthHeightList current product: \n\n', curProduct);
 
-    this.initHeightWidthValues(curProduct);
+    this.state = {
+      widthHeightValues: {
+        width: curProduct.width || 24,
+        widthEighth: curProduct.widthEighth || "0",
+        height: curProduct.height || 36,
+        heightEighth: curProduct.heightEighth || "0",
+        blindType: curProduct.blindType || "none"
+      },
+    };
+
+    // this.initHeightWidthValues(curProduct);
   }
 
-  initHeightWidthValues(curProduct) {
-    if (!curProduct || !curProduct.width && !curProduct.height && !curProduct.blindType) {
-      this.state = {
-        widthHeightValues: {
-          width: 24,
-          widthEighth: "0",
-          height: 36,
-          heightEighth: "0",
-          blindType: "none",
-        }
-      };
-    } else {
-      this.state = {
-        widthHeightValues: {
-          width: curProduct.width,
-          widthEighth: curProduct.widthEighth,
-          height: curProduct.height,
-          heightEighth: curProduct.heightEighth,
-          blindType: curProduct.blindType
-        },
-      };
-    }
-  }
+  // initHeightWidthValues(curProduct) {
+  //   if (!curProduct || !curProduct.width) {
+  //     this.state = {
+  //       widthHeightValues: {
+  //         width: 24,
+  //         widthEighth: "0",
+  //         height: 36,
+  //         heightEighth: "0",
+  //         blindType: "none",
+  //       }
+  //     };
+  //   } else if (!curProduct || !curProduct.width && !curProduct.height && !curProduct.blindType) {
+      
+  //   } else {
+  //     this.state = {
+  //       widthHeightValues: {
+  //         width: curProduct.width,
+  //         widthEighth: curProduct.widthEighth,
+  //         height: curProduct.height,
+  //         heightEighth: curProduct.heightEighth,
+  //         blindType: curProduct.blindType
+  //       },
+  //     };
+  //   }
+  // }
 
   update(productData, widthEighth, heightEighth) {
     this.commit(productData);
@@ -147,12 +159,12 @@ function priceSlotCheck(dimension, eighth) {
   if (dimension % 6 !== 0) {
     const subtract = dimension % 6;
     dimensionOutput = dimension - subtract + 6; // + 6 to round up to the next price
-  } // end if (dimension % 6)
-
+  }
   if (eighth !== 0) {
     dimensionOutput = dimensionOutput + 6;
     return dimensionOutput;
   }
+  return dimensionOutput;
 }
 
 /**
@@ -170,15 +182,11 @@ function findPrice(element) {
     case "2in1":
       splitValue = 2;
       break;
-
     case "3in1":
       splitValue = 3;
       break;
-
-    default:
-      splitValue = 1;
   }
-
+  
   if (originWidth < 24) {
     originWidth = 24;
   }
@@ -186,21 +194,22 @@ function findPrice(element) {
     originHeight = 30;
   }
 
-  let newWidth = Math.round(this.width / splitValue);
+  let splitWidth = Math.round(this.width / splitValue);
 
-  if (newWidth < 24) {
-    newWidth = this.width;
+  if (splitWidth < 24) {
+    splitWidth = originWidth;
     splitValue = 1;
   }
 
-  const widthPrice = priceSlotCheck(newWidth, this.widthEighth);
-  const heightPrice = priceSlotCheck(originHeight, this.heightEighth);
+  const widthPrice = priceSlotCheck(splitWidth, parseInt(this.widthEighth, 10));
+  const heightPrice = priceSlotCheck(originHeight, parseInt(this.heightEighth, 10));
 
   if (element.width === widthPrice && element.height === heightPrice) {
     console.log('price', widthPrice, heightPrice);
     element.price *= splitValue;
-    return element;
+    return element.price;
   }
+  return new Error("Failed to find price.");
 }
 
 // function findSplitValue(splitType) {
@@ -265,7 +274,7 @@ export function BlindTypeDescription(props) {
               blindType: e.target.value
             };
 
-            productData.price = softwoodProducts.find(findPrice, productData).price;
+            productData.price = softwoodProducts.find(findPrice, productData);
             console.log('price', softwoodProducts.find(findPrice,productData));
             updateProduct(productData);
           }}
@@ -299,7 +308,7 @@ function HeightTitle() {
   );
 }
 
-function dimensionSelect(key, values, list, ethList, onChange) {
+function dimensionSelect(key, values, list, ethList, onChangeCallback) {
   const optionTitle = (key === "width") ? <WidthTitle/> : <HeightTitle/>;
 
   return (
@@ -311,7 +320,7 @@ function dimensionSelect(key, values, list, ethList, onChange) {
         value={values[key]}
         onChange={(e) => {
           console.log(key, e.target.value);
-          onChange(parseInt(e.target.value, 10), values[key + "Eighth"]);
+          onChangeCallback(parseInt(e.target.value, 10), values[key + "Eighth"]);
         }}
       >
         { // loop to creation select options:
@@ -332,7 +341,7 @@ function dimensionSelect(key, values, list, ethList, onChange) {
         value={values[key + "Eighth"]}
         onChange={(e) => {
           console.log(key + "Eighth", e.target.value);
-          onChange(values[key], parseInt(e.target.value, 10));
+          onChangeCallback(values[key], parseInt(e.target.value, 10));
         }}
       >
         { // loop to create 8ths options:
@@ -373,7 +382,6 @@ function formatElement(element) {
     weight: 0,
     inventoryQuantity: 9,
     inventoryPolicy: false,
-    title: "Softwood " + uniqueKey,
     metafields: [
       {
         key: "Room",
@@ -457,7 +465,7 @@ function addNewVariantIfNotExist(parent, varientConfig) {
 // }
 
 // TODO
-// After cleanBlinds(), variants arestill in the DB
+// After cleanBlinds(), variants are still in the DB
 // Maybe we need to use Products.remove()
 // function cleanBlinds(variantId) {
 //   const product = ReactionProduct.selectedProduct();
@@ -538,7 +546,7 @@ function addNewVariant(parentId, newVariant) {
   //   flushQuantity(parentId);
   // }
 
-  console.log(Products, ReactionProduct, Reaction);
+  // console.log(Products, ReactionProduct, Reaction);
 
   Products.insert(assembledVariant,
     (error, result) => {
@@ -553,6 +561,8 @@ function addNewVariant(parentId, newVariant) {
       }
     }
   );
+  
+  Reaction.Import.product({ 'ean': assembledVariant.newVariantId }, { 'price': assembledVariant.price }, { 'title': assembledVariant.title });
 
   // cleanBlinds(newVariantId); // Remove existing blind child variants from the DB so that new variants don't get junked up
 

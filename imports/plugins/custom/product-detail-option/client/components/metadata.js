@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
-import * as SelectedVariants from "../stores/selected-variants";
+// import SelectedVariants  from "../stores/selectedVariants";
 
 
 class ProductMetadata extends Component {

@@ -3,13 +3,13 @@ import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 import { Validation } from "@reactioncommerce/reaction-collections";
-import { ChildVariant } from "./";
+// import { ChildVariant } from "./";
 // import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { ProductVariant } from "/lib/collections/schemas";
 // import { Products } from "/lib/collections";
 import { SortableItem } from "/imports/plugins/core/ui/client/containers";
-import { Currency, Translation } from "/imports/plugins/core/ui/client/components";
+// import { Currency, Translation } from "/imports/plugins/core/ui/client/components";
 
 class Variant extends Component {
   constructor(props) {
@@ -35,7 +35,7 @@ class Variant extends Component {
 
       const selectedAccordion = document.getElementById(variantId);
       const variantAccordion = document.getElementsByClassName("variant-accordion");
-
+      
       selectedAccordion.style.display = selectedAccordion.style.display === "block" ? "none" : "block";
       for (let i = 0; i < variantAccordion.length; i += 1) {
         if (variantAccordion[i].id !== variantId) {
@@ -181,8 +181,8 @@ class Variant extends Component {
 
     const variantElement = (
       <li
-        className="variant-list-item"
-        id="variant-list-item-{variant._id}"
+        className={`variant-list-item variant-list-item-${variant._id}`}
+        id={variant._id}
         key={variant._id}
       >
         <div

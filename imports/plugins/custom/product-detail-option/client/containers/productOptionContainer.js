@@ -11,7 +11,7 @@ import { Reaction, i18next, Logger } from "/client/api";
 import { Tags, Media, Cart } from "/lib/collections";
 // import { Loading } from "/imports/plugins/core/ui/client/components";
 import { ProductOptionComponent } from "../components";
-import * as SelectedVariants from "../stores/selected-variants";
+import SelectedVariants from "../stores/selectedVariants";
 import { SocialContainer, VariantListContainer } from "./";
 import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
