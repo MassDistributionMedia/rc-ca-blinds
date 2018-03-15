@@ -5,7 +5,6 @@ import { Template } from "meteor/templating";
 import { AutoForm } from "meteor/aldeed:autoform";
 import { i18next } from "/client/api";
 
-
 function setWorkingAddress(address) {
   if (address.fullName) {
     const fullName = $("input[name='fullName']");
@@ -49,8 +48,7 @@ function setWorkingAddress(address) {
   }
 }
 
-
-Template.addressBookEdit.onRendered(function () {
+Template.addressBookEdit.onRendered(() => {
   const addressState = Session.get("addressState");
   if (addressState.address) {
     setWorkingAddress(addressState.address);
@@ -63,26 +61,25 @@ Template.addressBookEdit.onRendered(function () {
  */
 AutoForm.hooks({
   addressBookEditForm: {
-    onSubmit: function (insertDoc) {
-      const that = this;
-      this.event.preventDefault();
-      const addressBook = $(this.template.firstNode).closest(".address-book");
+    onSubmit(insertDoc) {
+      const { done, event, template } = this; // provided by AutoForm
+      event.preventDefault();
+      const addressBook = $(template.firstNode).closest(".address-book");
 
-      Meteor.call("accounts/validateAddress", insertDoc, function (err, res) {
+      function handleError(error) {
+        Alerts.toast(i18next.t("addressBookEdit.somethingWentWrong", { err: error.message }), "error");
+        done(error);
+      }
+
+      Meteor.call("accounts/validateAddress", insertDoc, (err, res) => {
+        if (err) return handleError(err);
+
         // if the address is validated OR the address has already been through the validation process, pass it on
         if (res.validated) {
-          Meteor.call("accounts/addressBookUpdate", insertDoc, (error, result) => {
-            if (error) {
-              Alerts.toast(i18next.t("addressBookEdit.somethingWentWrong", { err: error.message }), "error");
-              this.done(new Error(error));
-              return false;
-            }
-            if (result) {
-              that.done();
-
-              // Show the grid
-              addressBook.trigger($.Event("showMainView"));
-            }
+          Meteor.call("accounts/addressBookUpdate", insertDoc, (error) => {
+            if (error) return handleError(error);
+            done();
+            addressBook.trigger($.Event("showMainView")); // Show the grid
           });
         } else {
           // set addressState and kick it back to review

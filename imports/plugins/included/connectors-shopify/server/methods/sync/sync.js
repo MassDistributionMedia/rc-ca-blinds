@@ -17,8 +17,9 @@ export const methods = {
    *                                in the integrations array within the shopify webhooks settings
    *  @returns {undefined}
    */
-  "connectors/shopify/sync/setup"(integrations) {
+  "connectors/shopify/sync/setup"(integrations, webhooksDomain) {
     check(integrations, [String]);
+    check(webhooksDomain, String);
 
     // Check for permissions
     if (!Reaction.hasPermission(["owner", "settings/connectors", "settings/connectors/shopify"])) {
@@ -42,8 +43,9 @@ export const methods = {
     topics.forEach((topic) => {
       Logger.info(`Setting up shopify webhook ${topic} for ${integrationsByTopic[topic]}`);
       Meteor.call("connectors/shopify/webhooks/create", {
-        topic: topic,
-        integrations: integrationsByTopic[topic]
+        topic,
+        integrations: integrationsByTopic[topic],
+        webhooksDomain
       });
     });
   },

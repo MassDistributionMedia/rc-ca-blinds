@@ -256,9 +256,7 @@ export function renderHandlebarsTemplate(templateInfo, data) {
  * @return {Object}          Static markup
  */
 export function renderTemplateToStaticMarkup(template, props) {
-  return ReactDOMServer.renderToStaticMarkup(
-    React.createElement(template, props)
-  );
+  return ReactDOMServer.renderToStaticMarkup(React.createElement(template, props));
 }
 
 /**
@@ -284,12 +282,12 @@ export function initTemplates() {
     Assets.find({ type: "template" }).forEach((t) => {
       Logger.debug(`Importing ${t.name} template`);
       if (t.content) {
-        Reaction.Import.template(JSON.parse(t.content));
+        Reaction.Importer.template(JSON.parse(t.content));
       } else {
         Logger.debug(`No template content found for ${t.name} asset`);
       }
     });
-    Reaction.Import.flush();
+    Reaction.Importer.flush();
   });
 }
 

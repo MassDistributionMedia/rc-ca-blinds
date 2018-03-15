@@ -1,5 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { check } from "meteor/check";
+import { Reaction } from "/server/api";
 import { Templates } from "/lib/collections";
 
 /**
@@ -20,16 +21,22 @@ export const methods = {
    * @param {Object} doc - data to update
    * @return {Number} remove template
    */
-  "templates/email/update": function (templateId, doc) {
+  "templates/email/update"(templateId, doc) {
     check(templateId, String);
     check(doc, Object);
-    // TODO: add permissions
-    // if (!Reaction.hasPermission("shipping")) {
-    //   throw new Meteor.Error(403, "Access Denied");
-    // }
+
+    const shopId = Reaction.getShopId();
+    const userId = Meteor.userId();
+
+    // Check that this user has permission to update templates for the active shop
+    if (!Reaction.hasPermission("reaction-templates", userId, shopId)) {
+      throw new Meteor.Error("access-denied", "Access Denied");
+    }
+
     return Templates.update({
       _id: templateId,
-      type: "email"
+      type: "email",
+      shopId // Ensure that the template we're attempting to update is owned by the active shop.
     }, {
       $set: {
         title: doc.title,

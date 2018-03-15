@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { compose } from "recompose";
 import { Meteor } from "meteor/meteor";
 import { Reaction, i18next } from "/client/api";
-import { Media } from "/lib/collections";
+import { getPrimaryMediaForOrderItem } from "/lib/api";
 import { registerComponent } from "@reactioncommerce/reaction-components";
 import { getShippingInfo } from "../helpers";
 import {
@@ -80,11 +80,7 @@ const wrapComponent = (Comp) => (
           selectedItems: selectedItemsArray
         });
       } else {
-        const updatedSelectedArray = selectedItemsArray.filter((id) => {
-          if (id !== name) {
-            return id;
-          }
-        });
+        const updatedSelectedArray = selectedItemsArray.filter((id) => id !== name);
         this.setState({
           selectedItems: updatedSelectedArray
         });
@@ -113,9 +109,7 @@ const wrapComponent = (Comp) => (
         // if there are no selected orders, or if there are some orders that have been
         // selected but not all of them, loop through the orders array and return a
         // new array with order ids only, then set the selectedItems array with the orderIds
-        const orderIds = orders.map((order) => {
-          return order._id;
-        });
+        const orderIds = orders.map((order) => order._id);
         this.setState({
           selectedItems: orderIds,
           multipleSelect: true
@@ -128,7 +122,7 @@ const wrapComponent = (Comp) => (
         label: "Order Details",
         i18nKeyLabel: "orderWorkflow.orderDetails",
         data: {
-          order: order
+          order
         },
         props: {
           size: "large"
@@ -152,32 +146,47 @@ const wrapComponent = (Comp) => (
     }
 
     /**
-     * Media - find media based on a product/variant
-     * @param  {Object} item object containing a product and variant id
-     * @return {Object|false} An object contianing the media or false
+     * updateBulkStatusHelper
+     *
+     * @summary return formatted shipping object to update state
+     * @param {String} status - the shipping status to be set
+     * @return {Object} the formatted shipping object
      */
-    handleDisplayMedia = (item) => {
-      const variantId = item.variants._id;
-      const productId = item.productId;
+    updateBulkStatusHelper = (status) => {
+      const statusIndex = shippingStrings.indexOf(status);
+      return shippingStrings.reduce((shipping, state) => ({
+        ...shipping,
+        [state]: shippingStrings.indexOf(state) <= statusIndex
+      }), {});
+    }
 
-      const variantImage = Media.findOne({
-        "metadata.variantId": variantId,
-        "metadata.productId": productId
-      });
-
-      if (variantImage) {
-        return variantImage;
-      }
-
-      const defaultImage = Media.findOne({
-        "metadata.productId": productId,
-        "metadata.priority": 0
-      });
-
-      if (defaultImage) {
-        return defaultImage;
-      }
-      return false;
+    /**
+     * updateBulkLoadingHelper
+     *
+     * @summary return formatted isLoading object to update state
+     * @param {String} status - the shipping status to be set
+     * @return {Object} the formatted isLoading object
+     */
+    updateBulkLoadingHelper = (status) => {
+      const statusIndex = shippingStrings.indexOf(status);
+      const prevStatusIndex = Object.keys(this.state.shipping).reduce((maxIndex, state) => {
+        if (this.state.shipping[state]) {
+          return Math.max(shippingStrings.indexOf(state), maxIndex);
+        }
+        return maxIndex;
+      }, -1);
+      return shippingStrings.reduce((shipping, state) => {
+        if (prevStatusIndex < statusIndex) {
+          return {
+            ...shipping,
+            [state]: shippingStrings.indexOf(state) <= statusIndex && shippingStrings.indexOf(state) > prevStatusIndex
+          };
+        }
+        return {
+          ...shipping,
+          [state]: shippingStrings.indexOf(state) >= statusIndex && shippingStrings.indexOf(state) <= prevStatusIndex
+        };
+      }, {});
     }
 
     /**
@@ -189,13 +198,9 @@ const wrapComponent = (Comp) => (
      * @return {null} no return value
      */
     shippingStatusUpdateCall = (selectedOrders, status) => {
-      const filteredSelectedOrders = selectedOrders.filter((order) => {
-        return order.shipping && Object.keys(getShippingInfo(order)).length;
-      });
+      const filteredSelectedOrders = selectedOrders.filter((order) => order.shipping && Object.keys(getShippingInfo(order)).length);
       this.setState({
-        isLoading: {
-          [status]: true
-        }
+        isLoading: this.updateBulkLoadingHelper(status)
       });
       let orderText = "order";
 
@@ -223,12 +228,10 @@ const wrapComponent = (Comp) => (
           } else {
             Meteor.call("orders/updateHistory", order._id, "Shipping state set by bulk operation", status);
           }
-          orderCount++;
+          orderCount += 1;
           if (orderCount === filteredSelectedOrders.length) {
             this.setState({
-              shipping: {
-                [status]: true
-              },
+              shipping: this.updateBulkStatusHelper(status),
               isLoading: {
                 [status]: false
               }
@@ -236,8 +239,8 @@ const wrapComponent = (Comp) => (
             Alerts.alert({
               text: i18next.t("order.orderSetToState", {
                 orderNumber: filteredSelectedOrders.length,
-                orderText: orderText,
-                status: status
+                orderText,
+                status
               }),
               type: "success",
               allowOutsideClick: false
@@ -271,8 +274,11 @@ const wrapComponent = (Comp) => (
       if (alertOptions.falsePreviousStatuses) {
         Alerts.alert({
           text: i18next.t("order.skippedBulkOrdersAlert", {
-            selectedOrders: selectedOrders.length, orderText: orderText, status: capitalizeStatus,
-            numberOfSkippedOrders: alertOptions.falsePreviousStatuses, skippedOrdersText: skippedOrdersText,
+            selectedOrders: selectedOrders.length,
+            orderText,
+            status: capitalizeStatus,
+            numberOfSkippedOrders: alertOptions.falsePreviousStatuses,
+            skippedOrdersText,
             skippedState: alertOptions.whichFalseState
           }),
           type: "warning",
@@ -297,7 +303,7 @@ const wrapComponent = (Comp) => (
         Alerts.alert({
           text: i18next.t("order.orderAlreadyInState", {
             orderText: orderAlreadyInStateText,
-            status: status
+            status
           })
         });
       }
@@ -318,7 +324,7 @@ const wrapComponent = (Comp) => (
 
       Alerts.alert({
         text: i18next.t("order.bulkOrdersRegressionAlert", {
-          ordersToRegress: ordersToRegress, orderText: orderText, status: capitalizeStatus
+          ordersToRegress, orderText, status: capitalizeStatus
         }),
         type: "warning",
         showCancelButton: true,
@@ -365,19 +371,16 @@ const wrapComponent = (Comp) => (
         // depending on the type of shop or product that a shop is selling.
         if (orderWorkflow) {
           if (orderWorkflow.status === "new") {
-            isNotPicked++;
+            isNotPicked += 1;
           } else if (orderWorkflow.status === "coreOrderWorkflow/picked") {
-            isPicked++;
-          } else {
-            // check if the selected order(s) are being regressed back to this state
-            if (orderWorkflow.workflow.includes("coreOrderWorkflow/picked")) {
-              ordersToRegress++;
-            } else if (!orderWorkflow.workflow.includes("coreOrderWorkflow/picked") &&
-            (orderWorkflow.status === "coreOrderWorkflow/packed" ||
-            orderWorkflow.status === "coreOrderWorkflow/labeled" ||
-            orderWorkflow.status === "coreOrderWorkflow/shipped")) {
-              ordersToRegress++;
-            }
+            isPicked += 1;
+          } else if (orderWorkflow.workflow.includes("coreOrderWorkflow/picked")) {
+            ordersToRegress += 1;
+          } else if (!orderWorkflow.workflow.includes("coreOrderWorkflow/picked") &&
+                     (orderWorkflow.status === "coreOrderWorkflow/packed" ||
+                      orderWorkflow.status === "coreOrderWorkflow/labeled" ||
+                      orderWorkflow.status === "coreOrderWorkflow/shipped")) {
+            ordersToRegress += 1;
           }
         }
       });
@@ -389,8 +392,10 @@ const wrapComponent = (Comp) => (
         // set status to 'picked' if order(s) are in the previous state OR
         // display alert if order(s) are already in this state
       } else {
-        this.displayAlert(selectedOrders, status,
-          { falseCurrentState: isNotPicked,
+        this.displayAlert(
+          selectedOrders, status,
+          {
+            falseCurrentState: isNotPicked,
             trueCurrentState: isPicked
           }
         );
@@ -419,28 +424,27 @@ const wrapComponent = (Comp) => (
         // depending on the type of shop or product that a shop is selling.
         if (orderWorkflow) {
           if (orderWorkflow.status === "new") {
-            isNotPicked++;
+            isNotPicked += 1;
           } else if (orderWorkflow.status === "coreOrderWorkflow/picked") {
-            isNotPacked++;
+            isNotPacked += 1;
           } else if (orderWorkflow.status === "coreOrderWorkflow/packed") {
-            isPacked++;
-          } else {
-            // check if the selected order(s) are being regressed back to this state
-            if (orderWorkflow.workflow.includes("coreOrderWorkflow/packed")) {
-              ordersToRegress++;
-            } else if (!orderWorkflow.workflow.includes("coreOrderWorkflow/packed") &&
-            (orderWorkflow.status === "coreOrderWorkflow/labeled" ||
-            orderWorkflow.status === "coreOrderWorkflow/shipped")) {
-              ordersToRegress++;
-            }
+            isPacked += 1;
+          } else if (orderWorkflow.workflow.includes("coreOrderWorkflow/packed")) { // check if the selected order(s) are being regressed back to this state
+            ordersToRegress += 1;
+          } else if (!orderWorkflow.workflow.includes("coreOrderWorkflow/packed") &&
+                     (orderWorkflow.status === "coreOrderWorkflow/labeled" ||
+                      orderWorkflow.status === "coreOrderWorkflow/shipped")) {
+            ordersToRegress += 1;
           }
         }
       });
 
       // display regression alert if order(s) are being regressed
       if (ordersToRegress) {
-        this.displayRegressionAlert(selectedOrders, ordersToRegress, status,
-          { whichFalseState,
+        this.displayRegressionAlert(
+          selectedOrders, ordersToRegress, status,
+          {
+            whichFalseState,
             falsePreviousStatuses: isNotPicked,
             falseCurrentState: isNotPacked,
             trueCurrentState: isPacked
@@ -449,8 +453,10 @@ const wrapComponent = (Comp) => (
 
         // display proper alert if the order(s) are in this state already or want to skip the previous states
       } else {
-        this.displayAlert(selectedOrders, status,
-          { whichFalseState,
+        this.displayAlert(
+          selectedOrders, status,
+          {
+            whichFalseState,
             falsePreviousStatuses: isNotPicked,
             falseCurrentState: isNotPacked,
             trueCurrentState: isPacked
@@ -480,21 +486,18 @@ const wrapComponent = (Comp) => (
         // depending on the type of shop or product that a shop is selling.
         if (orderWorkflow) {
           if (orderWorkflow.status === "new") {
-            isNotPacked++;
+            isNotPacked += 1;
             whichFalseState = shippingStates.picked;
           } else if (orderWorkflow.status === "coreOrderWorkflow/picked") {
-            isNotPacked++;
+            isNotPacked += 1;
             whichFalseState = shippingStates.packed;
           } else if (orderWorkflow.status === "coreOrderWorkflow/packed") {
-            isNotLabeled++;
+            isNotLabeled += 1;
           } else if (orderWorkflow.status === "coreOrderWorkflow/labeled") {
-            isLabeled++;
-          } else {
-            // check if the selected order(s) are being regressed back to this state
-            if (orderWorkflow.workflow.includes("coreOrderWorkflow/labeled") ||
-            orderWorkflow.status === "coreOrderWorkflow/shipped") {
-              ordersToRegress++;
-            }
+            isLabeled += 1;
+          } else if (orderWorkflow.workflow.includes("coreOrderWorkflow/labeled") ||
+                     orderWorkflow.status === "coreOrderWorkflow/shipped") { // check if the selected order(s) are being regressed back to this state
+            ordersToRegress += 1;
           }
         }
       });
@@ -503,16 +506,20 @@ const wrapComponent = (Comp) => (
       if (ordersToRegress) {
         this.displayRegressionAlert(
           selectedOrders, ordersToRegress, status,
-          { whichFalseState,
+          {
+            whichFalseState,
             falsePreviousStatuses: isNotPacked,
             falseCurrentState: isNotLabeled,
-            trueCurrentState: isLabeled }
+            trueCurrentState: isLabeled
+          }
         );
 
         // display proper alert if the order(s) are in this state already or want to skip the previous states
       } else {
-        this.displayAlert(selectedOrders, status,
-          { whichFalseState,
+        this.displayAlert(
+          selectedOrders, status,
+          {
+            whichFalseState,
             falsePreviousStatuses: isNotPacked,
             falseCurrentState: isNotLabeled,
             trueCurrentState: isLabeled
@@ -543,25 +550,27 @@ const wrapComponent = (Comp) => (
         if (orderWorkflow) {
           const orderWorkflowStatus = orderWorkflow.status;
           if (orderWorkflowStatus === "new") {
-            isNotLabeled++;
+            isNotLabeled += 1;
             whichFalseState = shippingStates.picked;
           } else if (orderWorkflowStatus === "coreOrderWorkflow/picked") {
-            isNotLabeled++;
+            isNotLabeled += 1;
             whichFalseState = shippingStates.packed;
           } else if (orderWorkflowStatus === "coreOrderWorkflow/packed") {
-            isNotLabeled++;
+            isNotLabeled += 1;
             whichFalseState = shippingStates.labeled;
           } else if (orderWorkflowStatus === "coreOrderWorkflow/labeled") {
-            isNotShipped++;
+            isNotShipped += 1;
           } else if (orderWorkflowStatus === "coreOrderWorkflow/shipped") {
-            isShipped++;
+            isShipped += 1;
           }
         }
       });
 
       // display proper alert if the order(s) are in this state already or want to skip the previous states
-      this.displayAlert(selectedOrders, status,
-        { whichFalseState,
+      this.displayAlert(
+        selectedOrders, status,
+        {
+          whichFalseState,
           falsePreviousStatuses: isNotLabeled,
           falseCurrentState: isNotShipped,
           trueCurrentState: isShipped
@@ -582,9 +591,7 @@ const wrapComponent = (Comp) => (
       this.setState({
         renderFlowList: true
       });
-      const selectedOrders = orders.filter((order) => {
-        return selectedOrdersIds.includes(order._id);
-      });
+      const selectedOrders = orders.filter((order) => selectedOrdersIds.includes(order._id));
 
       if (status === "picked") {
         this.pickedShippingStatus(selectedOrders, status);
@@ -603,21 +610,51 @@ const wrapComponent = (Comp) => (
       }
     }
 
+    /**
+     * orderCreditMethod: Finds the credit record in order.billing for the active shop
+     * @param order: The order where to find the billing record in.
+     * @return: The billing record with paymentMethod.method === credit of currently active shop
+     */
+    orderCreditMethod(order) {
+      const creditBillingRecords = order.billing.filter((value) => value.paymentMethod.method === "credit");
+      const billingRecord = creditBillingRecords.find((billing) => billing.shopId === Reaction.getShopId());
+      return billingRecord;
+    }
+
     handleBulkPaymentCapture = (selectedOrdersIds, orders) => {
       this.setState({
         isLoading: {
           capturePayment: true
         }
       });
-      const selectedOrders = orders.filter((order) => {
-        return selectedOrdersIds.includes(order._id);
-      });
+      const selectedOrders = orders.filter((order) => selectedOrdersIds.includes(order._id));
 
       let orderCount = 0;
+      const done = () => {
+        orderCount += 1;
+        if (orderCount === selectedOrders.length) {
+          this.setState({
+            isLoading: {
+              capturePayment: false
+            }
+          });
+          Alerts.alert({
+            text: i18next.t("order.paymentCaptureSuccess"),
+            type: "success",
+            allowOutsideClick: false
+          });
+        }
+      };
 
       // TODO: send these orders in batch as an array. This would entail re-writing the
       // "orders/approvePayment" method to receive an array of orders as a param.
       selectedOrders.forEach((order) => {
+        // Only capture orders which are not captured yet (but possibly are already approved)
+        const billingRecord = this.orderCreditMethod(order);
+        if (billingRecord.paymentMethod.mode === "capture" && billingRecord.paymentMethod.status === "completed") {
+          done();
+          return;
+        }
         Meteor.call("orders/approvePayment", order, (approvePaymentError) => {
           if (approvePaymentError) {
             this.setState({
@@ -638,20 +675,7 @@ const wrapComponent = (Comp) => (
                 });
                 Alerts.toast(`An error occured while capturing the payment: ${capturePaymentError}`, "error");
               }
-
-              orderCount++;
-              if (orderCount === selectedOrders.length) {
-                this.setState({
-                  isLoading: {
-                    capturePayment: false
-                  }
-                });
-                Alerts.alert({
-                  text: i18next.t("order.paymentCaptureSuccess"),
-                  type: "success",
-                  allowOutsideClick: false
-                });
-              }
+              done();
             });
           }
         });
@@ -664,7 +688,7 @@ const wrapComponent = (Comp) => (
           {...this.props}
           handleSelect={this.handleSelect}
           handleClick={this.handleClick}
-          displayMedia={this.handleDisplayMedia}
+          displayMedia={getPrimaryMediaForOrderItem}
           selectedItems={this.state.selectedItems}
           selectAllOrders={this.selectAllOrders}
           multipleSelect={this.state.multipleSelect}
@@ -680,6 +704,6 @@ const wrapComponent = (Comp) => (
   }
 );
 
-registerComponent("OrderTable", OrderTable, [ wrapComponent ]);
+registerComponent("OrderTable", OrderTable, [wrapComponent]);
 
 export default compose(wrapComponent)(OrderTable);

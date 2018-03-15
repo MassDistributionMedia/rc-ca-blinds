@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Meteor } from "meteor/meteor";
 import { Reaction } from "/server/api";
+import { methods } from "../methods/sync/orders";
 
 /**
  * verifies that the request coming from a webhook is from the connected Shopify shop
@@ -41,13 +42,13 @@ function verifyWebhook(req) {
   return true;
 }
 
-Reaction.Endpoints.add("post", "/webhooks/shopify/orders-create", function (req, res) {
+Reaction.Endpoints.add("post", "/webhooks/shopify/orders-create", (req, res) => {
   // We'll move the code that's in the orders-updated hook into here once it's functional
   // easier to iterate in that hook for now.
   Reaction.Endpoints.sendResponse(res);
 
   // If we can verify that this request is legitimate, call our shopify/sync/orders/created
   if (verifyWebhook(req)) {
-    Meteor.call("connectors/shopify/sync/orders/created", req.body.line_items);
+    methods.adjustInventory(req.body.line_items);
   }
 });

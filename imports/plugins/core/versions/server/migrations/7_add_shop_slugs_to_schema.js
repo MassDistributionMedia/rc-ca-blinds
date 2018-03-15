@@ -23,7 +23,7 @@ Migrations.add({
           $set: {
             slug: shopSlug
           }
-        });
+        }, { bypassCollection2: true });
       }
 
       // if the shop is a merchant shop, create an obeject for it to - these will be used to create shop routes
@@ -40,9 +40,9 @@ Migrations.add({
     if (merchantShops.length > 0) {
       Shops.update({ _id: primaryShop._id }, {
         $set: {
-          merchantShops: merchantShops
+          merchantShops
         }
-      });
+      }, { bypassCollection2: true });
     }
   },
 
@@ -53,6 +53,6 @@ Migrations.add({
         slug: null,
         merchantShops: null
       }
-    }, { multi: true });
+    }, { bypassCollection2: true, multi: true });
   }
 });

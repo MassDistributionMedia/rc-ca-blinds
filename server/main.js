@@ -1,7 +1,5 @@
 import { Meteor } from "meteor/meteor";
-import "./methods";
-import Startup from "./startup";
-import Security from "./security";
+import startup from "./startup";
 import { Logger } from "/server/api";
 
 // handle any unhandled Promise rejections because
@@ -10,7 +8,4 @@ process.on("unhandledRejection", (err) => {
   Logger.error(err);
 });
 
-Meteor.startup(() => {
-  Startup();
-  Security();
-});
+Meteor.startup(startup);

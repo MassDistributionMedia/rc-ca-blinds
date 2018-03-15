@@ -1,15 +1,14 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import _ from "lodash";
-import update from "react/lib/update";
+import update from "immutability-helper";
 import { compose } from "recompose";
-import { registerComponent, composeWithTracker } from "@reactioncommerce/reaction-components";
+import { registerComponent, composeWithTracker, Components } from "@reactioncommerce/reaction-components";
 import { Meteor } from "meteor/meteor";
 import { Reaction, i18next } from "/client/api";
 import TagList from "../components/tags/tagList";
 import { Tags } from "/lib/collections";
 import { getTagIds } from "/lib/selectors/tags";
-import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 
 function updateSuggestions(term, { excludeTags }) {
   const slug = Reaction.getSlug(term);
@@ -24,11 +23,9 @@ function updateSuggestions(term, { excludeTags }) {
     };
   }
 
-  const tags = Tags.find(selector).map((tag) => {
-    return {
-      label: tag.name
-    };
-  });
+  const tags = Tags.find(selector).map((tag) => ({
+    label: tag.name
+  }));
 
   return tags;
 }
@@ -196,7 +193,7 @@ const wrapComponent = (Comp) => (
       );
 
       this.setState({
-        suggestions: suggestions
+        suggestions
       });
     }
 
@@ -216,7 +213,7 @@ const wrapComponent = (Comp) => (
 
     render() {
       return (
-        <DragDropProvider>
+        <Components.DragDropProvider>
           <Comp
             newTag={this.state.newTag}
             onClick={this.handleEditButtonClick}
@@ -233,20 +230,18 @@ const wrapComponent = (Comp) => (
             tooltip="Unpublished changes"
             {...this.props}
           />
-        </DragDropProvider>
+        </Components.DragDropProvider>
       );
     }
   }
 );
 
 function composer(props, onData) {
-  let tags = props.tags;
+  let { tags } = props;
 
   if (props.product) {
     if (_.isArray(props.product.hashtags)) {
-      tags = _.map(props.product.hashtags, function (id) {
-        return Tags.findOne(id);
-      });
+      tags = _.map(props.product.hashtags, (id) => Tags.findOne(id));
     }
   }
 

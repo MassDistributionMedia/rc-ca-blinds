@@ -1,14 +1,16 @@
 import { Template } from "meteor/templating";
 import { Meteor } from "meteor/meteor";
-import { Reaction } from "/client/api";
-import { Media, Products } from "/lib/collections";
+import { FileRecord } from "@reactioncommerce/file-collections";
+import { Logger, Reaction } from "/client/api";
+import { Products } from "/lib/collections";
+import { Media } from "/imports/plugins/core/files/client";
 
 function uploadHandler(event) {
   const shopId = Reaction.getShopId();
   const userId = Meteor.userId();
-  const files = event.target.files.files;
+  const { files } = event.target.files;
 
-  for (let i = 0; i < files.length; i++) {
+  for (let i = 0; i < files.length; i += 1) {
     const parts = files[i].name.split(".");
     let product;
     if (parts[0]) {
@@ -23,21 +25,25 @@ function uploadHandler(event) {
       });
     }
     if (product) {
-      const fileObj = new FS.File(files[i]);
-      fileObj.metadata = {
+      const fileRecord = FileRecord.fromFile(files[i]);
+      fileRecord.metadata = {
         ownerId: userId,
         productId: product._id,
         variantId: product.variants[0]._id,
-        shopId: shopId,
+        shopId,
         priority: Number(parts[1]) || 0
       };
-      Media.insert(fileObj);
+      fileRecord.upload()
+        .then(() => Media.insert(fileRecord))
+        .catch((error) => {
+          Logger.error(error);
+        });
     }
   }
 }
 
 Template.import.events({
-  "submit form#form-import-images": function (event) {
+  "submit form#form-import-images"(event) {
     event.preventDefault();
     uploadHandler(event);
   }

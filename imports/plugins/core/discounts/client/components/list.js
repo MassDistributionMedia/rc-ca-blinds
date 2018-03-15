@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Meteor } from "meteor/meteor";
-import { registerComponent } from "@reactioncommerce/reaction-components";
+import { registerComponent, composeWithTracker } from "@reactioncommerce/reaction-components";
 import { Translation, IconButton } from "/imports/plugins/core/ui/client/components";
-import DiscountForm from "./form";
-import { composeWithTracker } from "@reactioncommerce/reaction-components";
 import { Reaction } from "/client/api";
+import DiscountForm from "./form";
 
 class DiscountList extends Component {
   constructor(props) {
@@ -19,9 +18,7 @@ class DiscountList extends Component {
   }
   // list items
   renderList() {
-    const listItems = this.props.listItems.map((listItem) => {
-      return this.renderItem(listItem.id, listItem.code);
-    });
+    const listItems = this.props.listItems.map((listItem) => this.renderItem(listItem.id, listItem.code));
 
     return (
       <div className="rui list-group">{listItems}</div>
@@ -32,10 +29,11 @@ class DiscountList extends Component {
     let TrashCan;
 
     if (this.props.collection !== "Orders") {
-      TrashCan =
-        <a className="pull-right">
+      TrashCan = (
+        <div className="pull-right">
           <IconButton icon="fa fa-remove" onClick={(e) => this.handleClick(e, _id)}/>
-        </a>;
+        </div>
+      );
     }
     return (
       <div className="rui list-group-item" key={_id}>
@@ -76,33 +74,28 @@ function composer(props, onData) {
   });
 
   const listItems = [];
-  for (const billing of currentCart.billing) {
-    if (billing.paymentMethod && billing.paymentMethod.processor === "code") {
-      listItems.push({
-        id: billing._id,
-        code: billing.paymentMethod.code,
-        discount: billing.paymentMethod.amount
-      });
-    }
+  const listItem = currentCart.billing.find((element) => element.paymentMethod && element.paymentMethod.processor === "code");
+  if (listItem) {
+    listItems.push({
+      id: listItem._id,
+      code: listItem.paymentMethod.code,
+      discount: listItem.paymentMethod.amount
+    });
   }
 
   onData(null, {
     collection: props.collection,
     validatedInput: props.validatedInput,
     id: props.id,
-    listItems: listItems
+    listItems
   });
 }
 
-// export default composeWithTracker(composer)(DiscountList)
 const options = {
   propsToWatch: ["billing"]
 };
 
-let discountListComponent = DiscountList;
-discountListComponent = composeWithTracker(composer, options)(discountListComponent);
-
+const discountListComponent = composeWithTracker(composer, options)(DiscountList);
 registerComponent("DiscountList", discountListComponent);
-
 
 export default discountListComponent;

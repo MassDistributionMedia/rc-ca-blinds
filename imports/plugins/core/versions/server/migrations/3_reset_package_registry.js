@@ -5,15 +5,15 @@ import { Reaction } from "/server/api/";
 Migrations.add({
   version: 3,
   up() {
-    Packages.update({},
-      {
+    Packages.update(
+      {}, {
         $set: {
           registry: []
         }
       },
-      { multi: true }
+      { bypassCollection2: true, multi: true }
     );
     Reaction.loadPackages();
-    Reaction.Import.flush();
+    Reaction.Importer.flush();
   }
 });

@@ -1,29 +1,19 @@
 import { Template } from "meteor/templating";
-import { ReactionProduct } from "/lib/api";
-import { Media } from "/lib/collections";
+import { getPrimaryMediaForItem, ReactionProduct } from "/lib/api";
 
 /**
  * productList helpers
  */
 
 Template.productList.helpers({
-  products: function () {
+  products() {
     return ReactionProduct.getProductsByTag(this.tag);
   },
-  media: function () {
-    let defaultImage;
+  mediaUrl() {
     const variants = ReactionProduct.getTopVariants();
-    if (variants.length > 0) {
-      const variantId = variants[0]._id;
-      defaultImage = Media.findOne({
-        "metadata.variantId": variantId
-      }, {
-        sort: { "metadata.priority": 1, "uploadedAt": 1 }
-      });
-    }
-    if (defaultImage) {
-      return defaultImage;
-    }
-    return false;
+    if (!variants || variants.length === 0) return "/resources/placeholder.gif";
+    const media = getPrimaryMediaForItem({ variantId: variants[0]._id });
+    if (!media) return "/resources/placeholder.gif";
+    return media.url({ store: "large" });
   }
 });

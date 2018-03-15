@@ -163,8 +163,49 @@ class VariantList extends Component {
   }
 
   renderChildVariants() {
-    if (!this.props.childVariants) {
-      return null;
+    let childVariants = [];
+
+    if (this.props.childVariants) {
+      childVariants = this.props.childVariants.map((childVariant, index) => {
+        const media = this.props.childVariantMedia.filter((mediaItem) => (
+          (mediaItem.document.metadata.variantId === childVariant._id)
+        ));
+
+        return (
+          <Components.EditContainer
+            data={childVariant}
+            disabled={this.props.editable === false}
+            editView="variantForm"
+            i18nKeyLabel="productDetailEdit.editVariant"
+            key={index}
+            label="Edit Variant"
+            onEditButtonClick={this.handleChildVariantEditClick}
+            onVisibilityButtonClick={this.handleVariantVisibilityClick}
+            permissions={["createProduct"]}
+            showsVisibilityButton={true}
+          >
+            <Components.ChildVariant
+              isSelected={this.props.variantIsSelected(childVariant._id)}
+              media={media}
+              onClick={this.handleChildVariantClick}
+              variant={childVariant}
+            />
+          </Components.EditContainer>
+        );
+      });
+    }
+
+    if (childVariants.length) {
+      return [
+        <Components.Divider
+          key="availableOptionsDivider"
+          i18nKeyLabel="availableOptions"
+          label="Available Options"
+        />,
+        <div className="row variant-product-options" key="childVariantList">
+          {childVariants}
+        </div>
+      ];
     }
     // const lists = this.props.childVariants.reduce((variants, childVariant, index) => {
     //   const type = childVariant.type;

@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import moment from "moment";
 import { formatPriceString } from "/client/api";
-import { Components, registerComponent } from "@reactioncommerce/reaction-components";
+import { Components, registerComponent, withMoment } from "@reactioncommerce/reaction-components";
 import LineItems from "./lineItems";
 import InvoiceActions from "./invoiceActions";
 
@@ -30,9 +29,11 @@ class Invoice extends Component {
   static propTypes = {
     canMakeAdjustments: PropTypes.bool,
     discounts: PropTypes.bool,
+    displayMedia: PropTypes.func,
     hasRefundingEnabled: PropTypes.bool,
     invoice: PropTypes.object,
     isFetching: PropTypes.bool,
+    moment: PropTypes.func,
     order: PropTypes.object,
     paymentCaptured: PropTypes.bool,
     refunds: PropTypes.array
@@ -51,8 +52,9 @@ class Invoice extends Component {
     * @returns {String} formatted date
     */
   formatDate(context, block) {
+    const { moment } = this.props;
     const dateFormat = block || "MMM DD, YYYY hh:mm:ss A";
-    return moment(context).format(dateFormat);
+    return (moment && moment(context).format(dateFormat)) || context.toLocaleString();
   }
 
   /**
@@ -245,6 +247,6 @@ class Invoice extends Component {
   }
 }
 
-registerComponent("Invoice", Invoice);
+registerComponent("Invoice", Invoice, withMoment);
 
-export default Invoice;
+export default withMoment(Invoice);

@@ -4,7 +4,8 @@ import { check, Match } from "meteor/check";
 import { Roles } from "meteor/alanning:roles";
 import { Random } from "meteor/random";
 import * as Collections from "/lib/collections";
-import { Logger, Reaction } from "/server/api";
+import { Hooks, Logger, Reaction } from "/server/api";
+import { PaymentMethodArgument } from "/lib/collections/schemas";
 
 /**
  * @method quantityProcessing
@@ -76,7 +77,7 @@ function getSessionCarts(userId, sessionId, shopId) {
   const allowedCarts = [];
 
   // only anonymous user carts allowed
-  carts.forEach(cart => {
+  carts.forEach((cart) => {
     if (Roles.userIsInRole(cart.userId, "anonymous", shopId)) {
       allowedCarts.push(cart);
     }
@@ -94,9 +95,7 @@ function getSessionCarts(userId, sessionId, shopId) {
  */
 function removeShippingAddresses(cart) {
   const cartShipping = cart.shipping;
-  cartShipping.map((sRecord) => {
-    delete sRecord.address;
-  });
+  cartShipping.map((sRecord) => delete sRecord.address);
   Collections.Cart.update({
     _id: cart._id
   }, {
@@ -124,7 +123,7 @@ Meteor.methods({
    * @todo I think this method should be moved out from methods to a Function Declaration to keep it more secure
    * @return {Object|Boolean} cartId - cartId on success or false
    */
-  "cart/mergeCart": function (cartId, currentSessionId) {
+  "cart/mergeCart"(cartId, currentSessionId) {
     check(cartId, String);
     // TODO: Review this. currentSessionId sometimes come in as false. e.g from Accounts.onLogin
     check(currentSessionId, Match.Optional(String));
@@ -159,16 +158,12 @@ Meteor.methods({
     // get session carts without current user cart cursor
     const sessionCarts = getSessionCarts(userId, sessionId, shopId);
 
-    Logger.debug(
-      `merge cart: begin merge processing of session ${
-        sessionId} into: ${currentCart._id}`
-    );
+    Logger.debug(`merge cart: begin merge processing of session ${
+      sessionId} into: ${currentCart._id}`);
     // loop through session carts and merge into user cart
-    sessionCarts.forEach(sessionCart => {
-      Logger.debug(
-        `merge cart: merge user userId: ${userId}, sessionCart.userId: ${
-          sessionCart.userId}, sessionCart id: ${sessionCart._id}`
-      );
+    sessionCarts.forEach((sessionCart) => {
+      Logger.debug(`merge cart: merge user userId: ${userId}, sessionCart.userId: ${
+        sessionCart.userId}, sessionCart id: ${sessionCart._id}`);
       // really if we have no items, there's nothing to merge
       if (sessionCart.items) {
         // if currentCart already have a cartWorkflow, we don't need to clean it
@@ -189,7 +184,7 @@ Meteor.methods({
         const cartSum = sessionCart.items.concat(currentCart.items);
         const mergedItems = cartSum.reduce((newItems, item) => {
           if (item) {
-            const existingItem = newItems.find(cartItem => cartItem.variants._id === item.variants._id);
+            const existingItem = newItems.find((cartItem) => cartItem.variants._id === item.variants._id);
             if (existingItem) {
               existingItem.quantity += item.quantity;
             } else {
@@ -203,6 +198,9 @@ Meteor.methods({
             items: { $each: mergedItems, $slice: -(mergedItems.length) }
           }
         });
+
+        // Calculate discounts
+        Hooks.Events.run("afterCartUpdateCalculateDiscount", currentCart._id);
       }
 
       // cleanup session Carts after merge.
@@ -214,30 +212,31 @@ Meteor.methods({
         Collections.Accounts.remove({
           userId: sessionCart.userId
         });
+        Hooks.Events.run("afterAccountsRemove", this.userId, sessionCart.userId);
         Meteor.users.remove(sessionCart.userId);
-        Logger.debug(
-          `merge cart: delete cart ${
-            sessionCart._id} and user: ${sessionCart.userId}`
-        );
+        Logger.debug(`merge cart: delete cart ${
+          sessionCart._id} and user: ${sessionCart.userId}`);
       }
-      Logger.debug(
-        `merge cart: processed merge for cartId ${sessionCart._id}`
-      );
+      Logger.debug(`merge cart: processed merge for cartId ${sessionCart._id}`);
     });
 
     // `checkoutLogin` should be used for anonymous only. Registered users
     // no need see this.
-    if (currentCart.workflow.status === "new") {
+    if (currentCart.workflow && currentCart.workflow.status === "new") {
       // to call `workflow/pushCartWorkflow` two times is the only way to move
       // from status "new" to "checkoutAddressBook" which I found without
       // refactoring of `workflow/pushCartWorkflow`
       // We send `cartId` as arguments because this method could be called from
       // publication method and in half cases it could be so, that
       // Meteor.userId() will be null.
-      Meteor.call("workflow/pushCartWorkflow", "coreCartWorkflow",
-        "checkoutLogin", cartId);
-      Meteor.call("workflow/pushCartWorkflow", "coreCartWorkflow",
-        "checkoutAddressBook", cartId);
+      Meteor.call(
+        "workflow/pushCartWorkflow", "coreCartWorkflow",
+        "checkoutLogin", cartId
+      );
+      Meteor.call(
+        "workflow/pushCartWorkflow", "coreCartWorkflow",
+        "checkoutAddressBook", cartId
+      );
     }
 
     return currentCart._id;
@@ -253,7 +252,7 @@ Meteor.methods({
    * @todo I think this method should be moved out from methods to a Function Declaration to keep it more secure
    * @returns {String} cartId - users cartId
    */
-  "cart/createCart": function (userId, sessionId) {
+  "cart/createCart"(userId, sessionId) {
     check(userId, String);
     check(sessionId, String);
 
@@ -278,16 +277,14 @@ Meteor.methods({
     // we need to create a user cart for the new authenticated user or
     // anonymous.
     const currentCartId = Collections.Cart.insert({
-      sessionId: sessionId,
-      userId: userId
+      sessionId,
+      userId
     });
-    Logger.debug("create cart: into new user cart. created: " +  currentCartId +
-      " for user " + userId);
+    Logger.debug(`create cart: into new user cart. created: ${currentCartId} for user ${userId}`);
 
     // merge session carts into the current cart
     if (sessionCartCount > 0 && !anonymousUser) {
-      Logger.debug("create cart: found existing cart. merge into " + currentCartId
-        + " for user " + userId);
+      Logger.debug(`create cart: found existing cart. merge into ${currentCartId} for user ${userId}`);
       Meteor.call("cart/mergeCart", currentCartId, sessionId);
     }
 
@@ -295,7 +292,7 @@ Meteor.methods({
     // this needed after submitting order, when user receives new cart
     const account = Collections.Accounts.findOne(userId);
     if (account && account.profile && account.profile.addressBook) {
-      account.profile.addressBook.forEach(address => {
+      account.profile.addressBook.forEach((address) => {
         if (address.isBillingDefault) {
           Meteor.call("cart/setPaymentAddress", currentCartId, address);
         }
@@ -332,7 +329,7 @@ Meteor.methods({
    *  @param {Object} [additionalOptions] - object containing additional options and fields for cart item
    *  @return {Number|Object} Mongo insert response
    */
-  "cart/addToCart": function (productId, variantId, itemQty, additionalOptions) {
+  "cart/addToCart"(productId, variantId, itemQty, additionalOptions) {
     check(productId, String);
     check(variantId, String);
     check(itemQty, Match.Optional(Number));
@@ -347,9 +344,11 @@ Meteor.methods({
 
     const cart = Collections.Cart.findOne({ userId: this.userId });
     if (!cart) {
-      Logger.error(`Cart not found for user: ${ this.userId }`);
-      throw new Meteor.Error("invalid-parameter",
-        "Cart not found for user with such id");
+      Logger.error(`Cart not found for user: ${this.userId}`);
+      throw new Meteor.Error(
+        "invalid-parameter",
+        "Cart not found for user with such id"
+      );
     }
     // With the flattened model we no longer need to work directly with the
     // products. But product still could be necessary for a `quantityProcessing`
@@ -357,10 +356,14 @@ Meteor.methods({
     // `quantityProcessing`?
     let product;
     let variant;
-    Collections.Products.find({ _id: { $in: [
-      productId,
-      variantId
-    ] } }).forEach(doc => {
+    Collections.Products.find({
+      _id: {
+        $in: [
+          productId,
+          variantId
+        ]
+      }
+    }).forEach((doc) => {
       if (doc.type === "simple") {
         product = doc;
       } else {
@@ -373,20 +376,24 @@ Meteor.methods({
     // const product = Collections.Products.findOne(productId);
     // const variant = Collections.Products.findOne(variantId);
     if (!product) {
-      Logger.warn(`Product: ${ productId } was not found in database`);
-      throw new Meteor.Error("not-found",
-        "Product with such id was not found");
+      Logger.warn(`Product: ${productId} was not found in database`);
+      throw new Meteor.Error(
+        "not-found",
+        "Product with such id was not found"
+      );
     }
     if (!variant) {
-      Logger.warn(`Product variant: ${ variantId } was not found in database`);
-      throw new Meteor.Error("not-found",
-        "ProductVariant with such id was not found");
+      Logger.warn(`Product variant: ${variantId} was not found in database`);
+      throw new Meteor.Error(
+        "not-found",
+        "ProductVariant with such id was not found"
+      );
     }
     // performs calculations admissibility of adding product to cart
     const quantity = quantityProcessing(product, variant, itemQty);
     // performs search of variant inside cart
     const cartVariantExists = cart.items && cart.items
-      .some(item => item.variants._id === variantId);
+      .some((item) => item.variants._id === variantId);
 
     if (cartVariantExists) {
       let modifier = {};
@@ -400,34 +407,42 @@ Meteor.methods({
         };
       }
 
-      return Collections.Cart.update({
-        "_id": cart._id,
-        "items.product._id": productId,
-        "items.variants._id": variantId
-      }, {
-        $inc: {
-          "items.$.quantity": quantity
-        },
-        ...modifier
-      }, function (error, result) {
-        if (error) {
-          Logger.warn("error adding to cart",
-            Collections.Cart.simpleSchema().namedContext().invalidKeys());
-          return error;
-        }
+      let updateResult;
 
-        // refresh shipping quotes
-        Meteor.call("shipping/updateShipmentQuotes", cart._id);
-        // revert workflow to checkout shipping step.
-        Meteor.call("workflow/revertCartWorkflow", "coreCheckoutShipping");
-        // reset selected shipment method
-        Meteor.call("cart/resetShipmentMethod", cart._id);
+      try {
+        updateResult = Collections.Cart.update({
+          "_id": cart._id,
+          "items.product._id": productId,
+          "items.variants._id": variantId
+        }, {
+          $inc: {
+            "items.$.quantity": quantity
+          },
+          ...modifier
+        });
+      } catch (error) {
+        Logger.error("Error adding to cart.", error);
+        Logger.error(
+          "Error adding to cart. Invalid keys:",
+          Collections.Cart.simpleSchema().namedContext().validationErrors()
+        );
+        throw error;
+      }
 
-        Logger.debug(`cart: increment variant ${variantId} quantity by ${
-          quantity}`);
+      // Update inventory
+      Hooks.Events.run("afterModifyQuantityInCart", cart._id, { productId, variantId });
+      // Calculate discounts
+      Hooks.Events.run("afterCartUpdateCalculateDiscount", cart._id);
+      // refresh shipping quotes
+      Meteor.call("shipping/updateShipmentQuotes", cart._id);
+      // revert workflow to checkout shipping step.
+      Meteor.call("workflow/revertCartWorkflow", "coreCheckoutShipping");
+      // reset selected shipment method
+      Meteor.call("cart/resetShipmentMethod", cart._id);
 
-        return result;
-      });
+      Logger.debug(`cart: increment variant ${variantId} quantity by ${quantity}`);
+
+      return updateResult;
     }
 
     // TODO: Handle more than 2 levels of variant hierarchy for determining parcel dimensions
@@ -445,42 +460,51 @@ Meteor.methods({
       parcel = { weight: variant.weight, height: variant.height, width: variant.width, length: variant.length };
     }
     // cart variant doesn't exist
-    return Collections.Cart.update({
-      _id: cart._id
-    }, {
-      $addToSet: {
-        items: {
-          _id: Random.id(),
-          shopId: product.shopId,
-          productId: productId,
-          quantity: quantity,
-          product: product,
-          variants: variant,
-          metafields: options.metafields,
-          title: product.title,
-          type: product.type,
-          parcel
+    let updateResult;
+    const newItemId = Random.id();
+
+    try {
+      updateResult = Collections.Cart.update({
+        _id: cart._id
+      }, {
+        $addToSet: {
+          items: {
+            _id: newItemId,
+            shopId: product.shopId,
+            productId,
+            quantity,
+            product,
+            variants: variant,
+            metafields: options.metafields,
+            title: product.title,
+            type: product.type,
+            parcel
+          }
         }
-      }
-    }, function (error, result) {
-      if (error) {
-        Logger.error(error);
-        Logger.error(Collections.Cart.simpleSchema().namedContext().invalidKeys(),
-          "Invalid keys. Error adding to cart.");
-        return error;
-      }
+      });
+    } catch (error) {
+      Logger.error("Error adding to cart.", error);
+      Logger.error(
+        "Error adding to cart. Invalid keys:",
+        Collections.Cart.simpleSchema().namedContext().validationErrors()
+      );
+      throw error;
+    }
 
-      // refresh shipping quotes
-      Meteor.call("shipping/updateShipmentQuotes", cart._id);
-      // revert workflow to checkout shipping step.
-      Meteor.call("workflow/revertCartWorkflow", "coreCheckoutShipping");
-      // reset selected shipment method
-      Meteor.call("cart/resetShipmentMethod", cart._id);
+    // Update add inventory reserve
+    Hooks.Events.run("afterAddItemsToCart", cart._id, { newItemId });
+    // Calculate discounts
+    Hooks.Events.run("afterCartUpdateCalculateDiscount", cart._id);
+    // refresh shipping quotes
+    Meteor.call("shipping/updateShipmentQuotes", cart._id);
+    // revert workflow to checkout shipping step.
+    Meteor.call("workflow/revertCartWorkflow", "coreCheckoutShipping");
+    // reset selected shipment method
+    Meteor.call("cart/resetShipmentMethod", cart._id);
 
-      Logger.debug(`cart: add variant ${variantId} to cartId ${cart._id}`);
+    Logger.debug(`cart: add variant ${variantId} to cartId ${cart._id}`);
 
-      return result;
-    });
+    return updateResult;
   },
 
   /**
@@ -491,14 +515,12 @@ Meteor.methods({
    * @param {Number} [quantity] - if provided will adjust increment by quantity
    * @returns {Number} returns Mongo update result
    */
-  "cart/removeFromCart": function (itemId, quantity) {
+  "cart/removeFromCart"(itemId, quantity) {
     check(itemId, String);
     check(quantity, Match.Optional(Number));
 
     const userId = Meteor.userId();
-    const cart = Collections.Cart.findOne({
-      userId: userId
-    });
+    const cart = Collections.Cart.findOne({ userId });
     if (!cart) {
       Logger.error(`Cart not found for user: ${this.userId}`);
       throw new Meteor.Error("not-found", "Cart not found for user with such id");
@@ -517,25 +539,34 @@ Meteor.methods({
     }
 
     if (!quantity || quantity >= cartItem.quantity) {
-      const cartResult = Collections.Cart.update({
-        _id: cart._id
-      }, {
-        $pull: {
-          items: {
-            _id: itemId
+      let cartResult;
+      try {
+        cartResult = Collections.Cart.update({
+          _id: cart._id
+        }, {
+          $pull: {
+            items: {
+              _id: itemId
+            }
           }
-        }
-      }, {
-        getAutoValues: false // See https://github.com/aldeed/meteor-collection2/issues/245
-      }, (error, result) => {
-        if (error) {
-          Logger.error(error);
-          Logger.error(Collections.Cart.simpleSchema().namedContext().invalidKeys(), "error removing from cart");
-          return error;
-        }
-        Logger.debug(`cart: deleted cart item variant id ${cartItem.variants._id}`);
-        return result;
-      });
+        }, {
+          getAutoValues: false // See https://github.com/aldeed/meteor-collection2/issues/245
+        });
+      } catch (error) {
+        Logger.error("Error removing from cart.", error);
+        Logger.error(
+          "Error removing from cart. Invalid keys:",
+          Collections.Cart.simpleSchema().namedContext().validationErrors()
+        );
+        throw error;
+      }
+
+      Logger.debug(`cart: deleted cart item variant id ${cartItem.variants._id}`);
+
+      // Clear inventory reservation
+      Meteor.call("inventory/clearReserve", [cartItem]);
+      // Calculate discounts
+      Hooks.Events.run("afterCartUpdateCalculateDiscount", cart._id);
       // TODO: HACK: When calling update shipping the changes to the cart have not taken place yet
       // TODO: But calling this findOne seems to force this record to update. Extra weird since we aren't
       // TODO: passing the Cart but just the cartId and regrabbing it so you would think that would work but it does not
@@ -551,23 +582,34 @@ Meteor.methods({
 
     // if quantity lets convert to negative and increment
     const removeQuantity = Math.abs(quantity) * -1;
-    const cartResult = Collections.Cart.update({
-      "_id": cart._id,
-      "items._id": cartItem._id
-    }, {
-      $inc: {
-        "items.$.quantity": removeQuantity
-      }
-    }, (error, result) => {
-      if (error) {
-        Logger.error(error);
-        Logger.error(Collections.Cart.simpleSchema().namedContext().invalidKeys(),
-          "error removing from cart");
-        return error;
-      }
-      Logger.debug(`cart: removed variant ${cartItem._id} quantity of ${quantity}`);
-      return result;
-    });
+
+    let cartResult;
+    try {
+      cartResult = Collections.Cart.update({
+        "_id": cart._id,
+        "items._id": cartItem._id
+      }, {
+        $inc: {
+          "items.$.quantity": removeQuantity
+        }
+      });
+    } catch (error) {
+      Logger.error("Error removing from cart.", error);
+      Logger.error(
+        "Error removing from cart. Invalid keys:",
+        Collections.Cart.simpleSchema().namedContext().validationErrors()
+      );
+      throw error;
+    }
+
+    // Clear inventory status for multiple instances of this item
+    // If quantity is provided, then set cartItem to it, so that quantity
+    // provided will be cleared in the inventory.
+    cartItem.quantity = quantity;
+    Meteor.call("inventory/clearReserve", [cartItem]);
+    // Calculate discounts
+    Hooks.Events.run("afterCartUpdateCalculateDiscount", cart._id);
+    Logger.debug(`cart: removed variant ${cartItem._id} quantity of ${quantity}`);
     // refresh shipping quotes
     Meteor.call("shipping/updateShipmentQuotes", cart._id);
     // revert workflow
@@ -585,44 +627,34 @@ Meteor.methods({
    * @param {Object} method - shipmentMethod object
    * @return {Number} return Mongo update result
    */
-  "cart/setShipmentMethod": function (cartId, method) {
+  "cart/setShipmentMethod"(cartId, method) {
     check(cartId, String);
-    check(method, Object);
+    Reaction.Schemas.ShippingMethod.validate(method);
+
     // get current cart
     const cart = Collections.Cart.findOne({
       _id: cartId,
       userId: Meteor.userId()
     });
     if (!cart) {
-      Logger.error(`Cart not found for user: ${ this.userId }`);
-      throw new Meteor.Error("not-found",
-        "Cart not found for user with such id");
+      Logger.error(`Cart not found for user: ${this.userId}`);
+      throw new Meteor.Error(
+        "not-found",
+        "Cart not found for user with such id"
+      );
     }
 
     // Sets all shipping methods to the one selected
     // TODO: Accept an object of shopId to method map to ship via different methods per shop
-    let selector;
     let update;
     // if we have an existing item update it, otherwise add to set.
     if (cart.shipping) {
-      const updatedShipping = [];
-      cart.shipping.map((shipRecord) => {
-        shipRecord.shipmentMethod = method;
-        updatedShipping.push(shipRecord);
-      });
-
-      selector = {
-        _id: cartId
-      };
-      update = {
-        $set: {
-          shipping: updatedShipping
-        }
-      };
+      const shipping = cart.shipping.map((shipRecord) => ({
+        ...shipRecord,
+        shipmentMethod: method
+      }));
+      update = { $set: { shipping } };
     } else {
-      selector = {
-        _id: cartId
-      };
       update = {
         $addToSet: {
           shipping: {
@@ -635,15 +667,18 @@ Meteor.methods({
 
     // update or insert method
     try {
-      Collections.Cart.update(selector, update);
+      Collections.Cart.update({ _id: cartId }, update);
     } catch (e) {
       Logger.error(e, `Error adding rates to cart ${cartId}`);
       throw new Meteor.Error("server-error", "An error occurred saving the order", e);
     }
 
+
+    // Calculate discounts
+    Hooks.Events.run("afterCartUpdateCalculateDiscount", cart._id);
+
     // this will transition to review
-    return Meteor.call("workflow/pushCartWorkflow", "coreCartWorkflow",
-      "coreCheckoutShipping");
+    return Meteor.call("workflow/pushCartWorkflow", "coreCartWorkflow", "coreCheckoutShipping");
   },
 
   /**
@@ -654,19 +689,17 @@ Meteor.methods({
    * @param {String} userCurrency - userCurrency to set to cart
    * @return {Number} update result
    */
-  "cart/setUserCurrency": function (cartId, userCurrency) {
+  "cart/setUserCurrency"(cartId, userCurrency) {
     check(cartId, String);
     check(userCurrency, String);
-    const cart = Collections.Cart.findOne({
-      _id: cartId
-    });
+    const cart = Collections.Cart.findOne({ _id: cartId });
     if (!cart) {
-      Logger.error(`Cart not found for user: ${ this.userId }`);
+      Logger.error(`Cart not found for user: ${this.userId}`);
       throw new Meteor.Error("not-found", "Cart not found for user with such id");
     }
 
     const userCurrencyString = {
-      userCurrency: userCurrency
+      userCurrency
     };
 
     let selector;
@@ -703,6 +736,9 @@ Meteor.methods({
       throw new Meteor.Error("server-error", "An error occurred adding the currency");
     }
 
+    // Calculate discounts
+    Hooks.Events.run("afterCartUpdateCalculateDiscount", cart._id);
+
     return true;
   },
 
@@ -713,7 +749,7 @@ Meteor.methods({
    * @param {String} cartId - cart _id
    * @return {Number} update result
    */
-  "cart/resetShipmentMethod": function (cartId) {
+  "cart/resetShipmentMethod"(cartId) {
     check(cartId, String);
 
     const cart = Collections.Cart.findOne({
@@ -722,8 +758,10 @@ Meteor.methods({
     });
     if (!cart) {
       Logger.error(`Cart not found for user: ${this.userId}`);
-      throw new Meteor.Error("not-found",
-        `Cart: ${cartId} not found for user: ${this.userId}`);
+      throw new Meteor.Error(
+        "not-found",
+        `Cart: ${cartId} not found for user: ${this.userId}`
+      );
     }
 
     return Collections.Cart.update({ _id: cartId }, {
@@ -739,18 +777,20 @@ Meteor.methods({
    * @param {Object} address - addressBook object
    * @return {Number} update result
    */
-  "cart/setShipmentAddress": function (cartId, address) {
+  "cart/setShipmentAddress"(cartId, address) {
     check(cartId, String);
-    check(address, Reaction.Schemas.Address);
+    Reaction.Schemas.Address.validate(address);
 
     const cart = Collections.Cart.findOne({
       _id: cartId,
       userId: this.userId
     });
     if (!cart) {
-      Logger.error(`Cart not found for user: ${ this.userId }`);
-      throw new Meteor.Error("not-found",
-        "Cart not found for user with such id");
+      Logger.error(`Cart not found for user: ${this.userId}`);
+      throw new Meteor.Error(
+        "not-found",
+        "Cart not found for user with such id"
+      );
     }
     // TODO: When we have a front end for doing more than one address
     // TODO: we need to not use the same address for every record
@@ -783,61 +823,58 @@ Meteor.methods({
           throw new Meteor.Error("An error occurred adding the address", error);
         }
       });
-    } else {
-      // if no items in cart just add or modify one record for the carts shop
-      if (!cart.items) {
-        // add a shipping record if it doesn't exist
-        if (!cart.shipping) {
-          selector = {
-            _id: cartId
-          };
-          update = {
-            $push: {
-              shipping: {
-                address: address,
-                shopId: cart.shopId
-              }
+    } else if (!cart.items) { // if no items in cart just add or modify one record for the carts shop
+      // add a shipping record if it doesn't exist
+      if (!cart.shipping) {
+        selector = {
+          _id: cartId
+        };
+        update = {
+          $push: {
+            shipping: {
+              address,
+              shopId: cart.shopId
             }
-          };
-
-          try {
-            Collections.Cart.update(selector, update);
-            updated = true;
-          } catch (error) {
-            Logger.error(error);
-            throw new Meteor.Error("server-error", "An error occurred adding the address");
           }
-        } else {
-          // modify an existing record if we have one already
-          selector = {
-            "_id": cartId,
-            "shipping.shopId": cart.shopId
-          };
+        };
 
-          update = {
-            $set: {
-              "shipping.$.address": address
-            }
-          };
+        try {
+          Collections.Cart.update(selector, update);
+          updated = true;
+        } catch (error) {
+          Logger.error(error);
+          throw new Meteor.Error("server-error", "An error occurred adding the address");
         }
       } else {
-        // if we have items in the cart but we didn't have existing shipping records
-        // add a record for each shop that's represented in the items
-        const shopIds = Object.keys(cart.getItemsByShop());
-        shopIds.map((shopId) => {
-          selector = {
-            _id: cartId
-          };
-          update = {
-            $addToSet: {
-              shipping: {
-                address: address,
-                shopId: shopId
-              }
-            }
-          };
-        });
+        // modify an existing record if we have one already
+        selector = {
+          "_id": cartId,
+          "shipping.shopId": cart.shopId
+        };
+
+        update = {
+          $set: {
+            "shipping.$.address": address
+          }
+        };
       }
+    } else {
+      // if we have items in the cart but we didn't have existing shipping records
+      // add a record for each shop that's represented in the items
+      const shopIds = Object.keys(cart.getItemsByShop());
+      shopIds.forEach((shopId) => {
+        selector = {
+          _id: cartId
+        };
+        update = {
+          $addToSet: {
+            shipping: {
+              address,
+              shopId
+            }
+          }
+        };
+      });
     }
     if (!updated) {
       // if we didn't do one of the inline updates, then run the update here
@@ -851,17 +888,24 @@ Meteor.methods({
     // refresh shipping quotes
     Meteor.call("shipping/updateShipmentQuotes", cartId);
 
+    // Calculate discounts
+    Hooks.Events.run("afterCartUpdateCalculateDiscount", cartId);
+
     if (typeof cart.workflow !== "object") {
-      throw new Meteor.Error("server-error",
-        "Cart workflow object not detected.");
+      throw new Meteor.Error(
+        "server-error",
+        "Cart workflow object not detected."
+      );
     }
 
     // ~~it's ok for this to be called multiple times~~
     // call it only once when we at the `checkoutAddressBook` step
     if (typeof cart.workflow.workflow === "object" &&
       cart.workflow.workflow.length < 2) {
-      Meteor.call("workflow/pushCartWorkflow", "coreCartWorkflow",
-        "coreCheckoutShipping");
+      Meteor.call(
+        "workflow/pushCartWorkflow", "coreCartWorkflow",
+        "coreCheckoutShipping"
+      );
     }
 
     // if we change default address during further steps, we need to revert
@@ -884,9 +928,9 @@ Meteor.methods({
    * @todo maybe we need to rename this method to `cart/setBillingAddress`?
    * @return {Number} return Mongo update result
    */
-  "cart/setPaymentAddress": function (cartId, address) {
+  "cart/setPaymentAddress"(cartId, address) {
     check(cartId, String);
-    check(address, Reaction.Schemas.Address);
+    Reaction.Schemas.Address.validate(address);
 
     const cart = Collections.Cart.findOne({
       _id: cartId,
@@ -894,9 +938,11 @@ Meteor.methods({
     });
 
     if (!cart) {
-      Logger.error(`Cart not found for user: ${ this.userId }`);
-      throw new Meteor.Error("not-found",
-        "Cart not found for user with such id");
+      Logger.error(`Cart not found for user: ${this.userId}`);
+      throw new Meteor.Error(
+        "not-found",
+        "Cart not found for user with such id"
+      );
     }
 
     let selector;
@@ -920,13 +966,18 @@ Meteor.methods({
       update = {
         $addToSet: {
           billing: {
-            address: address
+            address
           }
         }
       };
     }
 
-    return Collections.Cart.update(selector, update);
+    const result = Collections.Cart.update(selector, update);
+
+    // Calculate discounts
+    Hooks.Events.run("afterCartUpdateCalculateDiscount", cartId);
+
+    return result;
   },
 
   /**
@@ -941,7 +992,7 @@ Meteor.methods({
    * @return {Number|Object|Boolean} The number of removed documents or
    * error object or `false` if we don't need to update cart
    */
-  "cart/unsetAddresses": function (addressId, userId, type) {
+  "cart/unsetAddresses"(addressId, userId, type) {
     check(addressId, String);
     check(userId, String);
     check(type, Match.Optional(String));
@@ -951,7 +1002,7 @@ Meteor.methods({
     // we need to revert the workflow after a "shipping" address was removed
     let isShippingDeleting = false;
     const cart = Collections.Cart.findOne({
-      userId: userId
+      userId
     });
     const selector = {
       _id: cart._id
@@ -988,6 +1039,9 @@ Meteor.methods({
         throw new Meteor.Error("server-error", "Error updating cart");
       }
 
+      // Calculate discounts
+      Hooks.Events.run("afterCartUpdateCalculateDiscount", cart._id);
+
       if (isShippingDeleting) {
         // if we remove shipping address from cart, we need to revert
         // `cartWorkflow` to the `checkoutAddressBook` step.
@@ -1005,13 +1059,8 @@ Meteor.methods({
    * @param {Object|Array} paymentMethods - an array of paymentMethods or (deprecated) a single paymentMethod object
    * @return {String} returns update result
    */
-  "cart/submitPayment": function (paymentMethods) {
-    if (Array.isArray((paymentMethods))) {
-      check(paymentMethods, [Reaction.Schemas.PaymentMethod]);
-    } else {
-      check(paymentMethods, Reaction.Schemas.PaymentMethod);
-    }
-
+  "cart/submitPayment"(paymentMethods) {
+    PaymentMethodArgument.validate(paymentMethods);
 
     const cart = Collections.Cart.findOne({
       userId: Meteor.userId()
@@ -1033,19 +1082,19 @@ Meteor.methods({
     // we'll just update the workflow and billing data where
     // method-hooks can process the workflow update.
 
-    const payments = [];
-    let paymentAddress;
-
     // Find the payment address associated that the user input during the
     // checkout process
+    let paymentAddress;
     if (Array.isArray(cart.billing) && cart.billing[0]) {
       paymentAddress = cart.billing[0].address;
     }
 
+    const payments = [];
+
     // Payment plugins which have been updated for marketplace are passing an array as paymentMethods
     if (Array.isArray(paymentMethods)) {
       paymentMethods.forEach((paymentMethod) => {
-        const shopId = paymentMethod.shopId;
+        const { shopId } = paymentMethod;
         const invoice = {
           shipping: parseFloat(cartShippingByShop[shopId]),
           subtotal: parseFloat(cartSubtotalByShop[shopId]),
@@ -1055,10 +1104,10 @@ Meteor.methods({
         };
 
         payments.push({
-          paymentMethod: paymentMethod,
-          invoice: invoice,
+          paymentMethod,
+          invoice,
           address: paymentAddress,
-          shopId: shopId
+          shopId
         });
       });
     } else {
@@ -1075,11 +1124,15 @@ Meteor.methods({
       // Legacy payment plugins are passing in a single paymentMethod object
       payments.push({
         paymentMethod: paymentMethods,
-        invoice: invoice,
+        invoice,
         address: paymentAddress,
         shopId: Reaction.getPrimaryShopId()
       });
     }
+
+    // e.g. discount records would be already present on the billing array. Add to the end of the array.
+    const discountRecords = cart.billing.filter((billingInfo) => billingInfo.paymentMethod);
+    payments.push(...discountRecords);
 
     const selector = {
       _id: cartId
@@ -1098,6 +1151,9 @@ Meteor.methods({
       throw new Meteor.Error("server-error", "An error occurred saving the order");
     }
 
+    // Calculate discounts
+    Hooks.Events.run("afterCartUpdateCalculateDiscount", cartId);
+
     return Collections.Cart.findOne(selector);
   },
 
@@ -1109,11 +1165,11 @@ Meteor.methods({
    * @param {String} email - email to set for anonymous user's cart instance
    * @return {Number} returns update result
    */
-  "cart/setAnonymousUserEmail": function (userId, email) {
+  "cart/setAnonymousUserEmail"(userId, email) {
     check(userId, String);
     check(email, String);
 
-    const currentUserCart = Collections.Cart.findOne({ userId: userId });
+    const currentUserCart = Collections.Cart.findOne({ userId });
     const cartId = currentUserCart._id;
     let newEmail = "";
 

@@ -1,12 +1,17 @@
 /* eslint camelcase: 0 */
 import Braintree from "braintree";
 import accounting from "accounting-js";
-import moment from "moment";
 import Future from "fibers/future";
 import { Meteor } from "meteor/meteor";
 import { check } from "meteor/check";
 import { Packages } from "/lib/collections";
 import { Reaction, Logger } from "/server/api";
+
+let moment;
+async function lazyLoadMoment() {
+  if (moment) return;
+  moment = await import("moment");
+}
 
 
 export const BraintreeApi = {};
@@ -59,7 +64,7 @@ function getAccountOptions(isPayment) {
 
   const ref = Meteor.settings.braintree;
   const options = {
-    environment: environment,
+    environment,
     merchantId: getSettings(settings, ref, "merchant_id"),
     publicKey: getSettings(settings, ref, "public_key"),
     privateKey: getSettings(settings, ref, "private_key")
@@ -100,11 +105,11 @@ BraintreeApi.apiCall.paymentSubmit = function (paymentSubmitDetails) {
   paymentObj.creditCard = parseCardData(paymentSubmitDetails.cardData);
   paymentObj.amount = paymentSubmitDetails.paymentData.total;
   const fut = new Future();
-  gateway.transaction.sale(paymentObj, Meteor.bindEnvironment(function (error, result) {
+  gateway.transaction.sale(paymentObj, Meteor.bindEnvironment((error, result) => {
     if (error) {
       fut.return({
         saved: false,
-        error: error
+        error
       });
     } else if (!result.success) {
       fut.return({
@@ -117,7 +122,7 @@ BraintreeApi.apiCall.paymentSubmit = function (paymentSubmitDetails) {
         response: result
       });
     }
-  }, function (error) {
+  }, (error) => {
     Reaction.Events.warn(error);
   }));
 
@@ -126,17 +131,17 @@ BraintreeApi.apiCall.paymentSubmit = function (paymentSubmitDetails) {
 
 
 BraintreeApi.apiCall.captureCharge = function (paymentCaptureDetails) {
-  const transactionId = paymentCaptureDetails.transactionId;
+  const { transactionId } = paymentCaptureDetails;
   const amount = accounting.toFixed(paymentCaptureDetails.amount, 2);
   const gateway = getGateway();
   const fut = new Future();
 
   if (amount === accounting.toFixed(0, 2)) {
-    gateway.transaction.void(transactionId, function (error, result) {
+    gateway.transaction.void(transactionId, (error, result) => {
       if (error) {
         fut.return({
           saved: false,
-          error: error
+          error
         });
       } else {
         fut.return({
@@ -144,16 +149,16 @@ BraintreeApi.apiCall.captureCharge = function (paymentCaptureDetails) {
           response: result
         });
       }
-    }, function (e) {
+    }, (e) => {
       Logger.warn(e);
     });
     return fut.wait();
   }
-  gateway.transaction.submitForSettlement(transactionId, amount, Meteor.bindEnvironment(function (error, result) {
+  gateway.transaction.submitForSettlement(transactionId, amount, Meteor.bindEnvironment((error, result) => {
     if (error) {
       fut.return({
         saved: false,
-        error: error
+        error
       });
     } else {
       fut.return({
@@ -161,7 +166,7 @@ BraintreeApi.apiCall.captureCharge = function (paymentCaptureDetails) {
         response: result
       });
     }
-  }, function (e) {
+  }, (e) => {
     Logger.warn(e);
   }));
 
@@ -170,15 +175,14 @@ BraintreeApi.apiCall.captureCharge = function (paymentCaptureDetails) {
 
 
 BraintreeApi.apiCall.createRefund = function (refundDetails) {
-  const transactionId = refundDetails.transactionId;
-  const amount = refundDetails.amount;
+  const { amount, transactionId } = refundDetails;
   const gateway = getGateway();
   const fut = new Future();
-  gateway.transaction.refund(transactionId, amount, Meteor.bindEnvironment(function (error, result) {
+  gateway.transaction.refund(transactionId, amount, Meteor.bindEnvironment((error, result) => {
     if (error) {
       fut.return({
         saved: false,
-        error: error
+        error
       });
     } else if (!result.success) {
       if (result.errors.errorCollections.transaction.validationErrors.base[0].code === "91506") {
@@ -198,7 +202,7 @@ BraintreeApi.apiCall.createRefund = function (refundDetails) {
         response: result
       });
     }
-  }, function (e) {
+  }, (e) => {
     Logger.fatal(e);
   }));
   return fut.wait();
@@ -206,12 +210,13 @@ BraintreeApi.apiCall.createRefund = function (refundDetails) {
 
 
 BraintreeApi.apiCall.listRefunds = function (refundListDetails) {
-  const transactionId = refundListDetails.transactionId;
+  const { transactionId } = refundListDetails;
   const gateway = getGateway();
   const braintreeFind = Meteor.wrapAsync(gateway.transaction.find, gateway.transaction);
   const findResults = braintreeFind(transactionId);
   const result = [];
   if (findResults.refundIds.length > 0) {
+    Promise.await(lazyLoadMoment());
     for (const refund of findResults.refundIds) {
       const refundDetails = getRefundDetails(refund);
       result.push({

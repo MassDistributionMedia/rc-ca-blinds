@@ -1,23 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Components } from "@reactioncommerce/reaction-components";
-import { Meteor } from "meteor/meteor";
-
-// TODO: Delete this, and do it the react way - Mike M.
-async function openSearchModalLegacy(props) {
-  if (Meteor.isClient) {
-    const { Blaze } = await import("meteor/blaze");
-    const { Template } = await import("meteor/templating");
-    const { $ } = await import("meteor/jquery");
-
-    const searchTemplate = Template[props.searchTemplate];
-
-    Blaze.renderWithData(searchTemplate, {}, $("html").get(0));
-
-    $("body").css("overflow", "hidden");
-    $("#search-input").focus();
-  }
-}
 
 class NavBar extends Component {
   static propTypes = {
@@ -43,7 +26,8 @@ class NavBar extends Component {
   };
 
   state = {
-    navBarVisible: false
+    navBarVisible: false,
+    searchModalOpen: false
   }
 
   toggleNavbarVisibility = () => {
@@ -56,12 +40,16 @@ class NavBar extends Component {
   }
 
   handleOpenSearchModal = () => {
-    openSearchModalLegacy(this.props);
+    this.setState({ searchModalOpen: true });
+  }
+
+  handleCloseSearchModal = () => {
+    this.setState({ searchModalOpen: false });
   }
 
   renderLanguage() {
     return (
-      <div className="languages hidden-xs">
+      <div className="languages">
         <Components.LanguageDropdown />
       </div>
     );
@@ -69,20 +57,22 @@ class NavBar extends Component {
 
   renderCurrency() {
     return (
-      <div className="currencies hidden-xs">
+      <div className="currencies">
         <Components.CurrencyDropdown />
       </div>
     );
   }
 
   renderBrand() {
-    const shop = this.props.shop || { name: "" };
-    const logo = this.props.brandMedia && this.props.brandMedia.url();
+    const { brandMedia, shop } = this.props;
+
+    const { name } = shop || {};
+    const logo = brandMedia && brandMedia.url({ store: "large" });
 
     return (
       <Components.Brand
         logo={logo}
-        title={shop.name}
+        title={name || ""}
       />
     );
   }
@@ -96,6 +86,10 @@ class NavBar extends Component {
             kind="flat"
             onClick={this.handleOpenSearchModal}
           />
+          <Components.SearchSubscription
+            open={this.state.searchModalOpen}
+            onClose={this.handleCloseSearchModal}
+          />
         </div>
       );
     }
@@ -104,7 +98,9 @@ class NavBar extends Component {
   renderNotificationIcon() {
     if (this.props.hasProperPermission) {
       return (
-        <Components.Notification />
+        <div className="navbar-notification">
+          <Components.Notification />
+        </div>
       );
     }
   }
@@ -136,14 +132,18 @@ class NavBar extends Component {
 
   renderTagNav() {
     return (
-      <div className="menu">
+      <header className="menu" role="banner">
         <Components.TagNav
           isVisible={this.state.navBarVisible}
           closeNavbar={this.handleCloseNavbar}
+          {...this.props}
         >
           <Components.Brand />
+          {this.renderNotificationIcon()}
+          {this.renderLanguage()}
+          {this.renderCurrency()}
         </Components.TagNav>
-      </div>
+      </header>
     );
   }
 

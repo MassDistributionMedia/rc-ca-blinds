@@ -1,37 +1,10 @@
-import { compose, withProps } from "recompose";
+import { compose } from "recompose";
 import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
-import { Orders, Media } from "/lib/collections";
+import { Orders } from "/lib/collections";
 import { Reaction } from "/client/api";
 import { registerComponent, composeWithTracker } from "@reactioncommerce/reaction-components";
 import CompletedOrder from "../components/completedOrder";
-
-
-const handlers = {};
-
-handlers.handleDisplayMedia = (item) => {
-  const variantId = item.variants._id;
-  const productId = item.productId;
-
-  const variantImage = Media.findOne({
-    "metadata.variantId": variantId,
-    "metadata.productId": productId
-  });
-
-  if (variantImage) {
-    return variantImage;
-  }
-
-  const defaultImage = Media.findOne({
-    "metadata.productId": productId,
-    "metadata.priority": 0
-  });
-
-  if (defaultImage) {
-    return defaultImage;
-  }
-  return false;
-};
 
 function composer(props, onData) {
   // The Cart subscription does not update when you delete the original record
@@ -40,17 +13,17 @@ function composer(props, onData) {
   // I think this is a bug in SubscriptionManager but that should be revisited later
   const sessionId = Session.get("sessionId");
   Reaction.Subscriptions.Cart = Reaction.Subscriptions.Manager.subscribe("Cart", sessionId, Meteor.userId());
-  const orderId = Reaction.Router.getQueryParam("_id");
-  const orderSub = Meteor.subscribe("CompletedCartOrder", Meteor.userId(), orderId);
+  const cartId = Reaction.Router.getQueryParam("_id");
+  const orderSub = Meteor.subscribe("CompletedCartOrder", Meteor.userId(), cartId);
 
   if (orderSub.ready()) {
     const order = Orders.findOne({
       userId: Meteor.userId(),
-      cartId: orderId
+      cartId
     });
 
     if (order) {
-      const imageSub = Meteor.subscribe("CartImages", order.items);
+      const imageSub = Meteor.subscribe("OrderImages", order._id);
 
       const orderSummary = {
         quantityTotal: order.getCount(),
@@ -63,16 +36,12 @@ function composer(props, onData) {
       };
 
       if (imageSub.ready()) {
-        const productImages = Media.find().fetch();
-
         onData(null, {
           isProfilePage: false,
           shops: order.getShopSummary(),
           order,
-          orderId,
           orderSummary,
-          paymentMethods: order.getUniquePaymentMethods(),
-          productImages
+          paymentMethods: order.getUniquePaymentMethods()
         });
       }
     } else {
@@ -83,13 +52,8 @@ function composer(props, onData) {
   }
 }
 
-
 registerComponent("CompletedOrder", CompletedOrder, [
-  withProps(handlers),
   composeWithTracker(composer)
 ]);
 
-export default compose(
-  withProps(handlers),
-  composeWithTracker(composer)
-)(CompletedOrder);
+export default compose(composeWithTracker(composer))(CompletedOrder);

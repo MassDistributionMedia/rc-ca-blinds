@@ -5,6 +5,7 @@ import { $ } from "meteor/jquery";
 import { Reaction, Router, i18next } from "/client/api";
 import { Packages, Shops } from "/lib/collections";
 import { ShopifyConnectPackageConfig } from "../../lib/collections/schemas";
+import "./shopify.less";
 import "./shopify.html";
 
 Template.shopifyConnectSettings.helpers({
@@ -20,10 +21,13 @@ Template.shopifyConnectSettings.helpers({
 });
 
 Template.shopifyImport.events({
-  "click [data-event-action=importProductsFromShopify]"(event) {
+  "click [data-event-action=importDataFromShopify]"(event) {
     event.preventDefault();
-    $(event.currentTarget).html(`<i class='fa fa-circle-o-notch fa-spin'></i> ${i18next.t("admin.shopifyConnectSettings.importing")}`);
-    event.currentTarget.disabled = true;
+
+    if ($("#shopifyCheckboxCustomers").is(":checked") || $("#shopifyCheckboxProducts").is(":checked")) {
+      $(event.currentTarget).html(`<i class='fa fa-circle-o-notch fa-spin'></i> ${i18next.t("admin.shopifyConnectSettings.importing")}`);
+      event.currentTarget.disabled = true;
+    }
 
     // If this is the primary shop, redirect to index
     if (Reaction.getShopId() === Reaction.getPrimaryShopId()) {
@@ -40,16 +44,37 @@ Template.shopifyImport.events({
       }
     }
 
-    Meteor.call("connectors/shopify/import/products", (err) => {
-      $(event.currentTarget).html(`
-          <i class='fa fa-cloud-download'></i> ${i18next.t("admin.shopifyConnectSettings.importProducts")}`);
-      event.currentTarget.disabled = false;
+    // If no option is selected, return error asking user to select type of import
+    if (!$("#shopifyCheckboxCustomers").is(":checked") && !$("#shopifyCheckboxProducts").is(":checked")) {
+      return Alerts.toast(i18next.t("admin.shopifyConnectSettings.chooseImportType"), "error");
+    }
+    // TODO transform these Meteor calls to jobs like we do for the products images
+    // we got customers checkbox checked ? if yes then download customers
+    if ($("#shopifyCheckboxCustomers").is(":checked")) {
+      Meteor.call("connectors/shopify/import/customers", (err) => {
+        $(event.currentTarget).html(`
+            <i class='fa fa-cloud-download'></i> ${i18next.t("admin.shopifyConnectSettings.startImport")}`);
+        event.currentTarget.disabled = false;
 
-      if (!err) {
-        return Alerts.toast(i18next.t("admin.shopifyConnectSettings.importSuccess"), "success");
-      }
-      return Alerts.toast(`${i18next.t("admin.shopifyConnectSettings.importFailed")}: ${err}`, "error");
-    });
+        if (!err) {
+          return Alerts.toast(i18next.t("admin.shopifyConnectSettings.importSuccess"), "success");
+        }
+        return Alerts.toast(`${i18next.t("admin.shopifyConnectSettings.importFailed")}: ${err}`, "error");
+      });
+    }
+    // we got products checkbox checked ? if yes then download products
+    if ($("#shopifyCheckboxProducts").is(":checked")) {
+      Meteor.call("connectors/shopify/import/products", (err) => {
+        $(event.currentTarget).html(`
+            <i class='fa fa-cloud-download'></i> ${i18next.t("admin.shopifyConnectSettings.startImport")}`);
+        event.currentTarget.disabled = false;
+
+        if (!err) {
+          return Alerts.toast(i18next.t("admin.shopifyConnectSettings.importSuccess"), "success");
+        }
+        return Alerts.toast(`${i18next.t("admin.shopifyConnectSettings.importFailed")}: ${err}`, "error");
+      });
+    }
   }
 });
 
@@ -91,6 +116,25 @@ Template.shopifySync.helpers({
 
     // If no webhooks are found, this integration is inactive
     return "";
+  },
+
+  currentDomain() {
+    const { settings } = Reaction.getPackageSettings("reaction-connectors-shopify");
+    return settings.webhooksDomain || Meteor.absoluteUrl();
+  },
+
+  hookIsActive(hook) {
+    const { settings } = Reaction.getPackageSettings("reaction-connectors-shopify");
+    const { synchooks } = settings;
+    if (synchooks) {
+      const [topic, event, syncType] = hook.split(":");
+      const matchingHooks = synchooks.filter((synchook) => synchook.topic === topic && synchook.event === event && synchook.syncType === syncType);
+
+      if (matchingHooks.length > 0) {
+        return "checked";
+      }
+    }
+    return "";
   }
 });
 
@@ -98,11 +142,23 @@ Template.shopifySync.events({
   "submit [data-event-action=setupShopifySync]"(event) {
     event.preventDefault(); // Don't permit default form submission behavior
 
+    const { settings } = Reaction.getPackageSettings("reaction-connectors-shopify");
+
     // Our event target is the form we submitted
     const form = event.target;
 
     // Get all selected options
     const selectedOptionsNodeList = form.querySelectorAll('input[type="checkbox"]:checked');
+    const webhooksDomain = document.getElementsByName("webhooksDomain")[0].value;
+
+    if (!webhooksDomain) {
+      return Alerts.toast(`${i18next.t("admin.shopifyConnectSettings.noDomainSelected")}`, "warning");
+    }
+
+    if (settings.webhooksDomain !== webhooksDomain) {
+      settings.webhooksDomain = webhooksDomain;
+      Meteor.call("package/update", "reaction-connectors-shopify", "settings", settings);
+    }
 
     // Create options array
     // - create an array from the nodelist of checkboxes
@@ -110,11 +166,10 @@ Template.shopifySync.events({
     // - options should be in the form topic:integration
     // - e.g. orders/create:updateInventory
     const integrations = Array.from(selectedOptionsNodeList).map((integration) => integration.name);
-
     // If there's at least one option
     if (integrations && Array.isArray(integrations) && integrations.length > 0) {
       // setup sync with provided integrations
-      return Meteor.call("connectors/shopify/sync/setup", integrations, (err) => {
+      return Meteor.call("connectors/shopify/sync/setup", integrations, webhooksDomain, (err) => {
         if (!err) {
           // If there is no error, notify of success
           return Alerts.toast(i18next.t("admin.shopifyConnectSettings.syncSetupSuccess"), "success");
@@ -137,13 +192,44 @@ Template.shopifySync.events({
       // Notify setup sync error if an error is returned
       return Alerts.toast(i18next.t("admin.shopifyConnectSettings.syncStopFailure"), "error");
     });
+  },
+
+  "submit [data-event-action=setupShopifyHooks]"(formEvent) {
+    event.preventDefault();
+    const form = formEvent.target;
+    const optionsNodeList = form.querySelectorAll('input[type="checkbox"]');
+    const optionsList = Array.from(optionsNodeList).map((hook) => ({ name: hook.name, checked: hook.checked }));
+    optionsList.forEach((node) => {
+      if (node.checked) {
+        Meteor.call("synchooks/shopify/addHook", node, (error) => {
+          if (!error) {
+            Alerts.toast(i18next.t("admin.shopifyConnectSettings.hookSetupSuccess"), "success");
+          } else {
+            Alerts.toast(i18next.t("admin.shopifyConnectSettings.hookSetupFailure"), "error");
+          }
+        });
+      } else {
+        Meteor.call("synchooks/shopify/removeHook", node, (error) => {
+          if (!error) {
+            Alerts.toast(i18next.t("admin.shopifyConnectSettings.hookSetupSuccess"), "success");
+          } else {
+            Alerts.toast(i18next.t("admin.shopifyConnectSettings.hookSetupFailure"), "error");
+          }
+        });
+      }
+    });
   }
 });
 
 AutoForm.hooks({
   "shopify-connect-update-form": {
-    onSuccess: function () {
-      return Alerts.toast(i18next.t("admin.settings.saveSuccess"), "success");
+    onSuccess() {
+      Meteor.call("connectors/shopify/api/credentials/test", (err, isValid) => {
+        if (isValid) {
+          return Alerts.toast(i18next.t("admin.shopifyConnectSettings.validCredentials"), "Valid API key and password");
+        }
+        return Alerts.toast(i18next.t("admin.shopifyConnectSettings.invalidCredentials", "Invalid API key/password"), "error");
+      });
     },
     onError(error) {
       return Alerts.toast(`${i18next.t("admin.settings.saveFailed")} ${error}`, "error");

@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import moment from "moment";
 import _ from "lodash";
 import { Meteor } from "meteor/meteor";
-import { composeWithTracker } from "@reactioncommerce/reaction-components";
+import { composeWithTracker, withMoment } from "@reactioncommerce/reaction-components";
 import { Orders } from "/lib/collections";
 import { Card, CardHeader, CardBody, CardGroup } from "/imports/plugins/core/ui/client/components";
 import { i18next } from "/client/api";
@@ -12,6 +11,7 @@ import { getShippingInfo } from "../helpers";
 
 class OrderSummaryContainer extends Component {
   static propTypes = {
+    moment: PropTypes.func,
     order: PropTypes.object
   }
 
@@ -23,8 +23,9 @@ class OrderSummaryContainer extends Component {
   }
 
   dateFormat = (context, block) => {
+    const { moment } = this.props;
     const f = block || "MMM DD, YYYY hh:mm:ss A";
-    return moment(context).format(f);
+    return (moment && moment(context).format(f)) || context.toLocaleString();
   }
 
   tracking = () => {
@@ -36,7 +37,7 @@ class OrderSummaryContainer extends Component {
   }
 
   shipmentStatus = () => {
-    const order = this.props.order;
+    const { order } = this.props;
     const shipment = getShippingInfo(this.props.order);
 
     if (shipment.delivered) {
@@ -150,8 +151,8 @@ const composer = (props, onData) => {
       }
 
       onData(null, {
-        order: order,
-        profileShippingAddress: profileShippingAddress
+        order,
+        profileShippingAddress
       });
     } else {
       onData(null, {
@@ -162,4 +163,4 @@ const composer = (props, onData) => {
   }
 };
 
-export default composeWithTracker(composer)(OrderSummaryContainer);
+export default composeWithTracker(composer)(withMoment(OrderSummaryContainer));

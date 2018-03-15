@@ -1,4 +1,6 @@
 import _ from "lodash";
+import store from "store";
+import { Accounts as MeteorAccounts } from "meteor/accounts-base";
 import { Meteor } from "meteor/meteor";
 import { Session } from "meteor/session";
 import { check } from "meteor/check";
@@ -8,8 +10,8 @@ import { ReactiveDict } from "meteor/reactive-dict";
 import { Roles } from "meteor/alanning:roles";
 import Logger from "/client/modules/logger";
 import { Countries } from "/client/collections";
-import { localeDep } from  "/client/modules/i18n";
-import { Packages, Shops } from "/lib/collections";
+import { localeDep } from "/client/modules/i18n";
+import { Packages, Shops, Accounts } from "/lib/collections";
 import { Router } from "/client/modules/router";
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
@@ -22,6 +24,9 @@ injectTapEventPlugin();
 // access using `Reaction.state`
 const reactionState = new ReactiveDict();
 
+export const userPrefs = new ReactiveVar(undefined, (val, newVal) => JSON.stringify(val) === JSON.stringify(newVal));
+
+const deps = new Map();
 /**
  * Reaction namespace
  * Global reaction shop permissions methods and shop initialization
@@ -96,10 +101,11 @@ export default {
 
     // Listen for active shop change
     return Tracker.autorun(() => {
-      let domain;
       let shop;
       if (this.Subscriptions.MerchantShops.ready()) {
-        domain = Meteor.absoluteUrl().split("/")[2].split(":")[0];
+        // get domain (e.g localhost) from absolute url (e.g http://localhost:3000/)
+        const [, , host] = Meteor.absoluteUrl().split("/");
+        const [domain] = host.split(":");
 
         // if we don't have an active shopId, try to retreive it from the userPreferences object
         // and set the shop from the storedShopId
@@ -254,7 +260,11 @@ export default {
     // a user logging, as we'll check again
     // when everything is ready
     //
-    if (Meteor.loggingIn() === false) {
+    let loggingIn;
+    Tracker.nonreactive(() => {
+      loggingIn = MeteorAccounts.loggingIn();
+    });
+    if (loggingIn === false) {
       //
       // this userId check happens because when logout
       // occurs it takes a few cycles for a new anonymous user
@@ -283,8 +293,7 @@ export default {
    * @return {Boolean} Boolean - true if has dashboard access for any shop
    */
   hasDashboardAccessForAnyShop(options = { user: Meteor.user(), permissions: ["owner", "admin", "dashboard"] }) {
-    const user = options.user;
-    const permissions = options.permissions;
+    const { user, permissions } = options;
 
     if (!user || !user.roles) {
       return false;
@@ -292,48 +301,11 @@ export default {
 
     // Nested find that determines if a user has any of the permissions
     // specified in the `permissions` array for any shop
-    const hasPermissions = Object.keys(user.roles).find((shopId) => {
-      return user.roles[shopId].find((role) => {
-        return permissions.find(permission => permission === role);
-      });
-    });
+    const hasPermissions = Object.keys(user.roles).find((shopId) => user.roles[shopId].find((role) => permissions.find((permission) => permission === role)));
 
     // Find returns undefined if nothing is found.
     // This will return true if permissions are found, false otherwise
     return typeof hasPermissions !== "undefined";
-  },
-
-  /**
-   * getShopsForUser -
-   * @summary gets shopIds of shops where user has provided permissions
-   * @param {Array} roles - roles to check if user has
-   * @param {Object} userId - userId to check permissions for (defaults to current user)
-   * @return {Array} - shopIds user has provided permissions for
-   */
-  getShopsForUser(roles, userId = Meteor.userId()) {
-    // Get full user object, and get shopIds of all shops they are attached to
-    const user = Meteor.user(userId);
-    const shopIds = Object.keys(user.roles);
-    // Remove "__global_roles__" from the list of shopIds, as this function will always return true for
-    // marketplace admins if that "id" is left in the check
-    const filteredShopIds = shopIds.filter(shopId => shopId !== "__global_roles__");
-
-    // Reduce shopIds to shopsWithPermission, using the roles passed in to this function
-    const shopIdsWithRoles = filteredShopIds.reduce((shopsWithPermission, shopId) => {
-      // Get list of roles user has for this shop
-      const rolesUserHas = user.roles[shopId];
-
-      // Find first role that is included in the passed in roles array, otherwise hasRole is undefined
-      const hasRole = rolesUserHas.find((roleUserHas) => roles.includes(roleUserHas));
-
-      // if we found the role, then the user has permission for this shop. Add shopId to shopsWithPermission array
-      if (hasRole) {
-        shopsWithPermission.push(shopId);
-      }
-      return shopsWithPermission;
-    }, []);
-
-    return shopIdsWithRoles;
   },
 
   /**
@@ -376,7 +348,7 @@ export default {
     return this.hasDashboardAccessForMultipleShops();
   },
 
-  getSellerShopId: function (userId = Meteor.userId(), noFallback = false) {
+  getSellerShopId(userId = Meteor.userId(), noFallback = false) {
     if (userId) {
       const group = Roles.getGroupsForUser(userId, "admin")[0];
       if (group) {
@@ -392,12 +364,12 @@ export default {
   },
 
   getUserPreferences(packageName, preference, defaultValue) {
-    const user = Meteor.user();
-
-    if (user) {
-      const profile = Meteor.user().profile;
-      if (profile && profile.preferences && profile.preferences[packageName] && profile.preferences[packageName][preference]) {
-        return profile.preferences[packageName][preference];
+    getDep(`${packageName}.${preference}`).depend();
+    if (Meteor.user()) {
+      const packageSettings = store.get(packageName);
+      // packageSettings[preference] should not be undefined or null.
+      if (packageSettings && typeof packageSettings[preference] !== "undefined" && packageSettings[preference] !== null) {
+        return packageSettings[preference];
       }
     }
 
@@ -405,14 +377,23 @@ export default {
   },
 
   setUserPreferences(packageName, preference, value) {
+    getDep(`${packageName}.${preference}`).changed();
+    // User preferences are not stored in Meteor.user().profile
+    // to prevent all autorun() with dependency on Meteor.user() to run again.
     if (Meteor.user()) {
-      return Meteor.users.update(Meteor.userId(), {
-        $set: {
-          [`profile.preferences.${packageName}.${preference}`]: value
-        }
-      });
+      // "reaction" package settings should be synced to
+      // the Accounts collection.
+      if (packageName in ["reaction"]) {
+        Accounts.update(Meteor.userId(), {
+          $set: {
+            [`profile.preferences.${packageName}.${preference}`]: value
+          }
+        });
+      }
     }
-    return false;
+    const packageSettings = store.get(packageName) || {};
+    packageSettings[preference] = value;
+    return store.set(packageName, packageSettings);
   },
 
   updateUserPreferences(packageName, preference, values) {
@@ -453,7 +434,7 @@ export default {
 
   // Primary Shop should probably not have a prefix (or should it be /shop?)
   getPrimaryShopPrefix() {
-    return "/" + this.getSlug(this.getPrimaryShopName().toLowerCase());
+    return `/${this.getSlug(this.getPrimaryShopName().toLowerCase())}`;
   },
 
   getPrimaryShopSettings() {
@@ -469,7 +450,7 @@ export default {
       _id: this.getPrimaryShopId()
     });
 
-    return shop && shop.currency || "USD";
+    return (shop && shop.currency) || "USD";
   },
 
   // shopId refers to the active shop. For most shoppers this will be the same
@@ -488,7 +469,7 @@ export default {
   },
 
   setShopId(id) {
-    if (id) {
+    if (id && this.shopId !== id) {
       this.shopId = id;
       this.setUserPreferences("reaction", "activeShopId", id);
     }
@@ -511,7 +492,11 @@ export default {
   getShopPrefix() {
     const shopName = this.getShopName();
     if (shopName) {
-      return "/" + this.getSlug(shopName.toLowerCase());
+      return Router.pathFor("index", {
+        hash: {
+          shopSlug: this.getSlug(shopName.toLowerCase())
+        }
+      });
     }
   },
 
@@ -528,7 +513,7 @@ export default {
       _id: this.shopId
     });
 
-    return shop && shop.currency || "USD";
+    return (shop && shop.currency) || "USD";
   },
 
   isPreview() {
@@ -558,13 +543,9 @@ export default {
   },
 
   allowGuestCheckout() {
-    let allowGuest = false;
     const settings = this.getShopSettings();
     // we can disable in admin, let's check.
-    if (settings.public && settings.public.allowGuestCheckout) {
-      allowGuest = settings.public.allowGuestCheckout;
-    }
-    return allowGuest;
+    return !!(settings.public && settings.public.allowGuestCheckout);
   },
   /**
    * canInviteToGroup - client (similar to server/api canInviteToGroup)
@@ -624,8 +605,7 @@ export default {
 
       Session.set("admin/actionView", viewStack);
     } else {
-      const registryItem = this.getRegistryForCurrentRoute(
-        "settings");
+      const registryItem = this.getRegistryForCurrentRoute("settings");
 
       if (registryItem) {
         this.setActionView(registryItem);
@@ -646,8 +626,7 @@ export default {
       actionViewStack.push(viewData);
       Session.set("admin/actionView", actionViewStack);
     } else {
-      const registryItem = this.getRegistryForCurrentRoute(
-        "settings");
+      const registryItem = this.getRegistryForCurrentRoute("settings");
 
       if (registryItem) {
         this.pushActionView(registryItem);
@@ -771,7 +750,7 @@ export default {
     this.Router.watchPathChange();
     const currentRouteName = this.Router.getRouteName();
     const currentRoute = this.Router.current();
-    const template = currentRoute.route.options.template;
+    const { template } = currentRoute.route.options;
     // find registry entries for routeName
     const reactionApp = Packages.findOne({
       "registry.name": currentRouteName,
@@ -788,9 +767,7 @@ export default {
 
     // valid application
     if (reactionApp) {
-      const settingsData = _.find(reactionApp.registry, function (item) {
-        return item.provides && item.provides.includes(provides) && item.template === template;
-      });
+      const settingsData = _.find(reactionApp.registry, (item) => item.provides && item.provides.includes(provides) && item.template === template);
       return settingsData;
     }
     Logger.debug("getRegistryForCurrentRoute not found", template, provides);
@@ -834,7 +811,7 @@ function createCountryCollection(countries) {
       });
     }
   }
-  countryOptions.sort(function (a, b) {
+  countryOptions.sort((a, b) => {
     if (a.label < b.label) {
       return -1;
     }
@@ -848,4 +825,18 @@ function createCountryCollection(countries) {
     Countries.insert(country);
   }
   return countryOptions;
+}
+
+/**
+ * getDep
+ * Gets the dependency for the key if available, else creates
+ * a new dependency for the key and returns it.
+ * @param {String} -  The key to get the dependency for
+ * @returns {Tracker.Dependency}
+ */
+function getDep(key) {
+  if (!deps.has(key)) {
+    deps.set(key, new Tracker.Dependency());
+  }
+  return deps.get(key);
 }

@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { composeWithTracker } from "@reactioncommerce/reaction-components";
-import { ReactionProduct } from "/lib/api";
+import { getPrimaryMediaForItem, ReactionProduct } from "/lib/api";
 import SocialButtons from "/imports/plugins/included/social/client/components/socialButtons";
 import { createSocialSettings } from "/imports/plugins/included/social/lib/helpers";
 import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Media } from "/lib/collections";
 
 class ProductSocialContainer extends Component {
   render() {
@@ -27,11 +26,11 @@ class ProductSocialContainer extends Component {
 function composer(props, onData) {
   const product = ReactionProduct.selectedProduct() || {};
   const selectedVariant = ReactionProduct.selectedVariant() || {};
-  let title = product.title;
+  let { title } = product;
   let mediaUrl;
 
   if (selectedVariant) {
-    title = selectedVariant.title;
+    ({ title } = selectedVariant);
   }
 
   let description;
@@ -40,21 +39,13 @@ function composer(props, onData) {
     description = product.description.substring(0, 254);
   }
 
-  const media = Media.findOne({
-    "metadata.variantId": {
-      $in: [
-        selectedVariant._id,
-        product._id
-      ]
-    }
-  }, {
-    sort: {
-      "metadata.priority": 1
-    }
+  const media = getPrimaryMediaForItem({
+    productId: product._id,
+    variantId: selectedVariant && selectedVariant._id
   });
 
   if (media) {
-    mediaUrl = media.url();
+    mediaUrl = media.url({ store: "large" });
   }
 
   const options = {

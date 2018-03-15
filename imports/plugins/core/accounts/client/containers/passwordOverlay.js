@@ -1,13 +1,13 @@
 import _ from "lodash";
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 import { Accounts } from "meteor/accounts-base";
+import { Meteor } from "meteor/meteor";
 import { Random } from "meteor/random";
+import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 import { Reaction } from "/client/api";
-import UpdatePasswordOverlay from "../components/updatePasswordOverlay";
-import { TranslationProvider } from "/imports/plugins/core/ui/client/providers";
 import { LoginFormValidation } from "/lib/api";
+import UpdatePasswordOverlay from "../components/updatePasswordOverlay";
 
 const wrapComponent = (Comp) => (
   class UpdatePasswordOverlayContainer extends Component {
@@ -59,7 +59,7 @@ const wrapComponent = (Comp) => (
         this.setState({
           isDisabled: false,
           formMessages: {
-            errors: errors
+            errors
           }
         });
         return;
@@ -74,6 +74,9 @@ const wrapComponent = (Comp) => (
             }
           });
         } else {
+          // Now that Meteor.users is verified, we should do the same with the Accounts collection
+          Meteor.call("accounts/verifyAccount");
+
           this.props.callback();
 
           this.setState({
@@ -93,11 +96,9 @@ const wrapComponent = (Comp) => (
       });
     }
 
-    formMessages = () => {
-      return (
-        <Components.LoginFormMessages messages={this.state.formMessages} />
-      );
-    }
+    formMessages = () => (
+      <Components.LoginFormMessages messages={this.state.formMessages} />
+    )
 
     hasError = (error) => {
       // True here means the field is valid
@@ -111,19 +112,17 @@ const wrapComponent = (Comp) => (
 
     render() {
       return (
-        <TranslationProvider>
-          <Comp
-            uniqueId={this.props.uniqueId}
-            loginFormMessages={this.formMessages}
-            onError={this.hasError}
-            messages={this.state.formMessages}
-            onFormSubmit={this.handleFormSubmit}
-            onCancel={this.handleFormCancel}
-            isOpen={this.state.isOpen}
-            isDisabled={this.state.isDisabled}
-            type={this.props.type}
-          />
-        </TranslationProvider>
+        <Comp
+          uniqueId={this.props.uniqueId}
+          loginFormMessages={this.formMessages}
+          onError={this.hasError}
+          messages={this.state.formMessages}
+          onFormSubmit={this.handleFormSubmit}
+          onCancel={this.handleFormCancel}
+          isOpen={this.state.isOpen}
+          isDisabled={this.state.isDisabled}
+          type={this.props.type}
+        />
       );
     }
   }

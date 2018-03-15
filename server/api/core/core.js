@@ -1,7 +1,6 @@
 import url from "url";
 import packageJson from "/package.json";
-import { merge, uniqWith } from "lodash";
-import _ from "lodash";
+import _, { merge, uniqWith } from "lodash";
 import { Meteor } from "meteor/meteor";
 import { check, Match } from "meteor/check";
 import { Random } from "meteor/random";
@@ -23,7 +22,7 @@ import { createGroups } from "./groups";
  */
 
 // Unpack the named Collections we use.
-const { Jobs, Packages, Shops } = Collections;
+const { Jobs, Packages, Shops, Accounts: AccountsCollection } = Collections;
 
 export default {
 
@@ -52,7 +51,7 @@ export default {
 
     this.loadPackages();
     // process imports from packages and any hooked imports
-    this.Import.flush();
+    this.Importer.flush();
     this.createGroups();
     // timing is important, packages are rqd for initial permissions configuration.
     if (!Meteor.isAppTest) {
@@ -70,10 +69,11 @@ export default {
   Packages: {},
 
   registerPackage(packageInfo) {
-    const registeredPackage = this.Packages[packageInfo.name] = packageInfo;
+    this.Packages[packageInfo.name] = packageInfo;
+    const registeredPackage = this.Packages[packageInfo.name];
     return registeredPackage;
   },
-  defaultCustomerRoles: [ "guest", "account/profile", "product", "tag", "index", "cart/checkout", "cart/completed"],
+  defaultCustomerRoles: ["guest", "account/profile", "product", "tag", "index", "cart/checkout", "cart/completed"],
   defaultVisitorRoles: ["anonymous", "guest", "product", "tag", "index", "cart/checkout", "cart/completed"],
   createGroups,
 
@@ -113,7 +113,7 @@ export default {
    * @summary Registers Templates into the Templates Collection
    * @return {function} Registers template
    */
-  registerTemplate: registerTemplate,
+  registerTemplate,
 
   /**
    * @name hasPermission
@@ -293,7 +293,7 @@ export default {
    * @return {String} Prefix in the format of "/<slug>"
    */
   getPrimaryShopPrefix() {
-    return "/" + this.getSlug(this.getPrimaryShopName().toLowerCase());
+    return `/${this.getSlug(this.getPrimaryShopName().toLowerCase())}`;
   },
 
   /**
@@ -371,7 +371,7 @@ export default {
    * @summary Get shop ID
    * @todo This should intelligently find the correct default shop Probably whatever the main shop is or marketplace
    * @param  {String} userId User ID String
-   * @return {StringId}        active shop ID
+   * @return {String} active shop ID
    */
   getShopId(userId) {
     check(userId, Match.Maybe(String));
@@ -449,12 +449,20 @@ export default {
    * @method
    * @memberof Core
    * @summary Get shop prefix for URL
-   * @return {String} String int he format of "/slug"
+   * @return {String} String in the format of "/shop/slug"
    */
   getShopPrefix() {
     const shopName = this.getShopName();
     const lowerCaseShopName = shopName.toLowerCase();
     const slug = this.getSlug(lowerCaseShopName);
+    const marketplace = Packages.findOne({
+      name: "reaction-marketplace",
+      shopId: this.getPrimaryShopId()
+    });
+
+    if (marketplace && marketplace.settings && marketplace.settings.public) {
+      return `${marketplace.settings.public.shopPrefix}/${slug}`;
+    }
     return `/${slug}`;
   },
 
@@ -486,7 +494,7 @@ export default {
    * @return {Object}               Shop settings object or empty object
    */
   getShopSettings(name = "core") {
-    const settings = Packages.findOne({ name: name, shopId: this.getShopId() }) || {};
+    const settings = Packages.findOne({ name, shopId: this.getShopId() }) || {};
     return settings.settings || {};
   },
 
@@ -502,7 +510,7 @@ export default {
       _id: this.getShopId()
     });
 
-    return shop && shop.currency || "USD";
+    return (shop && shop.currency) || "USD";
   },
 
   /**
@@ -519,8 +527,8 @@ export default {
     }, {
       fields: {
         language: 1
-      } }
-    );
+      }
+    });
     return language;
   },
 
@@ -533,7 +541,7 @@ export default {
    * @return {Object|null}      Package setting object or null
    */
   getPackageSettings(name) {
-    return Packages.findOne({ name: name, shopId: this.getShopId() }) || null;
+    return Packages.findOne({ name, shopId: this.getShopId() }) || null;
   },
 
   /**
@@ -584,10 +592,10 @@ export default {
       return undefined;
     }
 
-    const user = Meteor.users.findOne({ _id: userId });
+    const user = AccountsCollection.findOne({ _id: userId });
 
     if (user) {
-      const profile = user.profile;
+      const { profile } = user;
       if (profile && profile.preferences && profile.preferences[packageName] && profile.preferences[packageName][preference]) {
         return profile.preferences[packageName][preference];
       }
@@ -595,6 +603,24 @@ export default {
     return defaultValue || undefined;
   },
 
+  /**
+   * @name setUserPreferences
+   * @method
+   * @summary save user preferences in the Accounts collection
+   * @param {String} packageName
+   * @param {String} preference
+   * @param {String} value
+   * @param {String} userId
+   * @return {Number} setPreferenceResult
+   */
+  setUserPreferences(packageName, preference, value, userId) {
+    const setPreferenceResult = AccountsCollection.update(userId, {
+      $set: {
+        [`profile.preferences.${packageName}.${preference}`]: value
+      }
+    });
+    return setPreferenceResult;
+  },
   /**
    *  @name insertPackagesForShop
    *  @method
@@ -622,10 +648,9 @@ export default {
         marketplaceSettings.shops &&
         Array.isArray(marketplaceSettings.shops.enabledPackagesByShopTypes)) {
       // Find the correct packages list for this shopType
-      const matchingShopType = marketplaceSettings.shops.enabledPackagesByShopTypes.find(
-        EnabledPackagesByShopType => EnabledPackagesByShopType.shopType === shop.shopType);
+      const matchingShopType = marketplaceSettings.shops.enabledPackagesByShopTypes.find((EnabledPackagesByShopType) => EnabledPackagesByShopType.shopType === shop.shopType); // eslint-disable-line max-len
       if (matchingShopType) {
-        enabledPackages = matchingShopType.enabledPackages;
+        ({ enabledPackages } = matchingShopType);
       }
     }
 
@@ -639,7 +664,7 @@ export default {
         this.assignOwnerRoles(shopId, packageName, config.registry);
 
         const pkg = Object.assign({}, config, {
-          shopId: shopId
+          shopId
         });
 
         // populate array of layouts that don't already exist (?!)
@@ -655,11 +680,8 @@ export default {
         if (enabledPackages && Array.isArray(enabledPackages)) {
           if (enabledPackages.indexOf(pkg.name) === -1) {
             pkg.enabled = false;
-          } else {
-            // Enable "soft switch" for package.
-            if (pkg.settings && pkg.settings[packageName]) {
-              pkg.settings[packageName].enabled = true;
-            }
+          } else if (pkg.settings && pkg.settings[packageName]) { // Enable "soft switch" for package.
+            pkg.settings[packageName].enabled = true;
           }
         }
         Packages.insert(pkg);
@@ -694,6 +716,9 @@ export default {
    */
   createDefaultAdminUser() {
     const shopId = this.getPrimaryShopId();
+    if (!shopId) {
+      throw new Error(`createDefaultAdminUser: getPrimaryShopId returned ${shopId}`);
+    }
 
     // if an admin user has already been created, we'll exit
     if (Roles.getUsersInRole("owner", shopId).count() !== 0) {
@@ -724,7 +749,7 @@ export default {
     // Process environment variables and Meteor settings for initial user config.
     // If ENV variables are set, they always override Meteor settings (settings.json).
     // This is to allow for testing environments where we don't want to use users configured in a settings file.
-    const env = process.env;
+    const { env } = process;
     let configureEnv = false;
 
     if (env.REACTION_EMAIL && env.REACTION_AUTH) {
@@ -802,6 +827,14 @@ export default {
           "emails.$.verified": true
         }
       });
+      Collections.Accounts.update({
+        "_id": accountId,
+        "emails.address": options.email
+      }, {
+        $set: {
+          "emails.$.verified": true
+        }
+      });
     } else {
       // send verification email to admin
       sendVerificationEmail(accountId);
@@ -871,7 +904,7 @@ export default {
       }
     }
 
-    if (!!registryFixtureData) {
+    if (registryFixtureData) {
       const validatedJson = EJSON.parse(registryFixtureData);
 
       if (!Array.isArray(validatedJson[0])) {
@@ -883,8 +916,8 @@ export default {
 
     const layouts = [];
     // for each shop, we're loading packages in a unique registry
-    _.each(this.Packages, (config, pkgName) => {
-      return Shops.find().forEach((shop) => {
+    _.each(this.Packages, (config, pkgName) =>
+      Shops.find().forEach((shop) => {
         const shopId = shop._id;
         if (!shopId) return [];
 
@@ -904,15 +937,11 @@ export default {
         // Setting from a fixture file, most likely reaction.json
         let settingsFromFixture;
         if (registryFixtureData) {
-          settingsFromFixture = _.find(registryFixtureData[0], (packageSetting) => {
-            return config.name === packageSetting.name;
-          });
+          settingsFromFixture = registryFixtureData[0].find((packageSetting) => config.name === packageSetting.name);
         }
 
         // Setting already imported into the packages collection
-        const settingsFromDB = _.find(packages, (ps) => {
-          return (config.name === ps.name && shopId === ps.shopId);
-        });
+        const settingsFromDB = packages.find((ps) => (config.name === ps.name && shopId === ps.shopId));
 
         const combinedSettings = merge({}, settingsFromPackage, settingsFromFixture || {}, settingsFromDB || {});
 
@@ -938,31 +967,28 @@ export default {
           }
         }
         // Import package data
-        this.Import.package(combinedSettings, shopId);
+        this.Importer.package(combinedSettings, shopId);
         return Logger.debug(`Initializing ${shop.name} ${pkgName}`);
-      }); // end shops
-    });
+      }));
 
     // helper for removing layout duplicates
     const uniqLayouts = uniqWith(layouts, _.isEqual);
     // import layouts into Shops
     Shops.find().forEach((shop) => {
-      this.Import.layout(uniqLayouts, shop._id);
+      this.Importer.layout(uniqLayouts, shop._id);
     });
 
     //
     // package cleanup
     //
-    Shops.find().forEach((shop) => {
-      return Packages.find().forEach((pkg) => {
-        // delete registry entries for packages that have been removed
-        if (!_.has(this.Packages, pkg.name)) {
-          Logger.debug(`Removing ${pkg.name}`);
-          return Packages.remove({ shopId: shop._id, name: pkg.name });
-        }
-        return false;
-      });
-    });
+    Shops.find().forEach((shop) => Packages.find().forEach((pkg) => {
+      // delete registry entries for packages that have been removed
+      if (!_.has(this.Packages, pkg.name)) {
+        Logger.debug(`Removing ${pkg.name}`);
+        return Packages.remove({ shopId: shop._id, name: pkg.name });
+      }
+      return false;
+    }));
   },
 
   /**
@@ -972,7 +998,7 @@ export default {
    * @return {undefined} no return value
    */
   setAppVersion() {
-    const version = packageJson.version;
+    const { version } = packageJson;
     Logger.info(`Reaction Version: ${version}`);
     Shops.update({}, { $set: { appVersion: version } }, { multi: true });
   },
@@ -981,7 +1007,6 @@ export default {
    * @summary Method for getting all schemas attached to a given collection
    * @deprecated by simpl-schema
    * @private
-   * @todo TODO: Remove collectionSchema method in favor of simpl-schema
    * @name collectionSchema
    * @param  {string} collection The mongo collection to get schemas for
    * @param  {Object} [selector] Optional selector for multi schema collections
@@ -990,38 +1015,26 @@ export default {
    *                  the collection or schema could not be found
    */
   collectionSchema(collection, selector) {
-    let selectorErrMsg = "";
-    if (selector) {
-      selectorErrMsg = `and selector ${selector}`;
-    }
+    Logger.warn("Reaction.collectionSchema is deprecated and will be removed" +
+      " in a future release. Use collection.simpleSchema(selector).");
+
+    const selectorErrMsg = selector ? `and selector ${selector}` : "";
     const errMsg = `Reaction.collectionSchema could not find schemas for ${collection} collection ${selectorErrMsg}`;
 
-    if (!Collections[collection] || !Collections[collection]._c2) {
+    const col = Collections[collection];
+    if (!col) {
       Logger.warn(errMsg);
       // Return false so we don't pass a check that uses a non-existant schema
       return false;
     }
 
-    const c2 = Collections[collection]._c2;
-
-    // if we have `_simpleSchemas` (plural), then this is a selector based schema
-    if (c2._simpleSchemas) {
-      const selectorKeys = Object.keys(selector);
-      const selectorSchema = c2._simpleSchemas.find((schema) => {
-        // Make sure that every key:value in our selector matches the key:value in the schema selector
-        return selectorKeys.every((key) => selector[key] === schema.selector[key]);
-      });
-
-      if (!selectorSchema) {
-        Logger.warn(errMsg);
-        // Return false so we don't pass a check that uses a non-existant schema
-        return false;
-      }
-
-      // return a copy of the selector schema we found
-      return selectorSchema.schema;
+    const schema = col.simpleSchema(selector);
+    if (!schema) {
+      Logger.warn(errMsg);
+      // Return false so we don't pass a check that uses a non-existant schema
+      return false;
     }
 
-    return c2._simpleSchema;
+    return schema;
   }
 };

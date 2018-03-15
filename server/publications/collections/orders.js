@@ -2,7 +2,7 @@ import { Meteor } from "meteor/meteor";
 import { check, Match } from "meteor/check";
 import { Roles } from "meteor/alanning:roles";
 import { ReactiveAggregate } from "./reactiveAggregate";
-import { Orders } from "/lib/collections";
+import { MediaRecords, Orders } from "/lib/collections";
 import { Reaction } from "/server/api";
 
 
@@ -82,7 +82,7 @@ Meteor.publish("Orders", function () {
     ReactiveAggregate(this, Orders, aggregate, aggregateOptions);
   } else {
     return Orders.find({
-      shopId: shopId,
+      shopId,
       userId: this.userId
     });
   }
@@ -114,7 +114,7 @@ Meteor.publish("PaginatedOrders", function (limit) {
     ReactiveAggregate(this, Orders, aggregate, aggregateOptions);
   } else {
     return Orders.find({
-      shopId: shopId,
+      shopId,
       userId: this.userId
     });
   }
@@ -143,7 +143,7 @@ Meteor.publish("CustomPaginatedOrders", function (query, options) {
     ReactiveAggregate(this, Orders, aggregate, aggregateOptions);
   } else {
     return Orders.find({
-      shopId: shopId,
+      shopId,
       userId: this.userId
     });
   }
@@ -165,7 +165,7 @@ Meteor.publish("AccountOrders", function (userId, currentShopId) {
   }
   return Orders.find({
     userId,
-    shopId: shopId
+    shopId
   });
 });
 
@@ -183,7 +183,39 @@ Meteor.publish("CompletedCartOrder", function (userId, cartId) {
   }
 
   return Orders.find({
-    cartId: cartId,
-    userId: userId
+    cartId,
+    userId
+  });
+});
+
+Meteor.publish("OrderImages", (orderId) => {
+  check(orderId, Match.Optional(String));
+  if (!orderId) return [];
+
+  const order = Orders.findOne(orderId);
+  const { items: orderItems } = order || {};
+  if (!Array.isArray(orderItems)) return [];
+
+  // Ensure each of these are unique
+  const productIds = [...new Set(orderItems.map((item) => item.product._id))];
+  const variantIds = [...new Set(orderItems.map((item) => item.variants._id))];
+
+  // return image for each the top level product or the variant and let the client code decide which to display
+  return MediaRecords.find({
+    "$or": [
+      {
+        "metadata.productId": {
+          $in: productIds
+        }
+      },
+      {
+        "metadata.variantId": {
+          $in: variantIds
+        }
+      }
+    ],
+    "metadata.workflow": {
+      $nin: ["archived", "unpublished"]
+    }
   });
 });

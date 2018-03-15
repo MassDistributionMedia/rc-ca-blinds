@@ -1,6 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { check, Match } from "meteor/check";
-import { Cart, Media } from "/lib/collections";
+import { Cart, MediaRecords } from "/lib/collections";
 import { Reaction } from "/server/api";
 
 /**
@@ -50,9 +50,9 @@ Meteor.publish("Cart", function (sessionId, userId) {
   // select user cart
   const cart = Cart.find({
     userId: this.userId,
-    shopId: shopId
+    shopId
   }, {
-    fields: fields
+    fields
   });
 
   if (cart.count()) {
@@ -68,44 +68,34 @@ Meteor.publish("Cart", function (sessionId, userId) {
 });
 
 
-Meteor.publish("CartImages", function (cartItems) {
-  check(cartItems, Array);
+Meteor.publish("CartImages", (cartId) => {
+  check(cartId, Match.Optional(String));
+  if (!cartId) return [];
+
+  const cart = Cart.findOne(cartId);
+  const { items: cartItems } = cart || {};
+  if (!Array.isArray(cartItems)) return [];
 
   // Ensure each of these are unique
   const productIds = [...new Set(cartItems.map((item) => item.product._id))];
   const variantIds = [...new Set(cartItems.map((item) => item.variants._id))];
 
   // return image for each the top level product or the variant and let the client code decide which to display
-  const productImages = Media.find(
-    {
-      "$or": [
-        {
-          "metadata.productId": {
-            $in: productIds
-          }
-        },
-        {
-          "metadata.productId": {
-            $in: variantIds
-          }
+  return MediaRecords.find({
+    "$or": [
+      {
+        "metadata.productId": {
+          $in: productIds
         }
-      ],
-      "metadata.workflow": {
-        $nin: ["archived", "unpublished"]
+      },
+      {
+        "metadata.variantId": {
+          $in: variantIds
+        }
       }
+    ],
+    "metadata.workflow": {
+      $nin: ["archived", "unpublished"]
     }
-
-  );
-
-  return productImages;
-});
-
-Meteor.publish("CartItemImage", function (cartItem) {
-  check(cartItem, Match.Optional(Object));
-  const productId = cartItem.productId;
-
-  return Media.find({
-    "metadata.productId": productId,
-    "metadata.workflow": { $nin: ["archived", "unpublished"] }
   });
 });

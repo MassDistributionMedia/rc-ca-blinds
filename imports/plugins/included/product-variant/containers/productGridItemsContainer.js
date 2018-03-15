@@ -6,7 +6,6 @@ import { registerComponent } from "@reactioncommerce/reaction-components";
 import { Session } from "meteor/session";
 import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
-import { Media } from "/lib/collections";
 import { SortableItem } from "/imports/plugins/core/ui/client/containers";
 import ProductGridItems from "../components/productGridItems";
 
@@ -21,22 +20,6 @@ const wrapComponent = (Comp) => (
       unmountMe: PropTypes.func
     }
 
-    constructor() {
-      super();
-
-      this.productPath = this.productPath.bind(this);
-      this.positions = this.positions.bind(this);
-      this.weightClass = this.weightClass.bind(this);
-      this.isSelected = this.isSelected.bind(this);
-      this.productMedia = this.productMedia.bind(this);
-      this.additionalProductMedia = this.additionalProductMedia.bind(this);
-      this.isMediumWeight = this.isMediumWeight.bind(this);
-      this.displayPrice = this.displayPrice.bind(this);
-      this.onDoubleClick = this.onDoubleClick.bind(this);
-      this.onClick = this.onClick.bind(this);
-      this.onPageClick = this.onPageClick.bind(this);
-    }
-
     componentDidMount() {
       document.querySelector(".page > main").addEventListener("click", this.onPageClick);
     }
@@ -45,7 +28,7 @@ const wrapComponent = (Comp) => (
       document.querySelector(".page > main").removeEventListener("click", this.onPageClick);
     }
 
-    onPageClick = () => {
+    onPageClick = (event) => {
       // Do nothing if we are in preview mode
       if (Reaction.isPreview() === false) {
         // Don't trigger the clear selection if we're clicking on a grid item.
@@ -73,10 +56,10 @@ const wrapComponent = (Comp) => (
 
     productPath = () => {
       if (this.props.product) {
-        let handle = this.props.product.handle;
+        let { handle } = this.props.product;
 
         if (this.props.product.__published) {
-          handle = this.props.product.__published.handle;
+          ({ handle } = this.props.product.__published);
         }
 
         return Reaction.Router.pathFor("product", {
@@ -91,7 +74,7 @@ const wrapComponent = (Comp) => (
 
     positions = () => {
       const tag = ReactionProduct.getTag();
-      return this.props.product.positions && this.props.product.positions[tag] || {};
+      return (this.props.product.positions && this.props.product.positions[tag]) || {};
     }
 
     weightClass = () => {
@@ -112,31 +95,6 @@ const wrapComponent = (Comp) => (
         return _.includes(Session.get("productGrid/selectedProducts"), this.props.product._id) ? "active" : "";
       }
       return false;
-    }
-
-    productMedia = () => {
-      const media = Media.findOne({
-        "metadata.productId": this.props.product._id,
-        "metadata.toGrid": 1
-      }, {
-        sort: { "metadata.priority": 1, "uploadedAt": 1 }
-      });
-
-      return media instanceof FS.File ? media : false;
-    }
-
-    additionalProductMedia = () => {
-      const variants = ReactionProduct.getVariants(this.props.product._id);
-      const variantIds = variants.map(variant => variant._id);
-      const mediaArray = Media.find({
-        "metadata.productId": this.props.product._id,
-        "metadata.variantId": {
-          $in: variantIds
-        },
-        "metadata.workflow": { $nin: ["archived", "unpublished"] }
-      }, { limit: 3 });
-
-      return mediaArray.count() > 1 ? mediaArray : false;
     }
 
     isMediumWeight = () => {
@@ -164,27 +122,25 @@ const wrapComponent = (Comp) => (
           Array.prototype.indexOf.call(items, activeItems[0]),
           Array.prototype.indexOf.call(items, activeItems[selected - 1])
         ];
-        for (let i = _.min(indexes); i <= _.max(indexes); i++) {
+        for (let i = _.min(indexes); i <= _.max(indexes); i += 1) {
           checkbox = items[i].querySelector("input[type=checkbox]");
           if (checkbox.checked === false) {
             checkbox.checked = true;
             this.props.itemSelectHandler(checkbox.checked, product._id);
           }
         }
-      } else {
-        if (checkbox) {
-          checkbox.checked = !checkbox.checked;
-          this.props.itemSelectHandler(checkbox.checked, product._id);
-        }
+      } else if (checkbox) {
+        checkbox.checked = !checkbox.checked;
+        this.props.itemSelectHandler(checkbox.checked, product._id);
       }
     }
 
     onDoubleClick = () => {
-      const product = this.props.product;
-      const handle = product.__published && product.__published.handle || product.handle;
+      const { product } = this.props;
+      const handle = (product.__published && product.__published.handle) || product.handle;
 
       Reaction.Router.go("product", {
-        handle: handle
+        handle
       });
 
       // Open actionView to productDetails panel
@@ -203,17 +159,17 @@ const wrapComponent = (Comp) => (
 
     onClick = (event) => {
       event.preventDefault();
-      const product = this.props.product;
+      const { product } = this.props;
 
       if (Reaction.hasPermission("createProduct") && Reaction.isPreview() === false) {
         if (this.props.isSearch) {
-          let handle = product.handle;
+          let { handle } = product;
           if (product.__published) {
-            handle = product.__published.handle;
+            ({ handle } = product.__published);
           }
 
           Reaction.Router.go("product", {
-            handle: handle
+            handle
           });
 
           this.props.unmountMe();
@@ -229,23 +185,21 @@ const wrapComponent = (Comp) => (
           if (event.metaKey || event.ctrlKey || event.shiftKey) {
             this.handleCheckboxSelect(list, product);
           }
+        } else if (event.metaKey || event.ctrlKey || event.shiftKey) {
+          this.handleCheckboxSelect(list, product);
         } else {
-          if (event.metaKey || event.ctrlKey || event.shiftKey) {
-            this.handleCheckboxSelect(list, product);
-          } else {
-            const checkbox = list.querySelector(`input[type=checkbox][value="${product._id}"]`);
-            Session.set("productGrid/selectedProducts", []);
-            if (checkbox) {
-              checkbox.checked = true;
-              this.props.itemSelectHandler(checkbox.checked, product._id);
-            }
+          const checkbox = list.querySelector(`input[type=checkbox][value="${product._id}"]`);
+          Session.set("productGrid/selectedProducts", []);
+          if (checkbox) {
+            checkbox.checked = true;
+            this.props.itemSelectHandler(checkbox.checked, product._id);
           }
         }
       } else {
-        const handle = product.__published && product.__published.handle || product.handle;
+        const handle = (product.__published && product.__published.handle) || product.handle;
 
         Reaction.Router.go("product", {
-          handle: handle
+          handle
         });
 
         if (this.props.isSearch) {
@@ -262,8 +216,6 @@ const wrapComponent = (Comp) => (
           positions={this.positions}
           weightClass={this.weightClass}
           isSelected={this.isSelected}
-          media={this.productMedia}
-          additionalMedia={this.additionalProductMedia}
           isMediumWeight={this.isMediumWeight}
           displayPrice={this.displayPrice}
           onDoubleClick={this.onDoubleClick}

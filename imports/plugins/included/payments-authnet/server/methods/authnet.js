@@ -6,10 +6,11 @@ import { Meteor } from "meteor/meteor";
 import { check, Match } from "meteor/check";
 import { Promise } from "meteor/promise";
 
-import AuthNetAPI from "@reactioncommerce/authorize-net";
+import AuthNetAPI from "authorize-net";
 import { Reaction, Logger } from "/server/api";
 import { Packages } from "/lib/collections";
-import { PaymentMethod } from "/lib/collections/schemas";
+import { ValidCardNumber, ValidExpireMonth, ValidExpireYear, ValidCVV } from "/lib/api";
+import { PaymentMethodArgument } from "/lib/collections/schemas";
 
 function getAccountOptions(isPayment) {
   const queryConditions = {
@@ -43,31 +44,19 @@ function getSettings(settings, ref, valueName) {
   return undefined;
 }
 
-const ValidCardNumber = Match.Where(function (x) {
-  return /^[0-9]{14,16}$/.test(x);
-});
-
-const ValidExpireMonth = Match.Where(function (x) {
-  return /^[0-9]{1,2}$/.test(x);
-});
-
-const ValidExpireYear = Match.Where(function (x) {
-  return /^[0-9]{4}$/.test(x);
-});
-
-const ValidCVV = Match.Where(function (x) {
-  return /^[0-9]{3,4}$/.test(x);
-});
-
 Meteor.methods({
-  authnetSubmit: function (transactionType = "authorizeTransaction", cardInfo, paymentInfo) {
+  authnetSubmit(transactionType = "authorizeTransaction", cardInfo, paymentInfo) {
     check(transactionType, String);
-    check(cardInfo, {
-      cardNumber: ValidCardNumber,
-      expirationYear: ValidExpireYear,
-      expirationMonth: ValidExpireMonth,
-      cvv2: ValidCVV
-    });
+    try {
+      check(cardInfo, {
+        cardNumber: ValidCardNumber,
+        expirationYear: ValidExpireYear,
+        expirationMonth: ValidExpireMonth,
+        cvv2: ValidCVV
+      });
+    } catch (error) {
+      throw new Meteor.Error("invalid-card-details", "Invalid card details");
+    }
     check(paymentInfo, {
       total: String,
       currency: String
@@ -88,7 +77,8 @@ Meteor.methods({
     let authResult;
     if (authnetTransactionFunc) {
       try {
-        authResult = authnetTransactionFunc.call(authnetService,
+        authResult = authnetTransactionFunc.call(
+          authnetService,
           order,
           creditCard
         );
@@ -98,13 +88,20 @@ Meteor.methods({
     } else {
       throw new Meteor.Error("invalid-transaction-type", "Invalid Transaction Type");
     }
-
-    const result =  Promise.await(authResult);
-    return result;
+    try {
+      const result = Promise.await(authResult);
+      return result;
+    } catch (error) {
+      throw new Meteor.Error("auth-failed", error.message);
+    }
   },
 
-  "authnet/payment/capture": function (paymentMethod) {
-    check(paymentMethod, Reaction.Schemas.PaymentMethod);
+  "authnet/payment/capture"(paymentMethod) {
+    // Call both check and validate because by calling `clean`, the audit pkg
+    // thinks that we haven't checked paymentMethod arg
+    check(paymentMethod, Object);
+    PaymentMethodArgument.validate(PaymentMethodArgument.clean(paymentMethod));
+
     const {
       transactionId,
       amount
@@ -116,7 +113,8 @@ Meteor.methods({
     let result;
     if (capturedAmount === accounting.toFixed(0, 2)) {
       try {
-        const captureResult = voidTransaction(transactionId,
+        const captureResult = voidTransaction(
+          transactionId,
           authnetService
         );
         if (captureResult.responseCode[0] === "1") {
@@ -134,13 +132,14 @@ Meteor.methods({
         Logger.fatal(error);
         result = {
           saved: false,
-          error: error
+          error
         };
       }
       return result;
     }
     try {
-      const captureResult = priorAuthCaptureTransaction(transactionId,
+      const captureResult = priorAuthCaptureTransaction(
+        transactionId,
         roundedAmount,
         authnetService
       );
@@ -159,15 +158,20 @@ Meteor.methods({
       Logger.fatal(error);
       result = {
         saved: false,
-        error: error
+        error
       };
     }
     return result;
   },
 
-  "authnet/refund/create": function (paymentMethod, amount) {
-    check(paymentMethod, PaymentMethod);
+  "authnet/refund/create"(paymentMethod, amount) {
     check(amount, Number);
+
+    // Call both check and validate because by calling `clean`, the audit pkg
+    // thinks that we haven't checked paymentMethod arg
+    check(paymentMethod, Object);
+    PaymentMethodArgument.validate(PaymentMethodArgument.clean(paymentMethod));
+
     const result = {
       saved: false,
       error: "Reaction does not yet support direct refund processing from Authorize.net. " +
@@ -176,8 +180,8 @@ Meteor.methods({
 
     return result;
   },
-  "authnet/refund/list": function () {
-    check(arguments, [Match.Any]);
+  "authnet/refund/list"(...args) {
+    check(args, [Match.Any]);
     Meteor.Error("not-implemented", "Authorize.net does not yet support retrieving a list of refunds.");
     return [];
   }
@@ -200,13 +204,11 @@ function getAuthnetService(accountOptions) {
 function priorAuthCaptureTransaction(transId, amount, service) {
   const body = {
     transactionType: "priorAuthCaptureTransaction",
-    amount: amount,
+    amount,
     refTransId: transId
   };
   // This call returns a Promise to the cb so we need to use Promise.await
-  const transactionRequest = service.sendTransactionRequest.call(service, body, function (trans) {
-    return trans;
-  });
+  const transactionRequest = service.sendTransactionRequest.call(service, body, (trans) => trans);
   return Promise.await(transactionRequest);
 }
 
@@ -216,8 +218,6 @@ function voidTransaction(transId, service) {
     refTransId: transId
   };
   // This call returns a Promise to the cb so we need to use Promise.await
-  const transactionRequest = service.sendTransactionRequest.call(service, body, function (trans) {
-    return trans;
-  });
+  const transactionRequest = service.sendTransactionRequest.call(service, body, (trans) => trans);
   return Promise.await(transactionRequest);
 }

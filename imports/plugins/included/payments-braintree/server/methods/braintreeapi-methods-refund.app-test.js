@@ -1,4 +1,5 @@
 /* eslint camelcase: 0 */
+/* eslint prefer-arrow-callback:0 */
 import { Meteor } from "meteor/meteor";
 import { expect } from "meteor/practicalmeteor:chai";
 import { sinon } from "meteor/practicalmeteor:sinon";
@@ -56,14 +57,10 @@ describe("braintree/refund/create", function () {
     sandbox.stub(BraintreeApi.apiCall, "createRefund", function () {
       return braintreeRefundResult;
     });
-    let refundResult = null;
-    let refundError = null;
     Meteor.call("braintree/refund/create", paymentMethod, paymentMethod.amount, function (error, result) {
-      refundResult = result;
-      refundError = error;
-      expect(refundError).to.be.undefined;
-      expect(refundResult).to.not.be.undefined;
-      expect(refundResult.saved).to.be.true;
+      expect(error).to.be.undefined;
+      expect(result).to.not.be.undefined;
+      expect(result.saved).to.be.true;
       return done();
     });
   });

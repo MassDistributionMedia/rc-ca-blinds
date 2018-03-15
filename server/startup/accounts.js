@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { Meteor } from "meteor/meteor";
+import { Random } from "meteor/random";
 import { Accounts } from "meteor/accounts-base";
 import * as Collections from "/lib/collections";
 import { Hooks, Logger, Reaction } from "/server/api";
@@ -12,7 +13,7 @@ export default function () {
    * http://docs.meteor.com/#/full/accounts_validateloginattempt
    */
 
-  Accounts.validateLoginAttempt(function (attempt) {
+  Accounts.validateLoginAttempt((attempt) => {
     if (!attempt.allowed) {
       return false;
     }
@@ -31,9 +32,7 @@ export default function () {
 
     if (loginEmail && loginEmail === adminEmail) {
       // filter out the matching login email from any existing emails
-      const userEmail = _.filter(attempt.user.emails, function (email) {
-        return email.address === loginEmail;
-      });
+      const userEmail = _.filter(attempt.user.emails, (email) => email.address === loginEmail);
 
       // check if the email is verified
       if (!userEmail.length || !userEmail[0].verified) {
@@ -49,10 +48,9 @@ export default function () {
    * creates a login type "anonymous"
    * default for all unauthenticated visitors
    */
-  Accounts.registerLoginHandler(function (options) {
-    if (!options.anonymous) {
-      return {};
-    }
+  Accounts.registerLoginHandler((options) => {
+    if (!options.anonymous) return {};
+
     const stampedToken = Accounts._generateStampedLoginToken();
     const userId = Accounts.insertUserDoc({
       services: {
@@ -62,7 +60,7 @@ export default function () {
     });
     const loginHandler = {
       type: "anonymous",
-      userId: userId
+      userId
     };
     return loginHandler;
   });
@@ -124,55 +122,68 @@ export default function () {
         roles[shopId] = group.permissions || Reaction.defaultCustomerRoles;
         additionals.groups = [group._id];
         // also add services with email defined to user.emails[]
-        for (const service in user.services) {
-          if (user.services[service].email) {
-            const email = {
-              provides: "default",
-              address: user.services[service].email,
-              verified: true
-            };
-            user.emails.push(email);
-          }
-          if (user.services[service].name) {
-            user.username = user.services[service].name;
-            additionals.profile.name = user.services[service].name;
-          }
-          // TODO: For now we have here instagram, twitter and google avatar cases
-          // need to make complete list
-          if (user.services[service].picture) {
-            additionals.profile.picture = user.services[service].picture;
-          } else if (user.services[service].profile_image_url_https) {
-            additionals.profile.picture = user.services[service].
-              dprofile_image_url_https;
-          } else if (user.services[service].profile_picture) {
-            additionals.profile.picture = user.services[service].profile_picture;
-          }
-          // Correctly map Instagram profile data to Meteor user / Accounts
-          if (user.services.instagram) {
-            user.username = user.services[service].username;
-            user.name = user.services[service].full_name;
-            additionals.name = user.services[service].full_name;
-            additionals.profile.picture = user.services[service].profile_picture;
-            additionals.profile.bio = user.services[service].bio;
-            additionals.profile.name = user.services[service].full_name;
-            additionals.profile.username = user.services[service].username;
+        const userServices = user.services;
+        for (const service in userServices) {
+          if ({}.hasOwnProperty.call(userServices, service)) {
+            const serviceObj = userServices[service];
+            if (serviceObj.email) {
+              const email = {
+                provides: "default",
+                address: serviceObj.email,
+                verified: true
+              };
+              user.emails.push(email);
+            }
+            if (serviceObj.name) {
+              user.username = serviceObj.name;
+              additionals.profile.name = serviceObj.name;
+            }
+            // TODO: For now we have here instagram, twitter and google avatar cases
+            // need to make complete list
+            if (serviceObj.picture) {
+              additionals.profile.picture = user.services[service].picture;
+            } else if (serviceObj.profile_image_url_https) {
+              additionals.profile.picture = user.services[service].dprofile_image_url_https;
+            } else if (serviceObj.profile_picture) {
+              additionals.profile.picture = user.services[service].profile_picture;
+            }
+            // Correctly map Instagram profile data to Meteor user / Accounts
+            if (userServices.instagram) {
+              user.username = serviceObj.username;
+              user.name = serviceObj.full_name;
+              additionals.name = serviceObj.full_name;
+              additionals.profile.picture = serviceObj.profile_picture;
+              additionals.profile.bio = serviceObj.bio;
+              additionals.profile.name = serviceObj.full_name;
+              additionals.profile.username = serviceObj.username;
+            }
           }
         }
       }
+
       // clone before adding roles
       const account = Object.assign({}, user, additionals);
       account.userId = user._id;
       Collections.Accounts.insert(account);
+      Hooks.Events.run("afterAccountsInsert", account.userId, user._id);
 
-      const userDetails = Collections.Accounts.findOne({
-        _id: user._id
-      });
+      const userDetails = Collections.Accounts.findOne({ _id: user._id });
 
       // send a welcome email to new users,
-      // but skip the first default admin user
+      // but skip the first default admin user and anonymous users
       // (default admins already get a verification email)
-      if (!(Meteor.users.find().count() === 0) && !userDetails.profile.invited) {
-        Meteor.call("accounts/sendWelcomeEmail", shopId, user._id);
+      if (userDetails.emails && userDetails.emails.length > 0
+        && (!(Meteor.users.find().count() === 0) && !userDetails.profile.invited)) {
+        const token = Random.secret();
+        Meteor.call("accounts/sendWelcomeEmail", shopId, user._id, token);
+        const defaultEmail = userDetails.emails.find((email) => email.provides === "default");
+        const when = new Date();
+        const tokenObj = {
+          address: defaultEmail.address,
+          token,
+          when
+        };
+        _.set(user, "services.email.verificationTokens", [tokenObj]);
       }
 
       // assign default user roles
@@ -204,7 +215,7 @@ export default function () {
         $pullAll: {}
       };
 
-      update.$pullAll["roles." + Reaction.getShopId()] = ["anonymous"];
+      update.$pullAll[`roles.${Reaction.getShopId()}`] = ["anonymous"];
 
       Meteor.users.update({
         _id: options.user._id
@@ -212,8 +223,7 @@ export default function () {
         multi: true
       });
       // debug info
-      Logger.debug("removed anonymous role from user: " +
-        options.user._id);
+      Logger.debug(`removed anonymous role from user: ${options.user._id}`);
 
       // do not call `cart/mergeCart` on methodName === `createUser`, because
       // in this case `cart/mergeCart` calls from cart publication

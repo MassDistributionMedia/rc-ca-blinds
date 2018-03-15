@@ -1,14 +1,102 @@
 import _ from "lodash";
 import { Meteor } from "meteor/meteor";
 import { Roles } from "meteor/alanning:roles";
-import { Random } from "meteor/random";
 import { check, Match } from "meteor/check";
 import { HTTP } from "meteor/http";
-import { Job } from "meteor/vsivsi:job-collection";
-import { GeoCoder, Logger } from "/server/api";
+import { Job } from "/imports/plugins/core/job-collection/lib";
+import { GeoCoder, Hooks, Logger } from "/server/api";
 import { Reaction } from "/lib/api";
 import * as Collections from "/lib/collections";
 import * as Schemas from "/lib/collections/schemas";
+
+/**
+ * @name cloneShop
+ * @summary Returns an existing shop object, with some values removed or changed such
+ *   that it is suitable for inserting as a new shop.
+ * @method
+ * @param {String} shopId - the ID of the shop to clone
+ * @return {Object|null} The cloned shop object or null if a shop with that ID can't be found
+ */
+function cloneShop(shopId) {
+  const shop = Collections.Shops.findOne(shopId);
+  if (!shop) return null;
+
+  // Never create a second primary shop
+  if (shop.shopType === "primary") shop.shopType = "merchant";
+
+  // Ensure unique id and shop name
+  const count = Collections.Shops.find().count() || "";
+  shop.name += count;
+
+  // Clean up values that get automatically added
+  delete shop._id;
+  delete shop.createdAt;
+  delete shop.updatedAt;
+  delete shop.slug;
+  // TODO audience permissions need to be consolidated into [object] and not [string]
+  // permissions with [string] on layout ie. orders and checkout, cause the insert to fail
+  delete shop.layout;
+  // delete brandAssets object from shop to prevent new shops from carrying over existing shop's
+  // brand image
+  delete shop.brandAssets;
+  return shop;
+}
+
+/**
+ * @name updateShopBrandAssets
+ * @method
+ * @param {Object} asset - brand asset {mediaId: "", type, ""}
+ * @param {String} shopId - the shop id coresponding to the shop for which
+ *                 the asset should be applied (defaults to Reaction.getShopId())
+ * @param {String} userId - the user id on whose behalf we are performing this
+ *                 action (defaults to Meteor.userId())
+ * @return {Int} returns update result
+ */
+export function updateShopBrandAssets(asset, shopId = Reaction.getShopId(), userId = Meteor.userId()) {
+  check(asset, {
+    mediaId: String,
+    type: String
+  });
+  check(shopId, String);
+
+  // must have core permissions
+  if (!Reaction.hasPermission("core", userId, shopId)) {
+    throw new Meteor.Error("access-denied", "Access Denied");
+  }
+
+  // Does our shop contain the brandasset we're tring to add
+  const shopWithBrandAsset = Collections.Shops.findOne({
+    "_id": shopId,
+    "brandAssets.type": asset.type
+  });
+
+  // If it does, then we update it with the new asset reference
+  if (shopWithBrandAsset) {
+    return Collections.Shops.update({
+      "_id": shopId,
+      "brandAssets.type": asset.type
+    }, {
+      $set: {
+        "brandAssets.$": {
+          mediaId: asset.mediaId,
+          type: asset.type
+        }
+      }
+    });
+  }
+
+  // Otherwise we insert a new brand asset reference
+  return Collections.Shops.update({
+    _id: shopId
+  }, {
+    $push: {
+      brandAssets: {
+        mediaId: asset.mediaId,
+        type: asset.type
+      }
+    }
+  });
+}
 
 /**
  * @file Meteor methods for Shop
@@ -25,9 +113,13 @@ Meteor.methods({
    * @param {Object} shopData - optionally provide shop object to customize
    * @return {String} return shopId
    */
-  "shop/createShop": function (shopAdminUserId, shopData) {
+  "shop/createShop"(shopAdminUserId, shopData) {
     check(shopAdminUserId, Match.Optional(String));
-    check(shopData, Match.Optional(Schemas.Shop));
+    if (shopData) {
+      Collections.Shops.simpleSchema(shopData).validate(shopData);
+      // Never create a second primary shop
+      if (shopData.shopType === "primary") shopData.shopType = "merchant";
+    }
 
     // Get the current marketplace settings
     const marketplace = Reaction.getMarketplaceSettings();
@@ -57,7 +149,6 @@ Meteor.methods({
       throw new Meteor.Error("access-denied", "Access Denied");
     }
 
-    const count = Collections.Shops.find().count() || "";
     const currentUser = Meteor.user();
     const currentAccount = Collections.Accounts.findOne({ _id: currentUser._id });
     if (!currentUser) {
@@ -74,41 +165,20 @@ Meteor.methods({
       shopAccount = Collections.Accounts.findOne({ _id: shopAdminUserId }) || currentAccount;
     }
 
+    const primaryShopId = Reaction.getPrimaryShopId();
+
     // Disallow creation of multiple shops, even for marketplace owners
-    if (shopAccount.shopId !== Reaction.getPrimaryShopId()) {
-      throw new Meteor.Error("operation-not-permitted",
-        "This user already has a shop. Each user may only have one shop.");
+    if (shopAccount.shopId !== primaryShopId) {
+      throw new Meteor.Error(
+        "operation-not-permitted",
+        "This user already has a shop. Each user may only have one shop."
+      );
     }
 
     // we'll accept a shop object, or clone the current shop
-    const seedShop = shopData || Collections.Shops.findOne(Reaction.getPrimaryShopId());
-
-    // Never create a second primary shop
-    if (seedShop.shopType === "primary") {
-      seedShop.shopType = "merchant";
-    }
-
-    // ensure unique id and shop name
-    seedShop._id = Random.id();
-    seedShop.name = seedShop.name + count;
-
-    // We trust the owner's shop clone, check only when shopData is passed as an argument
-    if (shopData) {
-      check(seedShop, Schemas.Shop);
-    }
-
-    const shop = Object.assign({}, seedShop, {
-      emails: shopUser.emails,
-      addressBook: shopAccount.addressBook
-    });
-
-    // Clean up values that get automatically added
-    delete shop.createdAt;
-    delete shop.updatedAt;
-    delete shop.slug;
-    // TODO audience permissions need to be consolidated into [object] and not [string]
-    // permissions with [string] on layout ie. orders and checkout, cause the insert to fail
-    delete shop.layout;
+    const shop = shopData || cloneShop(primaryShopId);
+    shop.emails = shopUser.emails;
+    shop.addressBook = shopAccount.addressBook;
 
     let newShopId;
 
@@ -121,24 +191,29 @@ Meteor.methods({
     const newShop = Collections.Shops.findOne({ _id: newShopId });
 
     // we should have created new shop, or errored
-    Logger.info("Created shop: ", shop._id);
+    Logger.info("Created shop: ", newShopId);
 
     // update user
-    Reaction.insertPackagesForShop(shop._id);
-    Reaction.createGroups({ shopId: shop._id });
-    const ownerGroup = Collections.Groups.findOne({ slug: "owner", shopId: shop._id });
-    Roles.addUsersToRoles([currentUser, shopUser._id], ownerGroup.permissions, shop._id);
+    Reaction.insertPackagesForShop(newShopId);
+    Reaction.createGroups({ shopId: newShopId });
+    const ownerGroup = Collections.Groups.findOne({ slug: "owner", shopId: newShopId });
+    Roles.addUsersToRoles([currentUser, shopUser._id], ownerGroup.permissions, newShopId);
+    // Set the active shopId for this user
+    Reaction.setUserPreferences("reaction", "activeShopId", newShopId, shopUser._id);
     Collections.Accounts.update({ _id: shopUser._id }, {
       $set: {
-        shopId: shop._id
+        shopId: newShopId
       },
       $addToSet: {
         groups: ownerGroup._id
       }
     });
-
+    Hooks.Events.run("afterAccountsUpdate", currentUser._id, {
+      accountId: shopUser._id,
+      updatedFields: ["groups"]
+    });
     // Add this shop to the merchant
-    Collections.Shops.update({ _id: Reaction.getPrimaryShopId() }, {
+    Collections.Shops.update({ _id: primaryShopId }, {
       $addToSet: {
         merchantShops: {
           _id: newShop._id,
@@ -149,7 +224,7 @@ Meteor.methods({
     });
 
     // Set active shop to new shop.
-    return { shopId: shop._id };
+    return { shopId: newShopId };
   },
 
   /**
@@ -160,7 +235,7 @@ Meteor.methods({
    * determine local currency and conversion rate from shop currency
    * @return {Object} returns user location and locale
    */
-  "shop/getLocale": function () {
+  "shop/getLocale"() {
     this.unblock();
     let clientAddress;
     const geo = new GeoCoder();
@@ -169,7 +244,7 @@ Meteor.methods({
     let localeCurrency = "USD";
     // if called from server, ip won't be defined.
     if (this.connection !== null) {
-      clientAddress = this.connection.clientAddress;
+      ({ clientAddress } = this.connection);
     } else {
       clientAddress = "127.0.0.1";
     }
@@ -217,7 +292,7 @@ Meteor.methods({
     }
 
     // localeCurrency is an array of allowed currencies
-    _.each(localeCurrency, function (currency) {
+    _.each(localeCurrency, (currency) => {
       let exchangeRate;
       if (shop.currencies[currency]) {
         result.currency = shop.currencies[currency];
@@ -246,14 +321,14 @@ Meteor.methods({
     });
     let profileCurrency = user.profile && user.profile.currency;
     if (!profileCurrency) {
-      localeCurrency = localeCurrency[0];
+      [localeCurrency] = localeCurrency;
       if (shop.currencies[localeCurrency] && shop.currencies[localeCurrency].enabled) {
         profileCurrency = localeCurrency;
       } else {
-        profileCurrency = shop.currency.split(",")[0];
+        [profileCurrency] = shop.currency.split(",");
       }
 
-      Collections.Accounts.update(user._id, { $set: { "profile.currency": profileCurrency } });
+      Meteor.call("accounts/setProfileCurrency", profileCurrency);
     }
 
     // set server side locale
@@ -272,7 +347,7 @@ Meteor.methods({
    * @param {String} currency code
    * @return {Number|Object} currency conversion rate
    */
-  "shop/getCurrencyRates": function (currency) {
+  "shop/getCurrencyRates"(currency) {
     check(currency, String);
     this.unblock();
 
@@ -297,7 +372,7 @@ Meteor.methods({
    * @fires Collections.Shops#update
    * @returns {undefined}
    */
-  "shop/fetchCurrencyRate": function () {
+  "shop/fetchCurrencyRate"() {
     this.unblock();
 
     const shopId = Reaction.getShopId();
@@ -314,7 +389,7 @@ Meteor.methods({
 
     // fetch shop settings for api auth credentials
     const shopSettings = Collections.Packages.findOne({
-      shopId: shopId,
+      shopId,
       name: "core"
     }, {
       fields: {
@@ -326,53 +401,55 @@ Meteor.methods({
     // with current rates from Open Exchange Rates
     // warn if we don't have app_id
     if (!shopSettings.settings.openexchangerates) {
-      throw new Meteor.Error("not-configured",
-        "Open Exchange Rates not configured. Configure for current rates.");
+      throw new Meteor.Error(
+        "not-configured",
+        "Open Exchange Rates not configured. Configure for current rates."
+      );
+    } else if (!shopSettings.settings.openexchangerates.appId) {
+      throw new Meteor.Error(
+        "not-configured",
+        "Open Exchange Rates AppId not configured. Configure for current rates."
+      );
     } else {
-      if (!shopSettings.settings.openexchangerates.appId) {
-        throw new Meteor.Error("not-configured",
-          "Open Exchange Rates AppId not configured. Configure for current rates.");
-      } else {
-        // shop open exchange rates appId
-        const openexchangeratesAppId = shopSettings.settings.openexchangerates.appId;
+      // shop open exchange rates appId
+      const openexchangeratesAppId = shopSettings.settings.openexchangerates.appId;
 
-        // we'll update all the available rates in Shops.currencies whenever we
-        // get a rate request, using base currency
-        const rateUrl =
-          `https://openexchangerates.org/api/latest.json?base=${
-            baseCurrency}&app_id=${openexchangeratesAppId}`;
-        let rateResults;
+      // we'll update all the available rates in Shops.currencies whenever we
+      // get a rate request, using base currency
+      const rateUrl =
+              `https://openexchangerates.org/api/latest.json?base=${
+                baseCurrency}&app_id=${openexchangeratesAppId}`;
+      let rateResults;
 
-        // We can get an error if we try to change the base currency with a simple
-        // account
-        try {
-          rateResults = HTTP.get(rateUrl);
-        } catch (error) {
-          if (error.error) {
-            Logger.error(error.message);
-            throw new Meteor.Error("server-error", error.message);
-          } else {
-            // https://openexchangerates.org/documentation#errors
-            throw new Meteor.Error("server-error", error.response.data.description);
-          }
+      // We can get an error if we try to change the base currency with a simple
+      // account
+      try {
+        rateResults = HTTP.get(rateUrl);
+      } catch (error) {
+        if (error.error) {
+          Logger.error(error.message);
+          throw new Meteor.Error("server-error", error.message);
+        } else {
+          // https://openexchangerates.org/documentation#errors
+          throw new Meteor.Error("server-error", error.response.data.description);
         }
-
-        const exchangeRates = rateResults.data.rates;
-
-        _.each(shopCurrencies, function (currencyConfig, currencyKey) {
-          if (exchangeRates[currencyKey] !== undefined) {
-            const rateUpdate = {
-              // this needed for shop/flushCurrencyRates Method
-              "currencies.updatedAt": new Date(rateResults.data.timestamp * 1000)
-            };
-            const collectionKey = `currencies.${currencyKey}.rate`;
-            rateUpdate[collectionKey] = exchangeRates[currencyKey];
-            Collections.Shops.update(shopId, {
-              $set: rateUpdate
-            });
-          }
-        });
       }
+
+      const exchangeRates = rateResults.data.rates;
+
+      _.each(shopCurrencies, (currencyConfig, currencyKey) => {
+        if (exchangeRates[currencyKey] !== undefined) {
+          const rateUpdate = {
+            // this needed for shop/flushCurrencyRates Method
+            "currencies.updatedAt": new Date(rateResults.data.timestamp * 1000)
+          };
+          const collectionKey = `currencies.${currencyKey}.rate`;
+          rateUpdate[collectionKey] = exchangeRates[currencyKey];
+          Collections.Shops.update(shopId, {
+            $set: rateUpdate
+          });
+        }
+      });
     }
   },
 
@@ -386,7 +463,7 @@ Meteor.methods({
    * @fires Collections.Shops#update
    * @returns {undefined}
    */
-  "shop/flushCurrencyRate": function () {
+  "shop/flushCurrencyRate"() {
     this.unblock();
 
     let shopId;
@@ -403,19 +480,21 @@ Meteor.methods({
         currencies: 1
       }
     });
-    const updatedAt = shop.currencies.updatedAt;
+    const { updatedAt } = shop.currencies;
 
     // if updatedAt is not a Date(), then there is no rates yet
     if (typeof updatedAt !== "object") {
-      throw new Meteor.Error("error-occurred",
-        "[flushCurrencyRates worker]: There is nothing to flush.");
+      throw new Meteor.Error(
+        "error-occurred",
+        "[flushCurrencyRates worker]: There is nothing to flush."
+      );
     }
 
     updatedAt.setHours(updatedAt.getHours() + 48);
     const now = new Date();
 
     if (now < updatedAt) { // todo remove this line. its for tests
-      _.each(shop.currencies, function (currencyConfig, currencyKey) {
+      _.each(shop.currencies, (currencyConfig, currencyKey) => {
         const rate = `currencies.${currencyKey}.rate`;
 
         if (typeof currencyConfig.rate === "number") {
@@ -436,16 +515,19 @@ Meteor.methods({
    * @description On submit OpenExchangeRatesForm handler
    * @summary we need to rerun fetch exchange rates job on every form submit,
    * that's why we update autoform type to "method-update"
-   * @param {Object} modifier - the modifier object generated from the form values
-   * @param {String} _id - the _id of the document being updated
+   * @param {Object} details An object with _id and modifier props
    * @fires Collections.Packages#update
-   * @todo This method fires Packages collection, so maybe someday it could be
+   * @todo This method fires Packages collection, so maybe someday it could be moved to another file
    * @returns {undefined}
-   * moved to another file
    */
-  "shop/updateShopExternalServices": function (modifier, _id) {
-    check(modifier, Match.Optional(Schemas.CorePackageConfig));
-    check(_id, String);
+  "shop/updateShopExternalServices"(details) {
+    check(details, {
+      _id: String,
+      modifier: Object // actual schema validation happens below
+    });
+
+    const { _id, modifier } = details;
+    Schemas.CorePackageConfig.validate(modifier, { modifier: true });
 
     // must have core permissions
     if (!Reaction.hasPermission("core")) {
@@ -486,7 +568,7 @@ Meteor.methods({
    * @param {Number} longitude - longitude
    * @return {Object} returns address
    */
-  "shop/locateAddress": function (latitude, longitude) {
+  "shop/locateAddress"(latitude, longitude) {
     check(latitude, Match.Optional(Number));
     check(longitude, Match.Optional(Number));
     let clientAddress;
@@ -494,7 +576,7 @@ Meteor.methods({
 
     // if called from server, ip won't be defined.
     if (this.connection !== null) {
-      clientAddress = this.connection.clientAddress;
+      ({ clientAddress } = this.connection);
     } else {
       clientAddress = "127.0.0.1";
     }
@@ -521,7 +603,7 @@ Meteor.methods({
    * @hooks after method
    * @return {String} with created tag _id
    */
-  "shop/createTag": function (tagName, isTopLevel) {
+  "shop/createTag"(tagName, isTopLevel) {
     check(tagName, String);
     check(isTopLevel, Boolean);
 
@@ -533,7 +615,7 @@ Meteor.methods({
     const tag = {
       name: tagName,
       slug: Reaction.getSlug(tagName),
-      isTopLevel: isTopLevel,
+      isTopLevel,
       updatedAt: new Date(),
       createdAt: new Date()
     };
@@ -551,10 +633,10 @@ Meteor.methods({
    * @param {String} currentTagId - currentTagId will update related/hierarchy
    * @return {Boolean} return true/false after insert
    */
-  "shop/updateHeaderTags": function (tagName, tagId, currentTagId) {
+  "shop/updateHeaderTags"(tagName, tagId, currentTagId) {
     check(tagName, String);
-    check(tagId, Match.OneOf(String, null, void 0));
-    check(currentTagId, Match.OneOf(String, null, void 0));
+    check(tagId, Match.OneOf(String, null, undefined));
+    check(currentTagId, Match.OneOf(String, null, undefined));
 
     let newTagId = {};
     // must have 'core' permissions
@@ -573,59 +655,55 @@ Meteor.methods({
       name: tagName
     });
 
+    let result;
+
     if (tagId) {
-      return Collections.Tags.update(tagId, {
-        $set: newTag
-      }, function () {
-        Logger.debug(
-          `Changed name of tag ${tagId} to ${tagName}`);
-        return true;
-      });
-    } else if (existingTag) {
+      result = Collections.Tags.update(tagId, { $set: newTag });
+      Logger.debug(`Changed name of tag ${tagId} to ${tagName}`);
+      return result;
+    }
+
+    if (existingTag) {
       // if is currentTag
       if (currentTagId) {
-        return Collections.Tags.update(currentTagId, {
+        result = Collections.Tags.update(currentTagId, {
           $addToSet: {
             relatedTagIds: existingTag._id
           }
-        }, function () {
-          Logger.debug(
-            `Added tag ${existingTag.name} to the related tags list for tag ${currentTagId}`
-          );
-          return true;
         });
+        Logger.debug(`Added tag ${existingTag.name} to the related tags list for tag ${currentTagId}`);
+        return result;
       }
+
       // update existing tag
-      return Collections.Tags.update(existingTag._id, {
+      result = Collections.Tags.update(existingTag._id, {
         $set: {
           isTopLevel: true
         }
-      }, function () {
-        Logger.debug(`Marked tag ${existingTag.name} as a top level tag`);
-        return true;
       });
+      Logger.debug(`Marked tag ${existingTag.name} as a top level tag`);
+      return result;
     }
+
     // create newTags
     newTagId = Meteor.call("shop/createTag", tagName, !currentTagId);
 
     // if result is an Error object, we return it immediately
-    if (typeof newTagId !== "string") {
-      return newTagId;
-    }
+    if (typeof newTagId !== "string") return newTagId;
 
     if (currentTagId) {
-      return Collections.Tags.update(currentTagId, {
+      result = Collections.Tags.update(currentTagId, {
         $addToSet: {
           relatedTagIds: newTagId
         }
-      }, function () {
-        Logger.debug(`Added tag${newTag.name} to the related tags list for tag ${currentTagId}`);
-        return true;
       });
-      // TODO: refactor this. unnecessary check
-    } else if (typeof newTagId === "string" && !currentTagId) {
-      return true;
+      Logger.debug(`Added tag${newTag.name} to the related tags list for tag ${currentTagId}`);
+      return result;
     }
+
+    // TODO: refactor this. unnecessary check
+    if (typeof newTagId === "string" && !currentTagId) return true;
+
     throw new Meteor.Error("access-denied", "Failed to update header tags.");
   },
 
@@ -637,7 +715,7 @@ Meteor.methods({
    * @param {String} currentTagId - currentTagId
    * @return {String} returns remove result
    */
-  "shop/removeHeaderTag": function (tagId, currentTagId) {
+  "shop/removeHeaderTag"(tagId, currentTagId) {
     check(tagId, String);
     check(currentTagId, String);
     // must have core permissions
@@ -678,7 +756,7 @@ Meteor.methods({
    * @param {String} tagId - method to remove tag navigation tags
    * @return {String} returns remove result
    */
-  "shop/hideHeaderTag": function (tagId) {
+  "shop/hideHeaderTag"(tagId) {
     check(tagId, String);
     // must have core permissions
     if (!Reaction.hasPermission("core")) {
@@ -703,7 +781,7 @@ Meteor.methods({
    * @param {String} name - workflow name
    * @return {Array} returns workflow array
    */
-  "shop/getWorkflow": function (name) {
+  "shop/getWorkflow"(name) {
     check(name, String);
 
     const shopWorkflows = Collections.Shops.findOne({
@@ -729,7 +807,7 @@ Meteor.methods({
    * @param {Boolean} enabled - true / false
    * @return {Array} returns workflow array
    */
-  "shop/updateLanguageConfiguration": function (language, enabled) {
+  "shop/updateLanguageConfiguration"(language, enabled) {
     check(language, String);
     check(enabled, Boolean);
 
@@ -792,7 +870,7 @@ Meteor.methods({
    * @param {Boolean} enabled - true / false
    * @return {Number} returns mongo update result
    */
-  "shop/updateCurrencyConfiguration": function (currency, enabled) {
+  "shop/updateCurrencyConfiguration"(currency, enabled) {
     check(currency, String);
     check(enabled, Boolean);
     // must have core permissions
@@ -850,49 +928,15 @@ Meteor.methods({
    * @param {Object} asset - brand asset {mediaId: "", type, ""}
    * @return {Int} returns update result
    */
-  "shop/updateBrandAssets": function (asset) {
+  "shop/updateBrandAssets"(asset) {
     check(asset, {
       mediaId: String,
       type: String
     });
-    // must have core permissions
-    if (!Reaction.hasPermission("core")) {
-      throw new Meteor.Error("access-denied", "Access Denied");
-    }
+
     this.unblock();
 
-    // Does our shop contain the brandasset we're tring to add
-    const shopWithBrandAsset = Collections.Shops.findOne({
-      "_id": Reaction.getShopId(),
-      "brandAssets.type": asset.type
-    });
-
-    // If it does, then we update it with the new asset reference
-    if (shopWithBrandAsset) {
-      return Collections.Shops.update({
-        "_id": Reaction.getShopId(),
-        "brandAssets.type": "navbarBrandImage"
-      }, {
-        $set: {
-          "brandAssets.$": {
-            mediaId: asset.mediaId,
-            type: asset.type
-          }
-        }
-      });
-    }
-
-    // Otherwise we insert a new brand asset reference
-    return Collections.Shops.update({
-      _id: Reaction.getShopId()
-    }, {
-      $push: {
-        brandAssets: {
-          mediaId: asset.mediaId,
-          type: asset.type
-        }
-      }
-    });
+    return updateShopBrandAssets(asset);
   },
 
   /**
@@ -904,7 +948,7 @@ Meteor.methods({
    * @param {Boolean} enabled - current package `enabled` state
    * @return {Number} mongo update result
    */
-  "shop/togglePackage": function (packageId, enabled) {
+  "shop/togglePackage"(packageId, enabled) {
     check(packageId, String);
     check(enabled, Boolean);
     if (!Reaction.hasAdminAccess()) {
@@ -927,15 +971,31 @@ Meteor.methods({
    * @param {String} newLayout - new layout to use
    * @return {Number} mongo update result
    */
-  "shop/changeLayouts": function (shopId, newLayout) {
+  "shop/changeLayouts"(shopId, newLayout) {
     check(shopId, String);
     check(newLayout, String);
     const shop = Collections.Shops.findOne(shopId);
-    for (let i = 0; i < shop.layout.length; i++) {
+    for (let i = 0; i < shop.layout.length; i += 1) {
       shop.layout[i].layout = newLayout;
     }
     return Collections.Shops.update(shopId, {
       $set: { layout: shop.layout }
     });
+  },
+
+
+  /**
+   * @name shop/getBaseLanguage
+   * @method
+   * @memberof Methods/Shop
+   * @summary Return the shop's base language ISO code
+   * @return {String} ISO lang code
+   */
+  "shop/getBaseLanguage"() {
+    if (!Reaction.hasPermission()) {
+      throw new Meteor.Error("access-denied", "Access Denied");
+    }
+    const shopId = Reaction.getShopId();
+    return Collections.Shops.findOne(shopId).language;
   }
 });

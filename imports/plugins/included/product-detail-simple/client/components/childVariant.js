@@ -79,15 +79,12 @@ class ChildVariant extends Component {
   }
 
   renderMedia() {
-    if (this.hasMedia) {
-      const media = this.primaryMediaItem;
+    const media = this.primaryMediaItem;
+    if (!media) return null;
 
-      return (
-        <Components.MediaItem source={media.url()} />
-      );
-    }
-
-    return null;
+    return (
+      <Components.MediaItem source={media} />
+    );
   }
 
   // http://stackoverflow.com/questions/26176519/reactjs-call-parent-function
@@ -117,7 +114,7 @@ class ChildVariant extends Component {
   }
 
   render() {
-    const variant = this.props.variant;
+    const { variant } = this.props;
     const classes = classnames({
       "btn": true,
       "btn-default": true,

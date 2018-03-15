@@ -26,11 +26,11 @@ Meteor.methods({
    * @param {String} shopId - id of the shop the group belongs to
    * @return {Object} - `object.status` of 200 on success or Error object on failure
    */
-  "group/createGroup": function (groupData, shopId) {
+  "group/createGroup"(groupData, shopId) {
     check(groupData, Object);
     check(groupData.name, String);
     check(groupData.description, Match.Optional(String));
-    check(groupData.permissions,  Match.Optional([String]));
+    check(groupData.permissions, Match.Optional([String]));
     check(shopId, String);
     let _id;
 
@@ -81,7 +81,7 @@ Meteor.methods({
    * @param {String} shopId - id of the shop the group belongs to
    * @return {Object} - `object.status` of 200 on success or Error object on failure
    */
-  "group/updateGroup": function (groupId, newGroupData, shopId) {
+  "group/updateGroup"(groupId, newGroupData, shopId) {
     check(groupId, String);
     check(newGroupData, Object);
     check(shopId, String);
@@ -132,7 +132,7 @@ Meteor.methods({
    * @param {String} groupId - id of the group
    * @return {Object} - `object.status` of 200 on success or Error object on failure
    */
-  "group/addUser": function (userId, groupId) {
+  "group/addUser"(userId, groupId) {
     check(userId, String);
     check(groupId, String);
     const group = Groups.findOne({ _id: groupId }) || {};
@@ -178,7 +178,10 @@ Meteor.methods({
     try {
       setUserPermissions({ _id: userId }, permissions, shopId);
       Accounts.update({ _id: userId }, { $set: { groups: newGroups } });
-
+      Hooks.Events.run("afterAccountsUpdate", loggedInUserId, {
+        accountId: userId,
+        updatedFields: ["groups"]
+      });
       if (slug === "owner") {
         if (shopId === Reaction.getPrimaryShopId()) {
           changeMarketplaceOwner({ userId, permissions });
@@ -205,7 +208,7 @@ Meteor.methods({
    * @param {String} groupId - name of the group
    * @return {Object} - `object.status` of 200 on success or Error object on failure
    */
-  "group/removeUser": function (userId, groupId) {
+  "group/removeUser"(userId, groupId) {
     check(userId, String);
     check(groupId, String);
 
@@ -226,6 +229,10 @@ Meteor.methods({
     try {
       setUserPermissions(user, defaultCustomerGroupForShop.permissions, shopId);
       Accounts.update({ _id: userId, groups: groupId }, { $set: { "groups.$": defaultCustomerGroupForShop._id } }); // replace the old id with new id
+      Hooks.Events.run("afterAccountsUpdate", Meteor.userId(), {
+        accountId: userId,
+        updatedFields: ["groups"]
+      });
       return { status: 200 };
     } catch (error) {
       Logger.error(error);
@@ -271,5 +278,9 @@ function setUserPermissions(users, permissions, shopId) {
 // set default admin user's account as "owner"
 Hooks.Events.add("afterCreateDefaultAdminUser", (user) => {
   const group = Groups.findOne({ slug: "owner", shopId: Reaction.getShopId() });
-  Accounts.update({ _id: user._id  }, { $set: { groups: [group._id] } });
+  Accounts.update({ _id: user._id }, { $set: { groups: [group._id] } });
+  Hooks.Events.run("afterAccountsUpdate", null, {
+    accountId: user._id,
+    updatedFields: ["groups"]
+  });
 });

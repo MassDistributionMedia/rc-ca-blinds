@@ -6,7 +6,6 @@ import { ReactiveDict } from "meteor/reactive-dict";
 import { Reaction } from "/client/api";
 import { Cart } from "/lib/collections";
 
-
 // Because we are duplicating shipment quotes across shipping records
 // we will get duplicate shipping quotes but we only want to diplay one
 // So this function eliminates duplicates
@@ -17,13 +16,9 @@ import { Cart } from "/lib/collections";
  * @private
  */
 function uniqObjects(objs) {
-  const jsonBlobs = objs.map((obj) => {
-    return JSON.stringify(obj);
-  });
+  const jsonBlobs = objs.map((obj) => JSON.stringify(obj));
   const uniqueBlobs = _.uniq(jsonBlobs);
-  return uniqueBlobs.map((blob) => {
-    return EJSON.parse(blob);
-  });
+  return uniqueBlobs.map((blob) => EJSON.parse(blob));
 }
 
 // cartShippingQuotes
@@ -133,7 +128,7 @@ Template.coreCheckoutShipping.onCreated(function () {
 Template.coreCheckoutShipping.helpers({
   // retrieves current rates and updates shipping rates
   // in the users cart collection (historical, and prevents repeated rate lookup)
-  shipmentQuotes: function () {
+  shipmentQuotes() {
     const instance = Template.instance();
     if (instance.subscriptionsReady()) {
       const cart = Cart.findOne();
@@ -173,7 +168,7 @@ Template.coreCheckoutShipping.helpers({
   },
 
   // helper to display currently selected shipmentMethod
-  isSelected: function () {
+  isSelected() {
     const self = this;
     const shipmentMethods = cartShipmentMethods();
 
@@ -221,18 +216,14 @@ Template.coreCheckoutShipping.helpers({
 // to shipmentMethod (selected rate)
 //
 Template.coreCheckoutShipping.events({
-  "click .list-group-item": function (event) {
+  "click .list-group-item"(event) {
     event.preventDefault();
     event.stopPropagation();
-    const self = this;
     const cart = Cart.findOne();
 
-    try {
-      Meteor.call("cart/setShipmentMethod", cart._id, self.method);
-    } catch (error) {
-      throw new Meteor.Error(error,
-        "Cannot change methods while processing.");
-    }
+    Meteor.call("cart/setShipmentMethod", cart._id, this.method, (error) => {
+      if (error) throw new Meteor.Error("set-shipment-method-error", error.message);
+    });
   },
   "click [data-event-action=configure-shipping]"(event) {
     event.preventDefault();
