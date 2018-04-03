@@ -1,9 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import Variant from "./variant";
-import { EditContainer } from "/imports/plugins/core/ui/client/containers";
-import { Divider, Translation } from "/imports/plugins/core/ui/client/components";
-import { ChildVariant } from "./";
+import { Components } from "@reactioncommerce/reaction-components";
 
 class VariantList extends Component {
   handleVariantEditClick = (event, editButtonProps) => {
@@ -20,7 +17,7 @@ class VariantList extends Component {
     }
   }
 
-  handleChildleVariantClick = (event, variant) => {
+  handleChildVariantClick = (event, variant) => {
     if (this.props.onVariantClick) {
       this.props.onVariantClick(event, variant, 1);
     }
@@ -42,13 +39,33 @@ class VariantList extends Component {
   }
 
   renderVariants() {
+    let variants = [];
+    let addButton;
+
+    if (this.props.editable) {
+      addButton = (
+        <div className="rui items flex">
+          <div className="rui item full justify center">
+            <Components.IconButton
+              i18nKeyTooltip="variantList.createVariant"
+              icon="fa fa-plus"
+              primary={true}
+              tooltip="Create Variant"
+              onClick={this.props.onCreateVariant}
+            />
+          </div>
+        </div>
+      );
+    }
+
     if (this.props.variants) {
-      return this.props.variants.map((variant, index) => {
+      variants = this.props.variants.map((variant, index) => {
         const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
 
         return (
-          <EditContainer
+          <Components.EditContainer
             data={variant}
+            disabled={this.props.editable === false}
             editView="variantForm"
             i18nKeyLabel="productDetailEdit.editVariant"
             key={index}
@@ -58,7 +75,7 @@ class VariantList extends Component {
             permissions={["createProduct"]}
             showsVisibilityButton={true}
           >
-            <Variant
+            <Components.Variant
               displayPrice={displayPrice}
               editable={this.props.editable}
               index={index}
@@ -68,33 +85,52 @@ class VariantList extends Component {
               soldOut={this.isSoldOut(variant)}
               variant={variant}
             />
-          </EditContainer>
+          </Components.EditContainer>
         );
       });
     }
 
-    return (
-      <li>
-        <a href="#" id="create-variant">
-          {"+"} <Translation defaultValue="Create Variant" i18nKey="variantList.createVariant" />
-        </a>
-      </li>
+    const variantList = (
+      <ul className="variant-list list-unstyled" id="variant-list" key="variantList">
+        {variants}
+        {addButton}
+      </ul>
     );
+
+    if (variants.length === 0 && this.props.editable === false) {
+      return variantList;
+    } else if (variants.length > 1 || variants.length === 0) {
+      return [
+        <Components.Divider
+          i18nKeyLabel="productDetail.options"
+          key="dividerWithLabel"
+          label="Options"
+        />,
+        variantList
+      ];
+    } else if (variants.length === 1) {
+      return [
+        <Components.Divider key="divider" />,
+        variantList
+      ];
+    }
+
+    return variantList;
   }
 
   renderChildVariants() {
+    let childVariants = [];
+
     if (this.props.childVariants) {
-      return this.props.childVariants.map((childVariant, index) => {
-        const media = this.props.childVariantMedia.filter((mediaItem) => {
-          if (mediaItem.metadata.variantId === childVariant._id) {
-            return true;
-          }
-          return false;
-        });
+      childVariants = this.props.childVariants.map((childVariant, index) => {
+        const media = this.props.childVariantMedia.filter((mediaItem) => (
+          (mediaItem.document.metadata.variantId === childVariant._id)
+        ));
 
         return (
-          <EditContainer
+          <Components.EditContainer
             data={childVariant}
+            disabled={this.props.editable === false}
             editView="variantForm"
             i18nKeyLabel="productDetailEdit.editVariant"
             key={index}
@@ -104,15 +140,28 @@ class VariantList extends Component {
             permissions={["createProduct"]}
             showsVisibilityButton={true}
           >
-            <ChildVariant
+            <Components.ChildVariant
               isSelected={this.props.variantIsSelected(childVariant._id)}
               media={media}
-              onClick={this.handleChildleVariantClick}
+              onClick={this.handleChildVariantClick}
               variant={childVariant}
             />
-          </EditContainer>
+          </Components.EditContainer>
         );
       });
+    }
+
+    if (childVariants.length) {
+      return [
+        <Components.Divider
+          key="availableOptionsDivider"
+          i18nKeyLabel="availableOptions"
+          label="Available Options"
+        />,
+        <div className="row variant-product-options" key="childVariantList">
+          {childVariants}
+        </div>
+      ];
     }
 
     return null;
@@ -121,20 +170,8 @@ class VariantList extends Component {
   render() {
     return (
       <div className="product-variants">
-        <Divider
-          i18nKeyLabel="productDetail.options"
-          label="Options"
-        />
-        <ul className="variant-list list-unstyled" id="variant-list">
-          {this.renderVariants()}
-        </ul>
-        <Divider
-          i18nKeyLabel="productDetail.availableOptions"
-          label="Available Options"
-        />
-        <div className="row variant-product-options">
-          {this.renderChildVariants()}
-        </div>
+        {this.renderVariants()}
+        {this.renderChildVariants()}
       </div>
     );
   }
@@ -146,6 +183,7 @@ VariantList.propTypes = {
   displayPrice: PropTypes.func,
   editable: PropTypes.bool,
   isSoldOut: PropTypes.func,
+  onCreateVariant: PropTypes.func,
   onEditVariant: PropTypes.func,
   onMoveVariant: PropTypes.func,
   onVariantClick: PropTypes.func,

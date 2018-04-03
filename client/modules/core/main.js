@@ -19,6 +19,9 @@ import { Router } from "/client/modules/router";
 // This is placed outside the main object to make it a private variable.
 // access using `Reaction.state`
 const reactionState = new ReactiveDict();
+
+export const userPrefs = new ReactiveVar(undefined, (val, newVal) => JSON.stringify(val) === JSON.stringify(newVal));
+
 const deps = new Map();
 /**
  * Reaction namespace
@@ -383,11 +386,10 @@ export default {
           }
         });
       }
-      const packageSettings = store.get(packageName) || {};
-      packageSettings[preference] = value;
-      return store.set(packageName, packageSettings);
     }
-    return false;
+    const packageSettings = store.get(packageName) || {};
+    packageSettings[preference] = value;
+    return store.set(packageName, packageSettings);
   },
 
   updateUserPreferences(packageName, preference, values) {
@@ -486,7 +488,11 @@ export default {
   getShopPrefix() {
     const shopName = this.getShopName();
     if (shopName) {
-      return `/${this.getSlug(shopName.toLowerCase())}`;
+      return Router.pathFor("index", {
+        hash: {
+          shopSlug: this.getSlug(shopName.toLowerCase())
+        }
+      });
     }
   },
 
@@ -533,13 +539,9 @@ export default {
   },
 
   allowGuestCheckout() {
-    let allowGuest = false;
     const settings = this.getShopSettings();
     // we can disable in admin, let's check.
-    if (settings.public && settings.public.allowGuestCheckout) {
-      allowGuest = settings.public.allowGuestCheckout;
-    }
-    return allowGuest;
+    return !!(settings.public && settings.public.allowGuestCheckout);
   },
   /**
    * canInviteToGroup - client (similar to server/api canInviteToGroup)
