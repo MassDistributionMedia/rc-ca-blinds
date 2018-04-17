@@ -1,11 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-// import { Reaction } from "/client/api";
 import { Components } from "@reactioncommerce/reaction-components";
 import { ReactionProduct } from "/lib/api";
-
 import RenderWidthHeightList, { WIDTH_HEIGHT_VARIANT_TYPE } from "/imports/plugins/custom/width-height-variant/client/render-list";
-
 
 class VariantList extends Component {
   handleVariantEditClick = (event, editButtonProps) => {

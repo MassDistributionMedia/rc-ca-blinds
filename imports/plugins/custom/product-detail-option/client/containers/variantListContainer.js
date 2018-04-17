@@ -4,7 +4,7 @@ import update from "immutability-helper";
 import { ReactionProduct } from "/lib/api";
 import { VariantList } from "../components";
 import { Reaction, i18next } from "/client/api";
-import { Products, Media } from "/lib/collections";
+import { Products } from "/lib/collections";
 import { Session } from "meteor/session";
 import { Meteor } from "meteor/meteor";
 import { composeWithTracker } from "@reactioncommerce/reaction-components";
@@ -12,6 +12,7 @@ import { getVariantIds } from "/lib/selectors/variants";
 import { getChildVariants } from "../selectors/variants";
 import SelectedVariants from "../stores/selectedVariants";
 import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
+import { Media } from "/imports/plugins/core/files/client";
 
 function variantIsSelected(variantId) {
   const current = ReactionProduct.selectedVariant();
@@ -108,7 +109,6 @@ class VariantListContainer extends Component {
   }
 
   handleVariantClick = (event, variant, ancestors = -1) => {
-    debugger;
     if (Reaction.isActionViewOpen()) {
       this.handleEditVariant(event, variant, ancestors);
     } else {
@@ -202,7 +202,7 @@ function composer(props, onData) {
   const childVariants = getChildVariants();
 
   if (Array.isArray(childVariants)) {
-    childVariantMedia = Media.find({
+    childVariantMedia = Media.findLocal({
       "metadata.variantId": {
         $in: getVariantIds(childVariants)
       }
@@ -210,7 +210,7 @@ function composer(props, onData) {
       sort: {
         "metadata.priority": 1
       }
-    }).fetch();
+    });
   }
 
   let editable;
