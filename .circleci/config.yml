@@ -13,6 +13,11 @@ defaults: &defaults
   docker:
     - image: circleci/node:8-stretch
 
+general:
+  branches:
+    ignore:
+      - master
+
 jobs:
   build:
     <<: *defaults
