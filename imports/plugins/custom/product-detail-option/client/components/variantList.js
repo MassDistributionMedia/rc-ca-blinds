@@ -67,6 +67,15 @@ class VariantList extends Component {
         }
 
         const displayPrice = this.props.displayPrice && this.props.displayPrice(variant._id);
+        // const childVariantContainer = <div className="variant-accordion" id={variant._id} style={divStyle}>
+        //                                 {<RenderList
+        //                                   renderType={type}
+        //                                   renderList={props.childVariants}
+        //                                   parentProps={props}
+        //                                   childVariants={childVariants}
+        //                                   parentMethods={methods}
+        //                                 />}
+        //                               </div>;
 
         return (
           <Components.EditContainer
@@ -89,6 +98,7 @@ class VariantList extends Component {
               onClick={this.props.onVariantClick}
               onMove={this.props.onMoveVariant}
               soldOut={this.isSoldOut(variant)}
+              renderChildVariants={this.renderChildVariants}
               variant={variant}
             />
           </Components.EditContainer>
@@ -139,14 +149,19 @@ class VariantList extends Component {
     const type = currentVariant.variantType || "variant";
     const methods = this;
     const { props } = this;
+    const divStyle = {
+          display: "none"
+        };
 
     return (
-      <RenderList
-        renderType={type}
-        renderList={props.childVariants}
-        parentProps={props}
-        parentMethods={methods}
-      />
+      <div className="variant-accordion" id={currentVariant._id} style={divStyle}>
+        <RenderList
+          renderType={type}
+          renderList={props.childVariants}
+          parentProps={props}
+          parentMethods={methods}
+        />
+      </div>
     );
   }
 

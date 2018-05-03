@@ -5,6 +5,7 @@ import _ from "lodash";
 import Velocity from "velocity-animate";
 import "velocity-animate/velocity.ui";
 import { Components } from "@reactioncommerce/reaction-components";
+import { findCurrency } from "/client/api";
 
 const fieldNames = [
   "title",
@@ -328,6 +329,7 @@ class VariantForm extends Component {
             i18nKeyPlaceholder="0"
             placeholder="0"
             label="Quantity"
+            type="number"
             name="inventoryQuantity"
             ref="inventoryQuantityInput"
             value={this.props.onUpdateQuantityField(this.variant)}
@@ -347,6 +349,7 @@ class VariantForm extends Component {
           i18nKeyPlaceholder="0"
           placeholder="0"
           label="Quantity"
+          type="number"
           name="inventoryQuantity"
           ref="inventoryQuantityInput"
           value={this.variant.inventoryQuantity}
@@ -368,6 +371,8 @@ class VariantForm extends Component {
       "variant-card": true,
       "active": this.isExpanded(cardName)
     });
+
+    const currency = findCurrency(null, true);
 
     return (
       <Components.CardGroup>
@@ -437,7 +442,7 @@ class VariantForm extends Component {
             />
             <div className="row">
               <div className="col-sm-6">
-                <Components.TextField
+                <Components.NumericInput
                   i18nKeyLabel="productVariant.price"
                   i18nKeyPlaceholder="0.00"
                   placeholder="0.00"
@@ -445,17 +450,18 @@ class VariantForm extends Component {
                   name="price"
                   ref="priceInput"
                   value={this.variant.price}
+                  format={currency}
+                  numericType="currency"
                   style={this.props.greyDisabledFields(this.variant)}
                   disabled={this.props.hasChildVariants(this.variant)}
                   onBlur={this.handleFieldBlur}
                   onChange={this.handleFieldChange}
                   onReturnKeyDown={this.handleFieldBlur}
                   validation={this.props.validation}
-                  isCurrency
                 />
               </div>
               <div className="col-sm-6">
-                <Components.TextField
+                <Components.NumericInput
                   i18nKeyLabel="productVariant.compareAtPrice"
                   i18nKeyPlaceholder="0.00"
                   placeholder="0.00"
@@ -463,11 +469,12 @@ class VariantForm extends Component {
                   name="compareAtPrice"
                   ref="compareAtPriceInput"
                   value={this.variant.compareAtPrice}
+                  numericType="currency"
+                  format={currency}
                   onBlur={this.handleFieldBlur}
                   onChange={this.handleFieldChange}
                   onReturnKeyDown={this.handleFieldBlur}
                   validation={this.props.validation}
-                  isCurrency
                 />
               </div>
             </div>
@@ -585,6 +592,7 @@ class VariantForm extends Component {
                 i18nKeyLabel="productVariant.lowInventoryWarningThreshold"
                 i18nKeyPlaceholder="0"
                 placeholder="0"
+                type="number"
                 label="Warn At"
                 name="lowInventoryWarningThreshold"
                 ref="lowInventoryWarningThresholdInput"
@@ -612,6 +620,8 @@ class VariantForm extends Component {
       "variant-option-card": true,
       "active": this.isExpanded(cardName),
     });
+
+    const currency = findCurrency(null, true);
 
     return (
       <Components.CardGroup>
@@ -675,7 +685,7 @@ class VariantForm extends Component {
             />
             <div className="row">
               <div className="col-sm-6">
-                <Components.TextField
+                <Components.NumericInput
                   i18nKeyLabel="productVariant.price"
                   i18nKeyPlaceholder="0.00"
                   placeholder="0.00"
@@ -683,6 +693,8 @@ class VariantForm extends Component {
                   name="price"
                   ref="priceInput"
                   value={this.variant.price}
+                  format={currency}
+                  numericType="currency"
                   style={this.props.greyDisabledFields(this.variant)}
                   disabled={this.props.hasChildVariants(this.variant)}
                   onBlur={this.handleFieldBlur}
@@ -691,11 +703,10 @@ class VariantForm extends Component {
                   validation={this.props.validation}
                   helpText={"Purchase price"}
                   i18nKeyHelpText={"admin.helpText.price"}
-                  isCurrency
                 />
               </div>
               <div className="col-sm-6">
-                <Components.TextField
+                <Components.NumericInput
                   i18nKeyLabel="productVariant.compareAtPrice"
                   i18nKeyPlaceholder="0.00"
                   placeholder="0.00"
@@ -703,13 +714,14 @@ class VariantForm extends Component {
                   name="compareAtPrice"
                   ref="compareAtPriceInput"
                   value={this.variant.compareAtPrice}
+                  format={currency}
+                  numericType="currency"
                   onBlur={this.handleFieldBlur}
                   onChange={this.handleFieldChange}
                   onReturnKeyDown={this.handleFieldBlur}
                   validation={this.props.validation}
                   helpText={"Original price or MSRP"}
                   i18nKeyHelpText={"admin.helpText.compareAtPrice"}
-                  isCurrency
                 />
               </div>
             </div>

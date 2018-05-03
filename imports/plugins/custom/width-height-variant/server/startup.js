@@ -111,10 +111,11 @@ function addNewVariants(productId, varientConfig) {
 */
 
 Meteor.startup(function () {
+  
+  console.log("\n\n\n\n\n\n\n\n\n\n\n Height Width Custom Startup!!!! \n\n\n\n\n\n\n\n\n\n\n")
 
   Meteor.methods({
     'clearBlinds'({ selectedParent, selectedVariantConfig,  userID }) {
-
       removeOldTemporaryVarient(userID, "temporary", selectedParent);
       var tempVariant = findOrCreateTemporaryVariant(
         selectedParent, selectedVariantConfig
@@ -122,10 +123,10 @@ Meteor.startup(function () {
       setVariantToUsersTemporaryVariant(userID, tempVariant);
     },
     'width-height-variant.set-variants'({ productId, variantConfigFile }) {
-      console.log("set variant");
-      let variantConfigs = JSON.parse(variantConfigFile);
+      console.log("set variant: ", variantConfigFile);
+      const variantConfig = JSON.parse(variantConfigFile);
       emptyOldVariants(productId);
-      addNewVariants(productId, varientConfig);
+      addNewVariants(productId, variantConfig);
     },
     "width-height-variant.is-valid-variant"({ productId, variantConfig}) {
 
@@ -172,10 +173,8 @@ function formatElement(element) {
     weight: 0,
     inventoryQuantity: 9,
     inventoryPolicy: false,
-    title: "Softwood " + unique_key,
   };
 }
-
 
 function removeVarient(userID, context, selectedParent) {
   var temps = findVariantWhere({
@@ -208,7 +207,6 @@ function removeVarient(userID, context, selectedParent) {
   deleteVariants(toDelete);
   updateVariants(toUpdate);
 }
-
 
 function flushQuantity(id) {
   const variant = Products.findOne(id);

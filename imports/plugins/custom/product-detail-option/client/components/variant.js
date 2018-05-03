@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
-import { Validation } from "@reactioncommerce/reaction-collections";
+import { Validation } from "@reactioncommerce/schemas";
 // import { ChildVariant } from "./";
 // import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
@@ -30,12 +30,9 @@ class Variant extends Component {
   handleClick = (event) => {
     if (this.props.onClick) {
       this.props.onClick(event, this.props.variant);
-
       const variantId = ReactionProduct.selectedVariant()._id;
-
       const selectedAccordion = document.getElementById(variantId);
       const variantAccordion = document.getElementsByClassName("variant-accordion");
-      
       selectedAccordion.style.display = selectedAccordion.style.display === "block" ? "none" : "block";
       for (let i = 0; i < variantAccordion.length; i += 1) {
         if (variantAccordion[i].id !== variantId) {
