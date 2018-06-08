@@ -2,51 +2,32 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
-// import SelectedVariants  from "../stores/selectedVariants";
+import SelectedVariants from "../stores/selectedVariants";
 
 
 class ProductMetadata extends Component {
+  selectedVariants = new SelectedVariants();
+  
   get metafields() {
-    // let metafields = [];
-    return this.props.metafields || this.props.product.metafields;
-    // metafields = this.props.metafields || this.props.product.metafields;
+    let metafields = [];
+    metafields = metafields.concat(
+      this.props.metafields || this.props.product.metafields,
+      this.selectedVariants.retrieveMetaValues(),
+    );
 
-    // metafields = metafields.concat(SelectedVariants.retrieveMetaValues());
-
-    // return metafields;
+    return metafields;
   }
-  // get metafields() {
-  //   let metafields = [];
-  //   if (this.props.metafields) {
-  //     metafields = metafields.concat(this.props.metafields);
-  //   }
-  //   const { product } = this.props;
-  //   if (product && product.metafields) {
-  //     metafields = metafields.concat(product.metafields.filter((meta) => {
-  //       for (let i = 0; i < metafields.length; i += 1) {
-  //         if (metafields[i].key === meta.key) {
-  //           return false;
-  //         }
-  //       }
-  //       return true;
-  //     }));
-  //   }
 
-  //   metafields = metafields.concat(SelectedVariants.retrieveMetaValues());
+  componentDidMount() {
+    this.updateListener = () => {
+      this.setState({ timestamp: Date.now() });
+    };
+    this.selectedVariants.onUpdate(this.updateListener);
+  }
 
-  //   return metafields;
-  // }
-
-  // componentDidMount() {
-  //   this.updateListener = () => {
-  //     this.setState({ timestamp: Date.now() });
-  //   };
-  //   SelectedVariants.onUpdate(this.updateListener);
-  // }
-
-  // componentWillUnmount() {
-  //   SelectedVariants.offUpdate(this.updateListener);
-  // }
+  componentWillUnmount() {
+    this.selectedVariants.offUpdate(this.updateListener);
+  }
 
   get showEditControls() {
     return this.props.product && this.props.editable;

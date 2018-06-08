@@ -31,12 +31,12 @@ class Variant extends Component {
     if (this.props.onClick) {
       this.props.onClick(event, this.props.variant);
       const variantId = ReactionProduct.selectedVariant()._id;
-      const selectedAccordion = document.getElementById(variantId);
-      const variantAccordion = document.getElementsByClassName("variant-accordion");
+      const selectedAccordion = document.querySelector(`.variant-accordion#${variantId}`);
+      const variantAccordions = document.getElementsByClassName("variant-accordion");
       selectedAccordion.style.display = selectedAccordion.style.display === "block" ? "none" : "block";
-      for (let i = 0; i < variantAccordion.length; i += 1) {
-        if (variantAccordion[i].id !== variantId) {
-          variantAccordion[i].style.display = "none";
+      for (let i = 0; i < variantAccordions.length; i += 1) {
+        if (variantAccordions[i].id !== variantId) {
+          variantAccordions[i].style.display = "none";
         }
       }
     }

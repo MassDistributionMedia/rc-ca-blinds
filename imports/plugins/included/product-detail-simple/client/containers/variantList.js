@@ -47,6 +47,7 @@ function getTopVariants() {
     // calculate percentage of total inventory of this product
     for (const variant of variants) {
       const qty = ReactionProduct.getVariantQuantity(variant);
+
       variant.inventoryTotal = inventoryTotal;
       if (variant.inventoryManagement && inventoryTotal) {
         variant.inventoryPercentage = parseInt(qty / inventoryTotal * 100, 10);

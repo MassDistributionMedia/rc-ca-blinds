@@ -1,5 +1,7 @@
 /**
  * Product Price Collection
+ * Softwoods Prices:
+ * - https://docs.google.com/spreadsheets/d/1O_cHpt_CDSa_hfy2I7GAdPq--nFQRukiicX00oNSwcw/edit#gid=1417458915
  */
 export default [
   {

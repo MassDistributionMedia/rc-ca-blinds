@@ -18,7 +18,7 @@ import {
 
 import {
   SocialContainer,
-  VariantListContainer
+  VariantOptionListContainer
 } from "./containers";
 
 import {
@@ -36,7 +36,7 @@ registerComponent("PriceRange", PriceRange);
 registerComponent("AlertContainer", AlertContainer);
 registerComponent("MediaGalleryContainer", MediaGalleryContainer);
 registerComponent("SocialContainer", SocialContainer);
-registerComponent("VariantListContainer", VariantListContainer);
+registerComponent("VariantOptionListContainer", VariantOptionListContainer);
 registerComponent("AddToCartButton", AddToCartButton);
 registerComponent("Divider", Divider);
 registerComponent("ProductNotFound", ProductNotFound);

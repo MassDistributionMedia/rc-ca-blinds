@@ -12,12 +12,13 @@ import { Tags, Cart } from "/lib/collections";
 // import { Loading } from "/imports/plugins/core/ui/client/components";
 import { ProductOptionComponent } from "../components";
 import SelectedVariants from "../stores/selectedVariants";
-import { SocialContainer, VariantListContainer } from "./";
+import { SocialContainer, VariantOptionListContainer } from "./";
 import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 import { Media } from "/imports/plugins/core/files/client";
 
 const wrapComponent = (Comp) => (
   class ProductOptionContainer extends Component {
+    selectedVariants = new SelectedVariants();
     static propTypes = {
       media: PropTypes.arrayOf(PropTypes.object),
       product: PropTypes.object,
@@ -66,7 +67,7 @@ const wrapComponent = (Comp) => (
       // }
 
       Promise.resolve().then(() =>
-        SelectedVariants.composeNewVariant()).then((newVariant) => {
+        this.selectedVariants.composeNewVariant()).then((newVariant) => {
         quantity = parseInt(this.state.cartQuantity, 10);
 
         if (quantity < 1) {
@@ -195,7 +196,7 @@ const wrapComponent = (Comp) => (
               onCartQuantityChange={this.handleCartQuantityChange}
               onViewContextChange={this.handleViewContextChange}
               socialComponent={<SocialContainer />}
-              topVariantComponent={<VariantListContainer />}
+              topVariantComponent={<VariantOptionListContainer />}
               onDeleteProduct={this.handleDeleteProduct}
               handleVariantChoice={this.handleVariantChoice}
               onProductFieldChange={this.handleProductFieldChange}

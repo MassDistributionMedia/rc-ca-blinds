@@ -10,6 +10,20 @@ Reaction.registerPackage({
     name: "product",
     template: "productDetailOption",
     workflow: "coreProductWorkflow",
+    permissions: [
+      {
+        label: "Update Metafiled",
+        permission: "products/updateMetaFields",
+      },
+      {
+        label: "Create Variant",
+        permission: "products/createVariant",
+      },
+      {
+        label: "Remove Variant",
+        permission: "products/deleteVariant",
+      },
+    ],
   }],
   layout: [{
     layout: "coreLayout",

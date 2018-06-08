@@ -1,5 +1,5 @@
 export { default as Variant } from "./variant";
-export { default as VariantList } from "./variantList";
+export { default as VariantOptionList } from "./variantOptionList";
 export { default as ChildVariant } from "./childVariant";
 export { default as AddToCartButton } from "./addToCartButton";
 export { default as ProductMetadata } from "./metadata";

@@ -3165,7 +3165,7 @@
       }
     }
   },
-  "name": "Reaction",
+  "name": "California Blinds",
   "taxes": [{
     "taxesIncluded": null,
     "taxShipping": null,
@@ -3200,15 +3200,15 @@
     "label": "Kilograms"
   }],
   "addressBook": [{
-    "company": "Reaction Commerce",
-    "fullName": "Ongo Works",
-    "address1": "2110 Main Street",
+    "company": "California Blinds",
+    "fullName": "California Blinds Co",
+    "address1": "13415 Saticoy St",
     "address2": "Suite 207",
-    "city": "Santa Monica",
+    "city": "North Hollywood",
     "region": "CA",
-    "postal": "90405",
+    "postal": "91605",
     "country": "US",
-    "phone": "8885551212",
+    "phone": "18188880111",
     "isCommercial": true,
     "isShippingDefault": true,
     "isBillingDefault": true

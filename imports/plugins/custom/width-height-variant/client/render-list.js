@@ -1,15 +1,20 @@
 import React, { Component } from "react";
-import { Reaction } from "/client/api";
+// import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { Products } from "/lib/collections";
 import softwoodProducts from "../data/product-prices";
 import { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
-import { Components } from "@reactioncommerce/reaction-components";
+// import { Components } from "@reactioncommerce/reaction-components";
 // import { emptyOldVariants } from "/imports/plugins/custom/width-height-variant/server/startup";
 
 const WIDTH_HEIGHT_OPTIONS = selectOptions();
 const SPLIT_OPTIONS = ["none", "2in1", "3in1"];
+  const hrStyle = {
+    width: "100%",
+    background: "#1a99dd",
+    height: "2px",
+  };
 
 function selectOptions() {
   const diameterOptions = [];
@@ -96,19 +101,14 @@ export default class RenderWidthHeightList extends Component {
   }
 
   render() {
-    const product = ReactionProduct.selectedProduct();
+    // const product = ReactionProduct.selectedProduct();
     const { widthHeightValues } = this.state;
     console.info('RenderWidthHeightList - this.state: \n\n', this.state);
 
     return (<span>
       {[
-        <Components.Divider
-          key="availableOptionsDivider"
-          i18nKeyLabel="productDetail.availableOptions"
-          label="Available Options"
-        />,
-        <WidthHeightOptionDescription key="width-height"/>,
-        <div className="row variant-product-options" key="childVariantList">
+        <WidthHeightOptionDescription key={"width-height"}/>,
+        <div className="row variant-product-options" key={"childVariantList"}>
           <div> {[
             dimensionSelect.call(this, "width", widthHeightValues, WIDTH_HEIGHT_OPTIONS, EIGHTHS, (val, eighth) => {
               const productData = {
@@ -134,7 +134,7 @@ export default class RenderWidthHeightList extends Component {
             }),
           ]}</div>
         </div>,
-        <BlindTypeDescription key="blind-desc" state={this.state}
+        <BlindTypeDescription key={"blind-desc"} state={this.state}
           updateProduct={this.update.bind(this)}
         />
       ]}
@@ -225,13 +225,8 @@ function findPrice(element) {
 // }
 
 export function WidthHeightOptionDescription() {
-  const hrStyle = {
-    width: "100%",
-    background: "#1a99dd",
-    height: "2px",
-  };
   return (
-    <div key="variant-product-options" className="row variant-product-options">
+    <div key={`variant-product-options-${Math.random()}`} className="row variant-product-options">
       <h2 style={{ width: "100%" }}>Select Size</h2>
       <p>
         If you selected <b>Inside Mount</b>, enter your window size.
@@ -249,17 +244,11 @@ export function BlindTypeDescription(props) {
     updateProduct
   } = props;
 
-  const hrStyle = {
-    width: "100%",
-    background: "#1a99dd",
-    height: "2px",
-  };
-
   return (
-    <div key="variant-product-options" className="row variant-product-options">
+    <div key={`variant-product-options-${Math.random()}`} className="row variant-product-options">
       <hr style={hrStyle}/>
       <h2 style={{ width: "100%" }}>Select Blind Split</h2>
-      <span className={"blinds" + "-selects"} key={"blinds" + "select-span"}>
+      <span className={"blinds" + "-selects"} key={`blinds-select-span-${Math.random()}`}>
         Split Blind
         <select
           className={"blinds" + "-select"}
@@ -312,11 +301,11 @@ function dimensionSelect(key, values, list, ethList, onChangeCallback) {
   const optionTitle = (key === "width") ? <WidthTitle/> : <HeightTitle/>;
 
   return (
-    <span className={key + "-selects"} key={key + "select-span"}>
+    <span className={key + "-selects"} key={`${key}-select-span-${Math.random()}`}>
       {optionTitle}
       <select
         className={"form-control " + key + "-select"}
-        key={key + "-select"}
+        key={`${key}-select-${Math.random()}`}
         value={values[key]}
         onChange={(e) => {
           console.log(key, e.target.value);
@@ -328,7 +317,7 @@ function dimensionSelect(key, values, list, ethList, onChangeCallback) {
             return (
               <option
                 className={"form-control"}
-                key={"".concat(key, index.toString(), opVal.toString())}
+                key={`${"".concat(key, index.toString(), opVal.toString())}-${Math.random()}`}
                 value={opVal}
               >{opVal}</option>
             );
@@ -349,7 +338,7 @@ function dimensionSelect(key, values, list, ethList, onChangeCallback) {
             return (
               <option
                 className={"form-control" + key + "-select-8th"}
-                key={"".concat(key, index.toString(), opVal.toString())}
+                key={`${"".concat(key, index.toString(), opVal.toString())}-${Math.random()}`}
                 value={opVal}
               >{opVal}</option>
             );
@@ -384,52 +373,12 @@ function formatElement(element) {
     inventoryPolicy: false,
     metafields: [
       {
-        key: "Room",
-        value: "",
-      },
-      {
-        key: "Window Name",
-        value: "",
-      },
-      {
-        key: "Mount",
-        value: "",
-      },
-      {
         key: "Height",
         value: element.height + " " + element.heightEighth,
       },
       {
         key: "Width",
         value: element.width + " " + element.widthEighth,
-      },
-      {
-        key: "Blind Type",
-        value: element.blindType,
-      },
-      {
-        key: "Color",
-        value: "",
-      },
-      {
-        key: "Slate Size",
-        value: "",
-      },
-      {
-        key: "Lift",
-        value: "",
-      },
-      {
-        key: "Lift Side",
-        value: "",
-      },
-      {
-        key: "Tilt",
-        value: "",
-      },
-      {
-        key: "Tilt Side",
-        value: "",
       },
     ]
   };
@@ -439,8 +388,8 @@ function addNewVariantIfNotExist(parent, varientConfig) {
   console.log('inside addNewVariantIfNotExist', varientConfig)
    try {
     return addNewVariant(parent, formatElement(varientConfig));
-  } catch(e) {
-    console.log("Variant already exists: ", e);
+  } catch(error) {
+    console.error("Variant already exists: ", error);
   }
 }
 
@@ -554,7 +503,7 @@ function addNewVariant(parentId, newVariant) {
         console.error(error);
       }
       if (result) {
-        console.log(
+        console.info(
           `products/createVariant: created variant: ${
             newVariantId} for ${parentId}`
         );
@@ -562,7 +511,7 @@ function addNewVariant(parentId, newVariant) {
     }
   );
   
-  Reaction.Import.product({ 'ean': assembledVariant.newVariantId }, { 'price': assembledVariant.price }, { 'title': assembledVariant.title });
+  // Reaction.Import.product({ 'ean': assembledVariant.newVariantId }, { 'price': assembledVariant.price }, { 'title': assembledVariant.title });
 
   // cleanBlinds(newVariantId); // Remove existing blind child variants from the DB so that new variants don't get junked up
 

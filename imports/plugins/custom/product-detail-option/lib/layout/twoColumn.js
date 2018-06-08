@@ -164,7 +164,7 @@ export default function twoColumn() {
 
         // Variant List
         {
-          component: "VariantListContainer"
+          component: "VariantOptionListContainer"
         },
 
         // Divider

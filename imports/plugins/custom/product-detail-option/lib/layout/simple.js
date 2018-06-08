@@ -165,7 +165,7 @@ export default function blocks() {
 
         // Variant List
         {
-          component: "VariantListContainer"
+          component: "VariantOptionListContainer"
         },
 
         // Divider

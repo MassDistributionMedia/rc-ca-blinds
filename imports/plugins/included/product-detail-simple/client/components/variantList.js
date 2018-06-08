@@ -91,7 +91,7 @@ class VariantList extends Component {
     }
 
     const variantList = (
-      <ul className="variant-list list-unstyled" id="variant-list" key="variantList">
+      <ul className="variant-list list-unstyled" id="variant-list" key={`variantList-${Math.random()}`}>
         {variants}
         {addButton}
       </ul>
@@ -169,7 +169,7 @@ class VariantList extends Component {
 
   render() {
     return (
-      <div className="product-variants">
+      <div className="pdp product-variants">
         {this.renderVariants()}
         {this.renderChildVariants()}
       </div>
