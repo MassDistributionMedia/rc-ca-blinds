@@ -16,6 +16,14 @@ Reaction.registerPackage({
         permission: "products/updateMetaFields",
       },
       {
+        label: "Create Product",
+        permission: "products/createProduct",
+      },
+      {
+        label: "Remove Product",
+        permission: "products/deleteProduct",
+      },
+      {
         label: "Create Variant",
         permission: "products/createVariant",
       },
