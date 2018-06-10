@@ -6,14 +6,12 @@ import { compose } from "recompose";
 import { Components, registerComponent, composeWithTracker } from "@reactioncommerce/reaction-components";
 import { $ } from "meteor/jquery";
 import { Meteor } from "meteor/meteor";
-import { ReactionProduct } from "/lib/api";
+import { Catalog, ReactionProduct } from "/lib/api";
 import { Reaction, i18next, Logger } from "/client/api";
 import { Tags, Cart } from "/lib/collections";
-// import { Loading } from "/imports/plugins/core/ui/client/components";
 import { ProductOptionComponent } from "../components";
 import SelectedVariants from "../stores/selectedVariants";
 import { SocialContainer, VariantOptionListContainer } from "./";
-import { DragDropProvider } from "/imports/plugins/core/ui/client/providers";
 import { Media } from "/imports/plugins/core/files/client";
 
 const wrapComponent = (Comp) => (
@@ -187,38 +185,31 @@ const wrapComponent = (Comp) => (
         );
       }
       return (
-        <DragDropProvider>
-          <StyleRoot>
-            <Comp
-              cartQuantity={this.state.cartQuantity}
-              mediaGalleryComponent={<Components.MediaGallery media={media} />}
-              onAddToCart={this.handleAddToCart}
-              onCartQuantityChange={this.handleCartQuantityChange}
-              onViewContextChange={this.handleViewContextChange}
-              socialComponent={<SocialContainer />}
-              topVariantComponent={<VariantOptionListContainer />}
-              onDeleteProduct={this.handleDeleteProduct}
-              handleVariantChoice={this.handleVariantChoice}
-              onProductFieldChange={this.handleProductFieldChange}
-              {...this.props}
-            />
-          </StyleRoot>
-        </DragDropProvider>
+        <StyleRoot>
+          <Comp
+            cartQuantity={this.state.cartQuantity}
+            mediaGalleryComponent={<Components.MediaGallery media={media} />}
+            onAddToCart={this.handleAddToCart}
+            onCartQuantityChange={this.handleCartQuantityChange}
+            onViewContextChange={this.handleViewContextChange}
+            socialComponent={<SocialContainer />}
+            topVariantComponent={<VariantOptionListContainer />}
+            onDeleteProduct={this.handleDeleteProduct}
+            handleVariantChoice={this.handleVariantChoice}
+            onProductFieldChange={this.handleProductFieldChange}
+            {...this.props}
+          />
+        </StyleRoot>
       );
     }
   }
 );
 
-// ProductOptionContainer.propTypes = {
-//   media: PropTypes.arrayOf(PropTypes.object),
-//   product: PropTypes.object
-// };
-
 function composer(props, onData) {
   const tagSub = Meteor.subscribe("Tags");
   const shopIdOrSlug = Reaction.Router.getParam("shopSlug");
   const productId = Reaction.Router.getParam("handle");
-  const variantId = Reaction.Router.getParam("variantId");
+  const variantId = ReactionProduct.selectedVariantId();
   const revisionType = Reaction.Router.getQueryParam("revision");
   const viewProductAs = Reaction.getUserPreferences("reaction-dashboard", "viewAs", "administrator");
 
@@ -226,8 +217,7 @@ function composer(props, onData) {
   if (productId) {
     productSub = Meteor.subscribe("Product", productId, shopIdOrSlug);
   }
-  if (productSub && productSub.ready()
-    && tagSub.ready() && Reaction.Subscriptions.Cart.ready()) {
+  if (productSub && productSub.ready() && tagSub.ready() && Reaction.Subscriptions.Cart.ready()) {
     const product = ReactionProduct.setProduct(productId, variantId);
     if (Reaction.hasPermission("createProduct")) {
       if (!Reaction.getActionView() && Reaction.isActionViewOpen() === true) {
@@ -252,13 +242,16 @@ function composer(props, onData) {
 
       if (selectedVariant) {
         // Find the media for the selected variant
-        mediaArray = Media.findLocal({
-          "metadata.variantId": selectedVariant._id
-        }, {
-          sort: {
-            "metadata.priority": 1
+        mediaArray = Media.findLocal(
+          {
+            "metadata.variantId": selectedVariant._id
+          },
+          {
+            sort: {
+              "metadata.priority": 1
+            }
           }
-        });
+        );
 
         // If no media found, broaden the search to include other media from parents
         if (Array.isArray(mediaArray) && mediaArray.length === 0 && selectedVariant.ancestors) {
@@ -289,7 +282,7 @@ function composer(props, onData) {
           priceRange = selectedVariant.price;
         } else {
           // otherwise we want to show child variants price range
-          priceRange = ReactionProduct.getVariantPriceRange();
+          priceRange = Catalog.getVariantPriceRange(ReactionProduct.selectedVariant()._id);
         }
       }
 
@@ -329,13 +322,7 @@ function composer(props, onData) {
   }
 }
 
-registerComponent("ProductOptionComponent", ProductOptionComponent, [
-  composeWithTracker(composer),
-  wrapComponent
-]);
+registerComponent("ProductDetail", ProductOptionComponent, [composeWithTracker(composer), wrapComponent]);
 
 // Decorate component and export
-export default compose(
-  composeWithTracker(composer),
-  wrapComponent
-)(ProductOptionComponent);
+export default compose(composeWithTracker(composer), wrapComponent)(ProductOptionComponent);

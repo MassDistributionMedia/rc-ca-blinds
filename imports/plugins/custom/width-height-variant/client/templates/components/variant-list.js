@@ -59,7 +59,7 @@
 //     }
 //     /*
 //           const media = this.props.childVariantMedia.filter((mediaItem) => {
-//         if (mediaItem.metadata.variantId === childVariant._id) {
+//         if ( mediaItem.document.metadata.variantId === childVariant._id) {
 //           return true;
 //         }
 //         return false;

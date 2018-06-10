@@ -244,7 +244,7 @@
 //         <div>{
 //           renderList.map((childVariant, index) => {
 //             const media = parentProps.childVariantMedia.filter((mediaItem) => {
-//               if (mediaItem.metadata.variantId === childVariant._id) {
+//               if (mediaItem.document.metadata.variantId === childVariant._id) {
 //                 return true;
 //               }
 //               return false;

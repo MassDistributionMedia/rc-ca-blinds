@@ -84,7 +84,7 @@ class ChildVariant extends Component {
 
     return (
       <Components.MediaItem 
-        source={media.url()}
+        source={media}
         onClick={this.handleClick}
       />
     );
