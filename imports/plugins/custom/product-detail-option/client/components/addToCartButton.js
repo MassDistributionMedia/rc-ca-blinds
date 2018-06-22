@@ -2,10 +2,8 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 
-
 class AddToCartButton extends Component {
   get hasVariants() {
-    console.log('variants', this.props.variants);
     return Array.isArray(this.props.variants) && this.props.variants.length > 0;
   }
 

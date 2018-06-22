@@ -115,6 +115,7 @@ class ProductField extends Component {
           multiline={this.props.multiline}
           onBlur={this.handleBlur}
           onChange={this.handleChange}
+          onFocus={this.handleFocus}
           onReturnKeyDown={this.handleBlur}
           value={this.state.value}
           {...this.props.textFieldProps}
@@ -141,7 +142,7 @@ class ProductField extends Component {
         itemProp: this.props.itemProp,
         children: this.value
       });
-      
+
     }
 
     return (

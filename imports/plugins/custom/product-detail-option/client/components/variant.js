@@ -3,13 +3,9 @@ import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 import { Validation } from "@reactioncommerce/schemas";
-// import { ChildVariant } from "./";
-// import { Reaction } from "/client/api";
 import { ReactionProduct } from "/lib/api";
 import { ProductVariant } from "/lib/collections/schemas";
-// import { Products } from "/lib/collections";
 import { SortableItem } from "/imports/plugins/core/ui/client/containers";
-// import { Currency, Translation } from "/imports/plugins/core/ui/client/components";
 
 class Variant extends Component {
   constructor(props) {
@@ -23,7 +19,7 @@ class Variant extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.variantValidation();
   }
 
@@ -54,49 +50,6 @@ class Variant extends Component {
     return this.props.displayPrice || this.props.variant.price;
   }
 
-  renderInventoryStatus() {
-    const {
-      inventoryManagement,
-      inventoryPolicy
-    } = this.props.variant;
-
-    // If variant is sold out, show Sold Out badge
-    if (inventoryManagement && this.props.soldOut) {
-      if (inventoryPolicy) {
-        return (
-          <span className="variant-qty-sold-out badge badge-danger">
-            <Components.Translation defaultValue="Sold Out!" i18nKey="productDetail.soldOut" />
-          </span>
-        );
-      }
-
-      return (
-        <span className="variant-qty-sold-out badge badge-info">
-          <Components.Translation defaultValue="Backorder" i18nKey="productDetail.backOrder" />
-        </span>
-      );
-    }
-
-    // If Warning Threshold is met, show Limited Supply Badge
-    if (inventoryManagement && this.props.variant.lowInventoryWarningThreshold >= this.props.variant.inventoryTotal) {
-      if (inventoryPolicy) {
-        return (
-          <span className="variant-qty-sold-out badge badge-warning">
-            <Components.Translation defaultValue="Limited Supply" i18nKey="productDetail.limitedSupply" />
-          </span>
-        );
-      }
-
-      return (
-        <span className="variant-qty-sold-out badge badge-info">
-          <Components.Translation defaultValue="Backorder" i18nKey="productDetail.backOrder" />
-        </span>
-      );
-    }
-
-    return null;
-  }
-
   renderDeletionStatus() {
     if (this.props.variant.isDeleted) {
       return (
@@ -110,7 +63,9 @@ class Variant extends Component {
   }
 
   renderValidationButton = () => {
-    if (this.state.selfValidation.isValid === false) {
+    if (this.props.editable === false) {
+      return null;
+    } else if (this.state.selfValidation.isValid === false) {
       return (
         <Components.Badge
           status="danger"
@@ -119,8 +74,7 @@ class Variant extends Component {
           i18nKeyTooltip={"admin.tooltip.validationError"}
         />
       );
-    }
-    if (this.state.invalidVariant.length) {
+    } else if (this.state.invalidVariant.length) {
       return (
         <Components.Badge
           status="danger"
@@ -130,6 +84,8 @@ class Variant extends Component {
         />
       );
     }
+
+    return null;
   }
 
   variantValidation = () => {
@@ -202,8 +158,8 @@ class Variant extends Component {
 
           <div className="alerts">
             {this.renderDeletionStatus()}
-            {this.renderInventoryStatus()}
-            {this.props.visibilityButton}
+            <Components.InventoryBadge className="variant-qty-sold-out variant-badge-label" {...this.props} />
+            {this.renderValidationButton()}
             {this.props.editButton}
           </div>
         </div>
