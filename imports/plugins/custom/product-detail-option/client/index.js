@@ -2,6 +2,7 @@ import "./templates/productDetailOption.html";
 import "./templates/productDetailOption.js";
 import { registerComponent } from "@reactioncommerce/reaction-components";
 
+
 import {
   ProductField,
   ProductTags,

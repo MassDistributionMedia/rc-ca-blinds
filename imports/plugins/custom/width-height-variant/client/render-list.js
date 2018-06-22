@@ -8,6 +8,7 @@ export { WIDTH_HEIGHT_VARIANT_TYPE } from "../data/constants";
 // import { Components } from "@reactioncommerce/reaction-components";
 // import { emptyOldVariants } from "/imports/plugins/custom/width-height-variant/server/startup";
 
+const EIGHTHS = [ 0, 1, 2, 3, 4, 5, 6, 7 ];
 const WIDTH_HEIGHT_OPTIONS = selectOptions();
 const SPLIT_OPTIONS = ["none", "2in1", "3in1"];
   const hrStyle = {
@@ -21,15 +22,32 @@ function selectOptions() {
   for (let i = 9; i < 97; i++) {
     diameterOptions.push(i);
   }
-
   return diameterOptions;
 }
 
-const EIGHTHS = [
-  "0", "1/8", "1/4", "3/8", "1/2", "5/8", "3/4", "7/8",
-].map(function (num) {
-  return num.toString();
-});
+export function toEighthLabel(eighth) {
+  switch (eighth) {
+    case 0:
+      return 0;
+    case 1:
+      return '1/8';
+    case 2:
+      return '1/4';
+    case 3:
+      return '3/8';
+    case 4:
+      return '1/2';
+    case 5:
+      return '5/8';
+    case 6:
+      return '3/4';
+    case 7:
+      return '7/8';
+    default:
+      return 0;
+  }
+}
+
 
 export default class RenderWidthHeightList extends Component {
   constructor(props) {
@@ -62,7 +80,7 @@ export default class RenderWidthHeightList extends Component {
   //       }
   //     };
   //   } else if (!curProduct || !curProduct.width && !curProduct.height && !curProduct.blindType) {
-      
+
   //   } else {
   //     this.state = {
   //       widthHeightValues: {
@@ -76,7 +94,7 @@ export default class RenderWidthHeightList extends Component {
   //   }
   // }
 
-  update(productData, widthEighth, heightEighth) {
+  update(productData) {
     this.commit(productData);
 
     return this.setState({
@@ -186,7 +204,7 @@ function findPrice(element) {
       splitValue = 3;
       break;
   }
-  
+
   if (originWidth < 24) {
     originWidth = 24;
   }
@@ -209,7 +227,6 @@ function findPrice(element) {
     element.price *= splitValue;
     return element.price;
   }
-  return new Error("Failed to find price.");
 }
 
 // function findSplitValue(splitType) {
@@ -269,7 +286,7 @@ export function BlindTypeDescription(props) {
           }}
         >
           { // loop to creation select options:
-            SPLIT_OPTIONS.map((value, index) => {
+            SPLIT_OPTIONS.map((value) => {
               return (
                 <option
                   className={"form-control"}
@@ -335,11 +352,13 @@ function dimensionSelect(key, values, list, ethList, onChangeCallback) {
       >
         { // loop to create 8ths options:
           ethList.map((opVal, index) => {
+            const eighthLabelVal = toEighthLabel(opVal);
             return (
               <option
                 className={"form-control" + key + "-select-8th"}
                 key={`${"".concat(key, index.toString(), opVal.toString())}-${Math.random()}`}
                 value={opVal}
+                label={eighthLabelVal}
               >{opVal}</option>
             );
           })
@@ -365,10 +384,10 @@ function formatElement(element) {
     price: element.price,
     height: height,
     width: width,
-    blindType: blindType,
+    weight: 0,
     widthEighth: element.widthEighth,
     heightEighth: element.heightEighth,
-    weight: 0,
+    blindType: blindType,
     inventoryQuantity: 9,
     inventoryPolicy: false,
     metafields: [
@@ -510,7 +529,7 @@ function addNewVariant(parentId, newVariant) {
       }
     }
   );
-  
+
   // Reaction.Import.product({ 'ean': assembledVariant.newVariantId }, { 'price': assembledVariant.price }, { 'title': assembledVariant.title });
 
   // cleanBlinds(newVariantId); // Remove existing blind child variants from the DB so that new variants don't get junked up

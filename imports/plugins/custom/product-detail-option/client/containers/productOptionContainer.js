@@ -14,18 +14,20 @@ import SelectedVariants from "../stores/selectedVariants";
 import { SocialContainer, VariantOptionListContainer } from "./";
 import { Media } from "/imports/plugins/core/files/client";
 
-const wrapComponent = (Comp) => (
+
+const wrapComponent = (Comp) =>
   class ProductOptionContainer extends Component {
     selectedVariants = new SelectedVariants();
     static propTypes = {
       media: PropTypes.arrayOf(PropTypes.object),
       product: PropTypes.object,
       storedCart: PropTypes.object
-    }
+    };
 
     constructor(props) {
       super(props);
 
+      this.selectedVariants.setProduct(ReactionProduct.selectedProduct());
       this.animationTimeOut = null;
       this.textTimeOut = null;
 
@@ -34,11 +36,11 @@ const wrapComponent = (Comp) => (
         productClick: 0
       };
     }
-    
+
     componentDidMount() {
       this._isMounted = true;
     }
-    
+
     componentWillUnmount() {
       this._isMounted = false;
     }
@@ -47,7 +49,7 @@ const wrapComponent = (Comp) => (
       this.setState({
         cartQuantity: Math.max(quantity, 1)
       });
-    }
+    };
 
     handleAddToCart = () => {
       let productId;
@@ -77,14 +79,15 @@ const wrapComponent = (Comp) => (
         console.log(productId, variantId);
 
         if (productId) {
+          debugger;
           Meteor.call("cart/addToCart", productId, variantId, quantity, (error) => {
             if (error) {
-              Logger.error("Failed to add to cart.", error);
+              Logger.error(error, "Failed to add to cart.");
               return error;
             }
             // Reset cart quantity on success
             this.handleCartQuantityChange(null, 1);
-            
+
             this.setState(({ productClick }) => ({
               productClick: productClick + 1
             }));
@@ -142,6 +145,39 @@ const wrapComponent = (Comp) => (
       });
     }
 
+    handleSlideOut(alertWidth, direction, oppositeDirection) {
+      // Animate slide out
+      return $(".cart-alert")
+        .show()
+        .css({
+          [oppositeDirection]: "auto",
+          [direction]: -alertWidth
+        })
+        .animate(
+          {
+            [oppositeDirection]: "auto",
+            [direction]: 0
+          },
+          600
+        );
+    }
+
+    handleSlideIn(alertWidth, direction, oppositeDirection) {
+      // Animate slide in
+      return $(".cart-alert").animate(
+        {
+          [oppositeDirection]: "auto",
+          [direction]: -alertWidth
+        },
+        {
+          duration: 600,
+          complete() {
+            $(".cart-alert").hide();
+          }
+        }
+      );
+    }
+
     handleProductFieldChange = (productId, fieldName, value) => {
       Meteor.call("products/updateProductField", productId, fieldName, value, (error) => {
         if (error) {
@@ -149,15 +185,15 @@ const wrapComponent = (Comp) => (
           this.forceUpdate();
         }
       });
-    }
+    };
 
     handleViewContextChange = (event, value) => {
       Reaction.Router.setQueryParams({ as: value });
-    }
+    };
 
     handleDeleteProduct = () => {
       ReactionProduct.archiveProduct(this.props.product);
-    }
+    };
 
     handleVariantChoice = (variant) => {
       this.state.requiredVariants.some((reqVariant) => {
@@ -174,15 +210,13 @@ const wrapComponent = (Comp) => (
         });
         return true;
       });
-    }
+    };
 
     render() {
       const { media, product } = this.props;
-      
+
       if (_.isEmpty(product)) {
-        return (
-          <Components.ProductNotFound />
-        );
+        return <Components.ProductNotFound />;
       }
       return (
         <StyleRoot>
@@ -197,13 +231,13 @@ const wrapComponent = (Comp) => (
             onDeleteProduct={this.handleDeleteProduct}
             handleVariantChoice={this.handleVariantChoice}
             onProductFieldChange={this.handleProductFieldChange}
+            selectedVariants={this.selectedVariants}
             {...this.props}
           />
         </StyleRoot>
       );
     }
-  }
-);
+  };
 
 function composer(props, onData) {
   const tagSub = Meteor.subscribe("Tags");
@@ -234,7 +268,7 @@ function composer(props, onData) {
       if (_.isArray(product.hashtags)) {
         tags = _.map(product.hashtags, (id) => Tags.findOne(id));
       }
-      
+
       Meteor.subscribe("ProductMedia", product._id);
 
       let mediaArray = [];
@@ -257,13 +291,16 @@ function composer(props, onData) {
         if (Array.isArray(mediaArray) && mediaArray.length === 0 && selectedVariant.ancestors) {
           // Loop through ancestors in reverse to find a variant that has media to use
           for (const ancestor of selectedVariant.ancestors.reverse()) {
-            const media = Media.findLocal({
-              "metadata.variantId": ancestor
-            }, {
-              sort: {
-                "metadata.priority": 1
+            const media = Media.findLocal(
+              {
+                "metadata.variantId": ancestor
+              },
+              {
+                sort: {
+                  "metadata.priority": 1
+                }
               }
-            });
+            );
 
             // If we found some media, then stop here
             if (Array.isArray(media) && media.length) {
@@ -301,6 +338,7 @@ function composer(props, onData) {
       }
 
       const topVariants = ReactionProduct.getTopVariants();
+
       const storedCart = Cart.findOne();
 
       onData(null, {
@@ -322,7 +360,7 @@ function composer(props, onData) {
   }
 }
 
-registerComponent("ProductDetail", ProductOptionComponent, [composeWithTracker(composer), wrapComponent]);
+registerComponent("ProductOptionComponent", ProductOptionComponent, [composeWithTracker(composer), wrapComponent]);
 
 // Decorate component and export
 export default compose(composeWithTracker(composer), wrapComponent)(ProductOptionComponent);

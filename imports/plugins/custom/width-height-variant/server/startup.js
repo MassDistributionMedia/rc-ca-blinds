@@ -62,13 +62,13 @@ function addNewVariantsIfNotExist(productId, varientConfig) {
       variantType: WIDTH_HEIGHT_VARIANT_TYPE,
       optionTitle: "Softwood Option: Width and Height",
     }, function(err){
-      console.log(nextParentID);
+      console.info(nextParentID);
       if(!err && nextParentID) {
         addNewVariants(nextParentID, varientConfig);
       }
     }); // end nextParentID
   } catch(e) {
-    console.log("already exists: ", e);
+    console.info("already exists: ", e);
   }
 }
 
@@ -111,8 +111,8 @@ function addNewVariants(productId, varientConfig) {
 */
 
 Meteor.startup(function () {
-  
-  console.log("\n\n\n\n\n\n\n\n\n\n\n Height Width Custom Startup!!!! \n\n\n\n\n\n\n\n\n\n\n")
+
+  console.info("\n\n\n\n\n\n\n\n\n\n\n Height Width Custom Startup!!!! \n\n\n\n\n\n\n\n\n\n\n")
 
   Meteor.methods({
     'clearBlinds'({ selectedParent, selectedVariantConfig,  userID }) {

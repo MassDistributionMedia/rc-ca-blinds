@@ -1,19 +1,19 @@
-[  
-  {  
+[
+  {
     "_id":"Faux-Wood-Blinds",
     "title":"Faux Wood Blinds",
     "shopId":"J8Bhq3uTtdgwZx3rz",
     "ancestors":[],
-    "createdAt":{  
+    "createdAt":{
       "$date":"2016-08-01T02:41:08.736Z"
     },
     "description":"Moisture Resistant\nHot and steamy? Faux wood is great for bathrooms, kitchens, and garages.\nSuper Durable\nDoes your home feel like a circus sometimes? Scratch and moisture-resistant PVC can stand up to almost anything.\nBudget Friendly, On a budget? No worries. For the same look, faux wood blinds cost less than real wood blinds. Easy to Clean, An easy wipe down is all that's needed to make your oh-so-pretty blinds sparkle.",
     "handle":"faux-wood-blinds",
-    "hashtags":[  
+    "hashtags":[
       "rpjCvTBGjhBi2xdro",
       "cseCBSSrJ3t8HQSNP"
     ],
-    "price":{  
+    "price":{
       "range":"12.99 - 19.99",
       "min":12.99,
       "max":19.99
@@ -22,59 +22,59 @@
     "isLowQuantity":false,
     "isSoldOut":false,
     "isBackorder":false,
-    "metafields":[  
-      {  
+    "metafields":[
+      {
         "key":"Material",
         "value":"Faux Wood"
       },
-      {  
+      {
         "key":"Room",
-        "value":""
+        "value":"🏡"
       },
-      {  
+      {
         "key":"Mount",
-        "value":""
+        "value":"⛔"
       },
-      {  
+      {
         "key":"Height",
-        "value":""
+        "value":"↕️"
       },
-      {  
+      {
         "key":"Width",
-        "value":""
+        "value":"↔️"
       },
-      {  
+      {
         "key":"Blind Type",
-        "value":""
+        "value":"⛔"
       },
-      {  
+      {
         "key":"Color",
-        "value":""
+        "value":"🎨"
       },
-      {  
+      {
         "key":"Slate Size",
-        "value":""
+        "value":"↔️"
       },
-      {  
+      {
         "key":"Lift",
-        "value":""
+        "value":"⛔"
       },
-      {  
+      {
         "key":"Lift Side",
-        "value":""
+        "value":"↔️"
       },
-      {  
+      {
         "key":"Tilt",
-        "value":""
+        "value":"⛔"
       },
-      {  
+      {
         "key":"Tilt Side",
-        "value":""
+        "value":"↔️"
       }
     ],
     "pageTitle":".",
     "type":"simple",
-    "updatedAt":{  
+    "updatedAt":{
       "$date":"2016-08-01T02:41:08.736Z"
     },
     "vendor":".",
@@ -82,14 +82,14 @@
     "requiresShipping":true,
     "isDeleted":false,
     "template":"productDetailSimple",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"Height-Width",
     "title":"Height & Width",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds"
     ],
     "price":19.99,
@@ -97,15 +97,15 @@
     "inventoryPolicy":false,
     "inventoryQuantity":15,
     "isVisible":true,
-    "updatedAt":{  
+    "updatedAt":{
       "$date":"2016-08-01T02:41:08.736Z"
     },
-    "createdAt":{  
+    "createdAt":{
       "$date":"2016-08-01T02:41:08.736Z"
     },
     "weight":35,
-    "metafields":[  
-      {  
+    "metafields":[
+      {
         "key":null,
         "value":null
       }
@@ -123,14 +123,14 @@
     "isHeightWidth":true,
     "optionTitle":"Untitled Option",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     },
     "variantType":"blindsHeightWidth"
   },
-  {  
+  {
     "_id":"room-choices",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds"
     ],
     "type":"variant",
@@ -153,13 +153,13 @@
     "isHeightWidth":false,
     "optionTitle":"Untitled Option",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"room-choices-kitchen",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "room-choices"
     ],
@@ -183,13 +183,13 @@
     "isHeightWidth":false,
     "optionTitle":"Kitchen",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"room-choices-office",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "room-choices"
     ],
@@ -213,13 +213,13 @@
     "isHeightWidth":false,
     "optionTitle":"Office",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"room-choices-bathroom",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "room-choices"
     ],
@@ -243,13 +243,13 @@
     "isHeightWidth":false,
     "optionTitle":"Bathroom",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"room-choices-bedroom",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "room-choices"
     ],
@@ -273,13 +273,13 @@
     "isHeightWidth":false,
     "optionTitle":"Bedroom",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"room-choices-kids",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "room-choices"
     ],
@@ -303,13 +303,13 @@
     "isHeightWidth":false,
     "optionTitle":"Kid's Room",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"room-choices-dining",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "room-choices"
     ],
@@ -333,13 +333,13 @@
     "isHeightWidth":false,
     "optionTitle":"Dining Room",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"room-choices-living",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "room-choices"
     ],
@@ -363,13 +363,13 @@
     "isHeightWidth":false,
     "optionTitle":"Living Room",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"room-choices-other",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "room-choices"
     ],
@@ -393,13 +393,13 @@
     "isHeightWidth":false,
     "optionTitle":"Other",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-slat-sizes",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds"
     ],
     "type":"variant",
@@ -422,13 +422,13 @@
     "isHeightWidth":false,
     "optionTitle":"Untitled Option",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-colors",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds"
     ],
     "type":"variant",
@@ -451,13 +451,13 @@
     "isHeightWidth":false,
     "optionTitle":"Untitled Option",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-colors-designer-white",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-colors"
     ],
@@ -481,13 +481,13 @@
     "isHeightWidth":false,
     "optionTitle":"Designer White",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-colors-silk-white",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-colors"
     ],
@@ -511,13 +511,13 @@
     "isHeightWidth":false,
     "optionTitle":"Silk White",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-colors-pearl",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-colors"
     ],
@@ -541,13 +541,13 @@
     "isHeightWidth":false,
     "optionTitle":"Pearl",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-colors-alabaster",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-colors"
     ],
@@ -571,13 +571,13 @@
     "isHeightWidth":false,
     "optionTitle":"Alabaster",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-colors-chestnut",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-colors"
     ],
@@ -601,13 +601,13 @@
     "isHeightWidth":false,
     "optionTitle":"Chestnut",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-colors-black-walnut",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-colors"
     ],
@@ -631,13 +631,13 @@
     "isHeightWidth":false,
     "optionTitle":"Black Walnut",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-lift-side",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds"
     ],
     "type":"variant",
@@ -660,13 +660,13 @@
     "isHeightWidth":false,
     "optionTitle":"Untitled Option",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-lift-left",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-lift-side"
     ],
@@ -690,13 +690,13 @@
     "isHeightWidth":false,
     "optionTitle":"Left",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-lift-right",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-lift-side"
     ],
@@ -720,13 +720,13 @@
     "isHeightWidth":false,
     "optionTitle":"Right",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-tilt-side",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds"
     ],
     "type":"variant",
@@ -749,13 +749,13 @@
     "isHeightWidth":false,
     "optionTitle":"Untitled Option",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-tilt-left",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-tilt-side"
     ],
@@ -779,13 +779,13 @@
     "isHeightWidth":false,
     "optionTitle":"Left",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-tilt-right",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-tilt-side"
     ],
@@ -809,13 +809,13 @@
     "isHeightWidth":false,
     "optionTitle":"Right",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-mount",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds"
     ],
     "type":"variant",
@@ -838,13 +838,13 @@
     "isHeightWidth":false,
     "optionTitle":"Untitled Option",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-mount-inside",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-mount"
     ],
@@ -868,13 +868,13 @@
     "isHeightWidth":false,
     "optionTitle":"Inside Mount",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   },
-  {  
+  {
     "_id":"faux-wood-mount-outside",
-    "ancestors":[  
+    "ancestors":[
       "Faux-Wood-Blinds",
       "faux-wood-mount"
     ],
@@ -898,7 +898,7 @@
     "isHeightWidth":false,
     "optionTitle":"Outside Mount",
     "originCountry":"US",
-    "workflow":{  
+    "workflow":{
       "status":"new"
     }
   }

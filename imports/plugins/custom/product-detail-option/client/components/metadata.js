@@ -2,17 +2,14 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
-import SelectedVariants from "../stores/selectedVariants";
 
 
 class ProductMetadata extends Component {
-  selectedVariants = new SelectedVariants();
-  
   get metafields() {
     let metafields = [];
     metafields = metafields.concat(
       this.props.metafields || this.props.product.metafields,
-      this.selectedVariants.retrieveMetaValues(),
+      this.props.selectedVariants.retrieveMetaValues(),
     );
 
     return metafields;
@@ -22,11 +19,11 @@ class ProductMetadata extends Component {
     this.updateListener = () => {
       this.setState({ timestamp: Date.now() });
     };
-    this.selectedVariants.onUpdate(this.updateListener);
+    this.props.selectedVariants.onUpdate(this.updateListener);
   }
 
   componentWillUnmount() {
-    this.selectedVariants.offUpdate(this.updateListener);
+    this.props.selectedVariants.offUpdate(this.updateListener);
   }
 
   get showEditControls() {

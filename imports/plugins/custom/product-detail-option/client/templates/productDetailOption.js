@@ -3,7 +3,7 @@ import { Template } from "meteor/templating";
 
 Template.productDetailOption.helpers({
   PDC() {
-    return Components.ProductDetail;
+    return Components.ProductOptionComponent;
   }
 });
 
