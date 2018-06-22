@@ -185,6 +185,7 @@ class VariantList extends Component {
             showsVisibilityButton={true}
           >
             <Components.ChildVariant
+              isEditable={this.props.editable}
               isSelected={this.props.variantIsSelected(childVariant._id)}
               media={media}
               onClick={this.handleChildVariantClick}

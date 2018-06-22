@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import classnames from "classnames";
 import { Components, registerComponent } from "@reactioncommerce/reaction-components";
 import { Validation } from "@reactioncommerce/schemas";
-import { ProductVariant } from "/lib/collections/schemas/products";
+import { ProductVariant } from "/lib/collections/schemas";
 
 
 class ChildVariant extends Component {
@@ -17,7 +17,7 @@ class ChildVariant extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.variantValidation();
   }
 
@@ -94,7 +94,9 @@ class ChildVariant extends Component {
   // http://stackoverflow.com/questions/30580638/pass-parent-prop-to-children-reactjs?rq=1
 
   renderValidationButton = () => {
-    if (this.state.invalidVariant === true) {
+    if (this.props.isEditable === false) {
+      return null;
+    } else if (this.state.invalidVariant === true) {
       return (
         <Components.Badge
           status="danger"
@@ -105,6 +107,8 @@ class ChildVariant extends Component {
         />
       );
     }
+
+    return null;
   }
 
   // checks whether the product variant is validated
@@ -157,6 +161,7 @@ class ChildVariant extends Component {
 
 ChildVariant.propTypes = {
   editButton: PropTypes.node,
+  isEditable: PropTypes.bool,
   isSelected: PropTypes.bool,
   media: PropTypes.arrayOf(PropTypes.object),
   onClick: PropTypes.func.isRequired,
